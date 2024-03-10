@@ -3,9 +3,21 @@
 	"version": "1.0.0",
 	"description": "",
 	"keywords": [],
-	"author": "@guillorrr <hola@guillo.dev>",
+	"author": "@guillorrr <hola@guillo.dev>  (https://guillo.dev/)",
+	"contributors": [
+		{
+			"name": "Guillermo Baron",
+			"email": "guillermobaron@gmail.com",
+			"url": "https://github.com/guillorrr"
+		}
+	],
 	"license": "ISC",
 	"main": "index.js",
+	"engineStrict": true,
+	"engines": {
+		"node": ">=18.0.0",
+		"npm": ">=9.0.0"
+	},
 	"scripts": {
 		"build": "NODE_ENV=production gulp build",
 		"dev": "gulp build",
