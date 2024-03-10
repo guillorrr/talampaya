@@ -1,0 +1,19 @@
+{
+	"root": true,
+	"plugins": ["prettier"],
+	"env": {
+		"node": true,
+		"es6": true,
+		"browser": true,
+		"es2021": true
+	},
+	"extends": ["eslint:recommended", "prettier"],
+	"parserOptions": {
+		"ecmaVersion": "latest"
+	},
+	"rules": {
+		"prettier/prettier": "warn",
+		"no-console": "off",
+		"camelcase": ["warn", { "allow": ["element_id"] }]
+	}
+}
