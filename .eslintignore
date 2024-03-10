@@ -1,0 +1,8 @@
+build
+dist
+node_modules
+coverage
+.husky
+__test__
+.idea
+.vscode

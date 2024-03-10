@@ -1,0 +1,11 @@
+package-lock.json
+build
+dist
+node_modules
+coverage
+__test__
+.husky
+.gitignore
+.gitkeep
+.prettierignore
+.eslintignore
