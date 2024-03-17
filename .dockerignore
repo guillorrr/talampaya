@@ -18,4 +18,6 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/.husky
+**/logs
 README.md
