@@ -1,0 +1,55 @@
+{
+	"name": "guillorrr/patagonia",
+	"description": "WordPress development",
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "https://wpackagist.org",
+			"only": [
+				"wpackagist-plugin/*",
+				"wpackagist-theme/*"
+			]
+		}
+	],
+	"require": {
+		"wpackagist-plugin/wordpress-importer": "*",
+		"wpackagist-plugin/classic-editor": "*",
+		"wpackagist-plugin/classic-widgets": "*",
+		"wpackagist-plugin/disable-admin-notices": "*",
+		"wpackagist-plugin/post-type-switcher": "*",
+		"wpackagist-plugin/duplicate-page": "*",
+		"wpackagist-plugin/user-role-editor": "*",
+		"wpackagist-plugin/contact-form-7": "*",
+		"wpackagist-plugin/redirection": "*",
+		"wpackagist-plugin/akismet": "*",
+		"wpackagist-plugin/advanced-custom-fields": "*",
+		"wpackagist-plugin/acf-extended": "*",
+		"wpackagist-plugin/acf-image-aspect-ratio-crop": "*",
+		"wpackagist-plugin/tinymce-advanced": "*",
+		"wpackagist-plugin/disable-xml-rpc-pingback": "*",
+		"wpackagist-plugin/wordpress-seo": ">=7.0.2",
+		"wpackagist-plugin/duplicate-post": "*",
+		"wpackagist-plugin/check-email": "*",
+		"wpackagist-plugin/svg-support": "*",
+		"wpackagist-plugin/moving-media-library": "*",
+		"wpackagist-plugin/moving-users": "*",
+		"wpackagist-plugin/media-sync": "*",
+		"wpackagist-theme/poema": "*"
+	},
+	"extra": {
+		"installer-paths": {
+			"wp-content/plugins/{$name}/": [
+				"type:wordpress-plugin"
+			],
+			"wp-content/themes/{$name}/": [
+				"type:wordpress-theme"
+			]
+		}
+	},
+	"config": {
+		"vendor-dir": "wp-content/vendor",
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}

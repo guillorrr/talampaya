@@ -22,11 +22,18 @@
 		"build": "NODE_ENV=production gulp build",
 		"dev": "gulp build",
 		"webpack": "webpack --mode=development",
-		"lint": "eslint ./src --ext .js,.ts",
+		"lint:js": "eslint ./src --ext .js,.ts",
 		"lint:fix": "eslint ./src --ext .js,.ts --fix",
 		"prettier": "prettier --config .prettierrc './**/*' --write",
 		"prepare": "husky",
-		"test": "jest"
+		"test": "jest",
+		"start": "docker compose up",
+		"_build": "docker compose build --no-cache",
+		"_delete": "docker compose down -v",
+		"_rebuild": "docker compose down -v && docker compose build --no-cache",
+		"_lint:fix": "docker compose run --rm node npm run lint:fix",
+		"_prettier": "docker compose run --rm node npm run prettier",
+		"_permissions": "docker compose run --rm chmod"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
