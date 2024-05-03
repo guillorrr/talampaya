@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3.8'
 services:
   db:
     image: mariadb
@@ -15,8 +15,8 @@ services:
     build:
       context: ./docker/wp/
       args:
-        - WORDPRESS_VERSION=${WORDPRESS_VERSION:-php8.0-fpm}
-    container_name: ${APP_NAME}-wordpress
+        - WORDPRESS_VERSION=${WORDPRESS_VERSION:-php8.1-fpm}
+    container_name: ${APP_NAME}-wp
     expose:
       - '9000'
     environment:
@@ -102,6 +102,10 @@ services:
       DOMAIN: ${DOMAIN}
       PROTOCOL: ${PROTOCOL}
     volumes:
+      - './package.json:/usr/src/app/package.json'
+      - './package-lock.json:/usr/src/app/package-lock.json'
+      - './gulpfile.js:/usr/src/app/gulpfile.js'
+      - './webpack.config.js:/usr/src/app/webpack.config.js'
       - './src:/usr/src/app/src'
       - './dist:/usr/src/app/dist'
       - './build:/usr/src/app/build'
@@ -161,7 +165,7 @@ services:
 
 networks:
   default:
-    name: wp-tests-network
+    name: ${APP_NAME}-network
 
 volumes:
   db-data:
