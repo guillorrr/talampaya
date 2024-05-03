@@ -9,3 +9,6 @@ __test__
 .gitkeep
 .prettierignore
 .eslintignore
+.dockerignore
+.env*
+docker/*
