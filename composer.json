@@ -34,7 +34,12 @@
 		"wpackagist-plugin/moving-media-library": "*",
 		"wpackagist-plugin/moving-users": "*",
 		"wpackagist-plugin/media-sync": "*",
-		"wpackagist-theme/poema": "*"
+		"wpackagist-theme/poema": "*",
+		"timber/timber": "^2.1"
+	},
+	"require-dev": {
+		"automattic/wordbless": "^0.4.2",
+		"yoast/wp-test-utils": "^1.0"
 	},
 	"extra": {
 		"installer-paths": {
@@ -43,13 +48,20 @@
 			],
 			"wp-content/themes/{$name}/": [
 				"type:wordpress-theme"
+			],
+			"wp-content/vendor/automattic/wordbless/": [
+				"automattic/wordbless"
 			]
 		}
 	},
 	"config": {
 		"vendor-dir": "wp-content/vendor",
 		"allow-plugins": {
+			"roots/wordpress-core-installer": true,
 			"composer/installers": true
 		}
+	},
+	"scripts": {
+		"test": "phpunit"
 	}
 }
