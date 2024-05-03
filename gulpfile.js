@@ -1,20 +1,427 @@
-// gulpfile.js
-
-const gulp = require('gulp');
-const sass = require('gulp-sass')(require('sass'));
+const pkg = require('gulp');
+const babel = require('gulp-babel');
+const browserSync = require('browser-sync');
+const concat = require('gulp-concat');
+const path = require('path');
+const del = require('del');
+const log = require('fancy-log');
+const fs = require('fs');
+const plumber = require('gulp-plumber');
+const sourcemaps = require('gulp-sourcemaps');
+const uglify = require('gulp-uglify');
+const zip = require('gulp-vinyl-zip');
+const replace = require('gulp-replace');
+const rename = require('gulp-rename');
 const webpack = require('webpack-stream');
+const sass = require('gulp-sass')(require('sass'));
+const { series, dest, src, watch } = pkg;
 
-sass.compiler = require('node-sass');
+/* -------------------------------------------------------------------------------------------------
+Theme Name
+-------------------------------------------------------------------------------------------------- */
+const themeName = process.env.APP_NAME.toLowerCase() || 'talampaya';
 
-function styles() {
-	return gulp.src('src/assets/scss/*.scss').pipe(sass()).pipe(gulp.dest('dist/css/'));
+/* -------------------------------------------------------------------------------------------------
+Styles Bundles
+-------------------------------------------------------------------------------------------------- */
+const frontendStyles = [
+	'./src/assets/scss/main.scss',
+	'./src/theme/template-parts/blocks/**/*.scss',
+];
+
+const backendStyles = [
+	'./src/assets/scss/backend-*.scss',
+	'./src/assets/scss/backend-*.css',
+	'./src/theme/template-parts/blocks/**/backend-*.scss',
+];
+
+/* -------------------------------------------------------------------------------------------------
+Header & Footer JavaScript Bundles
+-------------------------------------------------------------------------------------------------- */
+const headerJS = [
+	//'./node_modules/jquery/dist/jquery.js'
+];
+
+const footerJS = [
+	'./src/assets/js/**',
+	'./src/theme/template-parts/blocks/**/*.js',
+	'!./src/assets/js/backend-**',
+];
+
+const backendJS = ['./src/assets/js/backend-**'];
+
+/* -------------------------------------------------------------------------------------------------
+Assets
+-------------------------------------------------------------------------------------------------- */
+const assetsFiles = [
+	'./src/assets/img/**',
+	'./src/assets/fonts/**',
+	'!./src/assets/scss/**',
+	'!./src/assets/js/**',
+];
+
+/* -------------------------------------------------------------------------------------------------
+Wordpress Theme files
+-------------------------------------------------------------------------------------------------- */
+const themeFiles = [
+	'./src/theme/**',
+	'!./src/theme/template-parts/blocks/**/*.scss',
+	'!./src/theme/template-parts/blocks/**/*.js',
+];
+
+/* -------------------------------------------------------------------------------------------------
+Wordpress Plugin files
+-------------------------------------------------------------------------------------------------- */
+const pluginsFiles = ['./src/plugins/**'];
+
+/* -------------------------------------------------------------------------------------------------
+Environment Tasks
+-------------------------------------------------------------------------------------------------- */
+
+function registerCleanup(done) {
+	process.on('SIGINT', () => {
+		process.exit(0);
+	});
+	done();
 }
 
-function scripts() {
-	return gulp
-		.src('.')
+function replaceThemeName() {
+	return replace('talampaya', themeName)
+		.pipe(replace('Talampaya', themeName.charAt(0).toUpperCase() + themeName.slice(1)))
+		.pipe(replace('TALAMPAYA', themeName.toUpperCase()));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Development Tasks
+-------------------------------------------------------------------------------------------------- */
+function devServer() {
+	const proxy_port = parseInt(process.env.PROXY_PORT) || 3000;
+	const ui_port = parseInt(process.env.UI_PORT) || 3001;
+	const nginx_port = parseInt(process.env.NGINX_PORT) || 80;
+	const domain = process.env.DOMAIN || 'localhost';
+	const protocol = process.env.PROTOCOL || 'http';
+
+	browserSync({
+		logPrefix: '🐳 WordPress',
+		proxy: {
+			target: `${protocol}://nginx:${nginx_port}`,
+			proxyReq: [
+				function (proxyReq, req, res) {
+					proxyReq.setHeader('Host', req.headers.host);
+				},
+			],
+		},
+		host: domain,
+		port: proxy_port,
+		notify: true,
+		open: false,
+		logConnections: true,
+		https: {
+			key: `/var/www/ssl/${domain}-key.pem`,
+			cert: `/var/www/ssl/${domain}.pem`,
+		},
+		files: ['**/*.php'],
+		cors: true,
+		reloadDelay: 0,
+		ui: {
+			port: ui_port,
+		},
+	});
+
+	watchFiles();
+}
+
+function Reload() {
+	browserSync.reload();
+}
+
+function copyThemeDev() {
+	if (!fs.existsSync('./build')) {
+		log(buildNotFound);
+		process.exit(1);
+	} else {
+		return src(themeFiles)
+			.pipe(replaceThemeName())
+			.pipe(dest('./build/wp-content/themes/' + themeName));
+	}
+}
+
+function copyModifiedThemeFile(filePath) {
+	if (!fs.existsSync('./build')) {
+		log(buildNotFound);
+		process.exit(1);
+	} else {
+		console.log('Copying file: ' + filePath);
+		const extname = path.extname(filePath);
+		if (extname !== '.scss' && extname !== '.js') {
+			const relativePath = path.relative('./src/theme', filePath);
+			const destination =
+				'./build/wp-content/themes/' + themeName + '/' + path.dirname(relativePath);
+
+			return src(filePath).pipe(replaceThemeName()).pipe(dest(destination));
+		}
+	}
+}
+
+function copyAssetsDev() {
+	return src(assetsFiles).pipe(dest('./build/wp-content/themes/' + themeName));
+}
+
+function copyLanguagesDev() {
+	return src(['./src/assets/languages/**'])
+		.pipe(
+			rename(function (path) {
+				if (path.basename === 'talampaya') {
+					path.basename = themeName;
+				}
+			})
+		)
+		.pipe(dest('./build/wp-content/themes/' + themeName + '/languages'));
+}
+
+function stylesDev() {
+	console.log('Compiling styles...');
+	return src(frontendStyles)
+		.pipe(sourcemaps.init())
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('style.css'))
+		.pipe(sourcemaps.write('.'))
+		.pipe(dest('./build/wp-content/themes/' + themeName))
+		.pipe(browserSync.stream());
+}
+
+function backendStylesDev() {
+	return src(backendStyles)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('backend-styles.css'))
+		.pipe(dest('./build/wp-content/themes/' + themeName + '/css'))
+		.pipe(browserSync.stream());
+}
+
+function webpackScriptsDev() {
+	return src('.')
 		.pipe(webpack(require('./webpack.config.js')))
-		.pipe(gulp.dest('dist/js/'));
+		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
 }
 
-exports.build = gulp.parallel(styles, scripts);
+function headerScriptsDev() {
+	return src(headerJS)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(sourcemaps.init())
+		.pipe(concat('header-bundle.js'))
+		.pipe(sourcemaps.write('.'))
+		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
+}
+
+function backendScriptsDev() {
+	return src(backendJS)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(concat('backend-scripts.js'))
+		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
+}
+
+function pluginsDev() {
+	return src(pluginsFiles).pipe(dest('./build/wp-content/plugins'));
+}
+
+function watchFiles() {
+	watch(frontendStyles.concat(backendStyles), {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		stylesDev();
+		backendStylesDev();
+	});
+	watch(footerJS, {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		webpackScriptsDev();
+		Reload();
+	});
+	watch(assetsFiles, {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		copyAssetsDev();
+		Reload();
+	});
+	watch(themeFiles, {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		copyModifiedThemeFile(path);
+		stylesDev();
+		backendStylesDev();
+		Reload();
+	});
+	watch(pluginsFiles, {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		pluginsDev();
+		Reload();
+	});
+}
+
+const dev = series(
+	registerCleanup,
+	copyThemeDev,
+	copyAssetsDev,
+	stylesDev,
+	backendStylesDev,
+	//headerScriptsDev,
+	backendScriptsDev,
+	webpackScriptsDev,
+	pluginsDev,
+	copyLanguagesDev,
+	devServer
+);
+dev.displayName = 'dev';
+
+exports.dev = dev;
+
+/* -------------------------------------------------------------------------------------------------
+Production Tasks
+-------------------------------------------------------------------------------------------------- */
+async function cleanProd() {
+	await del(['./dist/*']);
+}
+
+function copyThemeProd() {
+	return src(themeFiles)
+		.pipe(replaceThemeName())
+		.pipe(dest('./dist/themes/' + themeName));
+}
+
+function copyAssetsProd() {
+	return src(assetsFiles)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(dest('./dist/themes/' + themeName));
+}
+
+function copyLanguagesProd() {
+	return src(['./src/assets/languages/**'])
+		.pipe(
+			rename(function (path) {
+				if (path.basename === 'talampaya') {
+					path.basename = themeName;
+				}
+			})
+		)
+		.pipe(dest('./dist/themes/' + themeName + '/languages'));
+}
+
+function stylesProd() {
+	return src(frontendStyles)
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('style.css'))
+		.pipe(dest('./dist/themes/' + themeName));
+}
+
+function backendStylesProd() {
+	return src(backendStyles)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('backend-styles.css'))
+		.pipe(dest('./dist/themes/' + themeName + '/css'));
+}
+
+function webpackScriptsProd() {
+	return src('.')
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(dest('./dist/themes/' + themeName + '/js'));
+}
+
+function headerScriptsProd() {
+	return src(headerJS)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(concat('header-bundle.js'))
+		.pipe(uglify())
+		.pipe(dest('./dist/themes/' + themeName + '/js'));
+}
+
+function backendScriptsProd() {
+	return src(backendJS)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(concat('backend-scripts.js'))
+		.pipe(dest('./dist/themes/' + themeName + '/js'));
+}
+
+function pluginsProd() {
+	return src(pluginsFiles).pipe(dest('./dist/plugins'));
+}
+
+function zipProd() {
+	return src('./dist/themes/' + themeName + '/**/*')
+		.pipe(zip.dest('./dist/' + themeName + '.zip'))
+		.on('end', () => {
+			log(pluginsGenerated);
+			log(filesGenerated);
+		});
+}
+
+const prod = series(
+	cleanProd,
+	copyThemeProd,
+	copyAssetsProd,
+	stylesProd,
+	backendStylesProd,
+	//headerScriptsProd,
+	backendScriptsProd,
+	webpackScriptsProd,
+	pluginsProd,
+	copyLanguagesProd,
+	zipProd
+);
+prod.displayName = 'prod';
+
+exports.prod = prod;
+
+/* -------------------------------------------------------------------------------------------------
+Utility Tasks
+-------------------------------------------------------------------------------------------------- */
+const onError = err => {
+	log(errorMsg + ' ' + err.toString());
+};
+
+function Backup() {
+	if (!fs.existsSync('./build')) {
+		log(buildNotFound);
+		process.exit(1);
+	} else {
+		return src('./build/**/*')
+			.pipe(zip.dest('./backups/' + date + '.zip'))
+			.on('end', () => {
+				log(backupsGenerated);
+			});
+	}
+}
+
+Backup.displayName = 'backup';
+
+exports.backup = Backup;
+
+/* -------------------------------------------------------------------------------------------------
+Messages
+-------------------------------------------------------------------------------------------------- */
+const date = new Date().toLocaleDateString('es-ES').replace(/\//g, '.');
+const errorMsg = '\x1b[41mError\x1b[0m';
+const buildNotFound =
+	errorMsg +
+	' ⚠️　- You need to build the project first. Run the command: $ \x1b[1mdocker compose build\x1b[0m';
+const filesGenerated =
+	'Your ZIP template file was generated in: \x1b[1m' + '/dist/' + themeName + '.zip\x1b[0m - ✅';
+const pluginsGenerated = 'Plugins are generated in: \x1b[1m' + '/dist/plugins/\x1b[0m - ✅';
+const backupsGenerated =
+	'Your backup was generated in: \x1b[1m' + '/backups/' + date + '.zip\x1b[0m - ✅';
+
+/* -------------------------------------------------------------------------------------------------
+End of all Tasks
+-------------------------------------------------------------------------------------------------- */
