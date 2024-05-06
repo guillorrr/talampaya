@@ -21,6 +21,7 @@
     "@pattern-lab/cli": "^6.1.0",
     "@pattern-lab/core": "^6.1.0",
     "@pattern-lab/engine-twig-php": "^6.1.0",
+    "@pattern-lab/starterkit-twig-demo": "^6.1.0",
     "@pattern-lab/uikit-workshop": "^6.1.0"
   }
 }
