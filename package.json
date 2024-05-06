@@ -28,13 +28,13 @@
 		"prepare": "husky",
 		"test": "jest",
 		"start": "docker compose up",
-		"_build": "docker compose build --no-cache",
-		"_delete": "docker compose down -v",
-		"_rebuild": "docker compose down -v && docker compose build --no-cache",
-		"_lint:fix": "docker compose run --rm node npm run lint:fix",
-		"_prettier": "docker compose run --rm node npm run prettier",
-		"_permissions": "docker compose run --rm chmod",
-		"_composer": "docker-compose run composer update"
+		"docker:build": "docker compose build --no-cache",
+		"docker:delete": "docker compose down -v",
+		"docker:rebuild": "docker compose down -v && docker compose build --no-cache",
+		"docker:lint:fix": "docker compose run --rm node npm run lint:fix",
+		"docker:prettier": "docker compose run --rm node npm run prettier",
+		"docker:permissions": "docker compose run --rm chmod",
+		"docker:composer:update": "docker-compose run composer update"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
