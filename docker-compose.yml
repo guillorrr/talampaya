@@ -115,6 +115,17 @@ services:
       - nginx
     command: npm run dev
 
+  patternlab:
+    build:
+      context: ./
+      dockerfile: ./docker/patternlab/Dockerfile
+    container_name: ${APP_NAME}-patternlab
+    ports:
+      - '${PATTERNLAB_PORT:-3000}:${PATTERNLAB_PORT:-3000}'
+    volumes:
+      - './patternlab:/app/patternlab'
+    command: npm run start
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: ${APP_NAME}-phpmyadmin

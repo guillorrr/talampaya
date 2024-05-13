@@ -12,3 +12,11 @@ __test__
 .dockerignore
 .env*
 docker/*
+**/.git
+**/.svn
+**/.hg
+# Ignore all files that begin with a dot beacause they are partials files with opening or closing tags
+**/_*.html
+**/_*.hbs
+**/_*.twig
+**/_*.php
