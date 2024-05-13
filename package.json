@@ -45,7 +45,7 @@
 			"eslint ./src --ext .js,.ts --fix"
 		],
 		"*.(sa|sc|c)ss": "stylelint --fix",
-		"*.{html,json, twig, hbs, php}": [
+		"*.{html,json,twig,hbs,php}": [
 			"prettier --config .prettierrc -l --write"
 		]
 	},
