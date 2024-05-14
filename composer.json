@@ -9,6 +9,82 @@
 				"wpackagist-plugin/*",
 				"wpackagist-theme/*"
 			]
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "advanced-custom-fields/advanced-custom-fields-pro",
+				"version": "6.2.9",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://connect.advancedcustomfields.com/index.php?a=download&p=pro&k={%WORDPRESS_PLUGIN_ACF_KEY}&t={%VERSION}"
+				},
+				"require": {
+					"composer/installers": "^1.4",
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/sitepress-multilingual-cms",
+				"version": "4.6.10",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=6088&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/wpml-string-translation",
+				"version": "3.2.11",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=6092&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/wp-seo-multilingual",
+				"version": "2.1.0",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=3566177&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/acfml",
+				"version": "2.1.2",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=1097589&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
 		}
 	],
 	"require": {
@@ -20,6 +96,8 @@
 		"wpackagist-plugin/duplicate-page": "*",
 		"wpackagist-plugin/user-role-editor": "*",
 		"wpackagist-plugin/contact-form-7": "*",
+		"wpackagist-plugin/cf7-conditional-fields": "*",
+		"wpackagist-plugin/flamingo": "*",
 		"wpackagist-plugin/redirection": "*",
 		"wpackagist-plugin/akismet": "*",
 		"wpackagist-plugin/advanced-custom-fields": "*",
@@ -27,21 +105,34 @@
 		"wpackagist-plugin/acf-image-aspect-ratio-crop": "*",
 		"wpackagist-plugin/tinymce-advanced": "*",
 		"wpackagist-plugin/disable-xml-rpc-pingback": "*",
-		"wpackagist-plugin/wordpress-seo": ">=7.0.2",
+		"wpackagist-plugin/wordpress-seo": "*",
 		"wpackagist-plugin/duplicate-post": "*",
 		"wpackagist-plugin/check-email": "*",
 		"wpackagist-plugin/svg-support": "*",
 		"wpackagist-plugin/moving-media-library": "*",
 		"wpackagist-plugin/moving-users": "*",
 		"wpackagist-plugin/media-sync": "*",
+		"wpackagist-plugin/posts-to-posts": "*",
+		"wpackagist-plugin/user-switching": "*",
+		"wpackagist-plugin/wp-tota11y": "*",
+		"wpackagist-plugin/disable-emojis": "*",
+		"wpackagist-plugin/debug-bar-timber": "*",
+		"wpackagist-plugin/debug-bar": "*",
 		"wpackagist-theme/poema": "*",
-		"timber/timber": "^2.1"
+		"advanced-custom-fields/advanced-custom-fields-pro": "*",
+		"wpml/sitepress-multilingual-cms": "*",
+		"wpml/wpml-string-translation": "*",
+		"wpml/wp-seo-multilingual": "*",
+		"wpml/acfml": "*",
+		"timber/timber": "^2.1",
+		"vlucas/phpdotenv": "^5.6"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
 		"yoast/wp-test-utils": "^1.0"
 	},
 	"extra": {
+		"wordpress-install-dir": "./",
 		"installer-paths": {
 			"wp-content/plugins/{$name}/": [
 				"type:wordpress-plugin"
@@ -52,13 +143,18 @@
 			"wp-content/vendor/automattic/wordbless/": [
 				"automattic/wordbless"
 			]
+		},
+		"private-composer-installer": {
+			"dotenv-path": ".",
+			"dotenv-name": ".env"
 		}
 	},
 	"config": {
 		"vendor-dir": "wp-content/vendor",
 		"allow-plugins": {
 			"roots/wordpress-core-installer": true,
-			"composer/installers": true
+			"composer/installers": true,
+			"ffraenz/private-composer-installer": true
 		}
 	},
 	"scripts": {

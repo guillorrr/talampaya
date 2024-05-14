@@ -155,6 +155,7 @@ services:
     volumes:
       - './build:/var/www/html'
       - './composer.json:/var/www/html/composer.json'
+      - '.env:/var/www/html/.env'
     command: composer update
 
   mkcert:
