@@ -9,11 +9,14 @@
 	},
 	"extends": ["eslint:recommended", "prettier"],
 	"parserOptions": {
-		"ecmaVersion": "latest"
+		"ecmaVersion": "latest",
+		"sourceType": "module"
 	},
 	"rules": {
 		"prettier/prettier": "warn",
 		"no-console": "off",
-		"camelcase": ["warn", { "allow": ["element_id"] }]
+		"camelcase": ["warn", { "allow": ["element_id"] }],
+		"no-unused-vars": "warn",
+		"no-undef": "warn"
 	}
 }

@@ -1,10 +1,40 @@
 {
 	"useTabs": true,
-	"tabWidth": 2,
+	"tabWidth": 4,
 	"printWidth": 100,
 	"singleQuote": true,
 	"trailingComma": "es5",
 	"bracketSpacing": true,
+	"bracketSameLine": true,
 	"semi": true,
-	"arrowParens": "avoid"
+	"singleAttributePerLine": false,
+	"arrowParens": "avoid",
+	"twigOutputEndblockName": true,
+	"twigPrintWidth": 120,
+	"twigSingleQuote": false,
+	"twigMultiTags": [
+		"nav,endnav",
+		"minify,endminify",
+		"switch,case,default,endswitch",
+		"ifchildren,endifchildren",
+		"cache,endcache",
+		"js,endjs"
+	],
+	"overrides": [
+		{
+			"files": "**/*.hbs",
+			"options": {
+				"parser": "glimmer",
+				"singleQuote": false
+			}
+		},
+		{
+			"files": "**/*.php",
+			"options": {
+				"parser": "php",
+				"singleQuote": false
+			}
+		}
+	],
+	"plugins": ["@zackad/prettier-plugin-twig-melody", "@prettier/plugin-php"]
 }
