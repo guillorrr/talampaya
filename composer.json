@@ -1,5 +1,5 @@
 {
-	"name": "guillorrr/patagonia",
+	"name": "guillorrr/talampaya",
 	"description": "WordPress development",
 	"repositories": [
 		{
@@ -129,7 +129,8 @@
 		"wpackagist-plugin/media-sync": "*",
 		"wpackagist-plugin/user-switching": "*",
 		"wpackagist-plugin/debug-bar-timber": "*",
-		"wpackagist-plugin/debug-bar": "*"
+		"wpackagist-plugin/debug-bar": "*",
+		"hellonico/timber-dump-extension": "*"
 	},
 	"extra": {
 		"wordpress-install-dir": "./",
