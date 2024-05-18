@@ -1,0 +1,13 @@
+{
+	"name": "acf/example",
+	"title": "Example Block",
+	"description": "Description for my block",
+	"style": ["file:./example-block.css"],
+	"category": "formatting",
+	"icon": "format-aside",
+	"keywords": ["example", "block"],
+	"acf": {
+		"mode": "preview",
+		"renderCallback": "my_acf_block_render_callback"
+	}
+}

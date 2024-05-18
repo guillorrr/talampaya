@@ -371,3 +371,26 @@ if (!function_exists("talampaya_directory_iterator")):
 		return $data;
 	}
 endif;
+
+// -----------------------------------------------------------------------------
+// Replace keys from ACF register fields
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
+	function talampaya_replace_keys_from_acf_register_fields($array, $prefix)
+	{
+		foreach ($array as $key => &$value) {
+			if (is_array($value)) {
+				$value = talampaya_replace_keys_from_acf_register_fields($value, $prefix);
+			} else {
+				if (is_string($value)) {
+					if (str_starts_with($value, "field_")) {
+						$value = str_replace("field_", "field_" . $prefix . "_", $value);
+					} elseif (str_starts_with($value, "group_")) {
+						$value = str_replace("group_", "group_" . $prefix . "_", $value);
+					}
+				}
+			}
+		}
+		return $array;
+	}
+endif;

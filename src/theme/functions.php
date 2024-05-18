@@ -37,3 +37,7 @@ if (class_exists("TalampayaFactory")) {
 if (class_exists("TalampayaTimber")) {
 	new TalampayaTimber();
 }
+
+if (class_exists("ACF")) {
+	require_once __DIR__ . "/inc/acf.php";
+}
