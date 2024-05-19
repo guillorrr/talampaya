@@ -50,11 +50,14 @@ class TalampayaSetup
 			wp_enqueue_script("select2");
 		}
 
+		global $theme_version;
+		$version = $theme_version . "." . filemtime(get_stylesheet_directory() . "/js/main.min.js");
+
 		wp_enqueue_script(
 			"talampaya_footer_js",
 			get_template_directory_uri() . "/js/main.min.js",
 			[],
-			talampaya_theme_version(),
+			$version,
 			true
 		);
 
@@ -74,22 +77,32 @@ class TalampayaSetup
 
 	public function talampaya_backend_styles()
 	{
+		global $theme_version;
+		$version =
+			$theme_version .
+			"." .
+			filemtime(get_stylesheet_directory() . "/css/backend-styles.css");
+
 		wp_enqueue_style(
 			"talampaya_backend_styles",
 			get_template_directory_uri() . "/css/backend-styles.css",
 			false,
-			talampaya_theme_version(),
+			$version,
 			"all"
 		);
 	}
 
 	public function talampaya_backend_scripts()
 	{
+		global $theme_version;
+		$version =
+			$theme_version . "." . filemtime(get_stylesheet_directory() . "/js/backend-scripts.js");
+
 		wp_enqueue_script(
 			"talampaya_backend_scripts",
 			get_template_directory_uri() . "/js/backend-scripts.js",
 			["jquery"],
-			talampaya_theme_version(),
+			$version,
 			true
 		);
 	}
