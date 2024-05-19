@@ -13,11 +13,6 @@ require_once __DIR__ . "/inc/plugins.php";
 Timber\Timber::init();
 Timber::$dirname = ["templates", "views"];
 
-$filters = talampaya_directory_iterator(__DIR__ . "/inc/filters");
-foreach ($filters as $f) {
-	require_once $f;
-}
-
 $paths = require_once __DIR__ . "/inc/utils/paths.php";
 $theme = wp_get_theme();
 $theme_version = $theme->get("Version");
@@ -40,4 +35,9 @@ if (class_exists("TalampayaTimber")) {
 
 if (class_exists("ACF")) {
 	require_once __DIR__ . "/inc/acf.php";
+}
+
+$filters = talampaya_directory_iterator(__DIR__ . "/inc/filters");
+foreach ($filters as $f) {
+	require_once $f;
 }
