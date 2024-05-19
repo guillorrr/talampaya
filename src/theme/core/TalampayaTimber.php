@@ -1,9 +1,14 @@
 <?php
 
 use Timber\Site;
+use Twig\Extension\StringLoaderExtension;
+use Twig\Extra\Html\HtmlExtension;
 
 class TalampayaTimber extends Site
 {
+	public $google_analytics_id = "UA-XXXXXXXX";
+	public $facebook_pixel_ids = "XXXXXXXXXXXXXXX";
+
 	public function __construct()
 	{
 		add_filter("timber/context", [$this, "add_to_context"]);
@@ -18,8 +23,8 @@ class TalampayaTimber extends Site
 		global $paths, $theme_version;
 
 		$context["foo"] = "bar";
-		$context["stuff"] = "I am a value set in your functions.php file";
-		$context["notes"] = "These values are available everytime you call Timber::context();";
+		//		$context["FACEBOOK_PIXEL_ID"] = $this->facebook_pixel_ids;
+		//      $context["GOOGLE_ANALYTICS_ID"] = $this->google_analytics_id;
 		$context["menu"] = Timber::get_menu();
 		$context["paths"] = $paths;
 		$context["version"] = $theme_version;
@@ -43,7 +48,8 @@ class TalampayaTimber extends Site
 		 * Required when you want to use Twig’s template_from_string.
 		 * @link https://twig.symfony.com/doc/3.x/functions/template_from_string.html
 		 */
-		// $twig->addExtension( new Twig\Extension\StringLoaderExtension() );
+		$twig->addExtension(new StringLoaderExtension());
+		$twig->addExtension(new HtmlExtension());
 
 		$twig->addFilter(new Twig\TwigFilter("myfoo", [$this, "myfoo"]));
 
