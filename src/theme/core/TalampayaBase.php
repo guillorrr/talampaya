@@ -6,7 +6,8 @@ class TalampayaBase
 	{
 		add_action("init", [$this, "disableWpEmojicons"]);
 		add_action("admin_head", [$this, "hideUpdateNoticeToAllButAdmin"], 1);
-		add_filter("acf/settings/save_json", [$this, "myAcfJsonSavePoint"]);
+		add_action("widgets_init", [$this, "disable_default_widgets"], 11);
+		add_action("wp_enqueue_scripts", [$this, "dequeue_unnecessary_scripts"], 100);
 
 		$this->disableXmlrpc();
 		$this->removeFromWpHead();
@@ -56,12 +57,6 @@ class TalampayaBase
 		remove_action("wp_head", "wlwmanifest_link");
 	}
 
-	function myAcfJsonSavePoint($path)
-	{
-		$path = get_template_directory() . "/acf-json";
-		return $path;
-	}
-
 	/**
 	 * Remove useless things from wp_head
 	 * @link http://cubiq.org/clean-up-and-optimize-wordpress-for-your-next-theme
@@ -75,5 +70,38 @@ class TalampayaBase
 		remove_action("wp_head", "feed_links_extra", 3); // Automatic feeds for single posts
 		remove_action("wp_head", "feed_links", 2);
 		remove_action("wp_head", "parent_post_rel_link", 10, 0);
+	}
+
+	/**
+	 * Disables default WordPress widgets to improve performance.
+	 */
+	function disable_default_widgets()
+	{
+		unregister_widget("WP_Widget_Pages");
+		unregister_widget("WP_Widget_Calendar");
+		unregister_widget("WP_Widget_Archives");
+		unregister_widget("WP_Widget_Links");
+		unregister_widget("WP_Widget_Meta");
+		unregister_widget("WP_Widget_Search");
+		unregister_widget("WP_Widget_Text");
+		unregister_widget("WP_Widget_Categories");
+		unregister_widget("WP_Widget_Recent_Posts");
+		unregister_widget("WP_Widget_Recent_Comments");
+		unregister_widget("WP_Widget_RSS");
+		unregister_widget("WP_Widget_Tag_Cloud");
+		unregister_widget("WP_Nav_Menu_Widget");
+		unregister_widget("Twenty_Eleven_Ephemera_Widget");
+	}
+
+	/**
+	 * Dequeues unnecessary scripts and styles to improve performance.
+	 */
+	function dequeue_unnecessary_scripts()
+	{
+		if (!is_admin()) {
+			wp_dequeue_style("wp-block-library");
+			wp_dequeue_style("wp-block-library-theme");
+			wp_dequeue_script("wp-embed");
+		}
 	}
 }
