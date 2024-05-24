@@ -14,7 +14,7 @@
 			"type": "package",
 			"package": {
 				"name": "advanced-custom-fields/advanced-custom-fields-pro",
-				"version": "6.2.9",
+				"version": "6.3.0.1",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -30,7 +30,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/sitepress-multilingual-cms",
-				"version": "4.6.10",
+				"version": "4.6.11",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -45,7 +45,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-string-translation",
-				"version": "3.2.11",
+				"version": "3.2.12",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
