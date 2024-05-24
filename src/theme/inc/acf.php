@@ -36,6 +36,18 @@ foreach ($directories = new DirectoryIterator(get_template_directory() . "/block
 }
 
 /**
+ * Register ACF Custom fields.
+ */
+foreach ($files = new DirectoryIterator(get_template_directory() . "/inc/acf") as $file) {
+	if ($file->isFile() && $file->getExtension() === "php") {
+		$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
+		if (!str_starts_with($filenameWithoutExtension, "_")) {
+			require_once $file->getPathname();
+		}
+	}
+}
+
+/**
  * Render callback to prepare and display a registered block using Timber.
  */
 function my_acf_block_render_callback(
