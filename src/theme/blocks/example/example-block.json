@@ -3,7 +3,7 @@
 	"title": "Example Block",
 	"description": "Description for my block",
 	"style": ["file:./example-block.css"],
-	"category": "formatting",
+	"category": "talampaya",
 	"icon": "format-aside",
 	"keywords": ["example", "block"],
 	"acf": {
