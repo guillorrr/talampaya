@@ -16,7 +16,6 @@ class TalampayaSetup
 		add_action("admin_enqueue_scripts", [$this, "talampaya_backend_scripts"]);
 		add_action("wp_before_admin_bar_render", [$this, "updateAdminBar"]);
 		add_action("admin_menu", [$this, "updateAdminMenu"]);
-		add_filter("admin_footer_text", [$this, "updateAdminFooter"]);
 	}
 
 	public function setup()
@@ -78,33 +77,27 @@ class TalampayaSetup
 	public function talampaya_backend_styles()
 	{
 		global $theme_version;
-		$version =
-			$theme_version .
-			"." .
-			filemtime(get_stylesheet_directory() . "/css/backend-styles.css");
 
-		wp_enqueue_style(
-			"talampaya_backend_styles",
-			get_template_directory_uri() . "/css/backend-styles.css",
-			false,
-			$version,
-			"all"
-		);
+		$file = get_stylesheet_directory() . "/css/backend-styles.css";
+
+		if (file_exists($file)) {
+			$version = $theme_version . "." . filemtime($file);
+
+			wp_enqueue_style("talampaya_backend_styles", $file, false, $version, "all");
+		}
 	}
 
 	public function talampaya_backend_scripts()
 	{
 		global $theme_version;
-		$version =
-			$theme_version . "." . filemtime(get_stylesheet_directory() . "/js/backend-scripts.js");
 
-		wp_enqueue_script(
-			"talampaya_backend_scripts",
-			get_template_directory_uri() . "/js/backend-scripts.js",
-			["jquery"],
-			$version,
-			true
-		);
+		$file = get_stylesheet_directory() . "/css/backend-scripts.css";
+
+		if (file_exists($file)) {
+			$version = $theme_version . "." . filemtime($file);
+
+			wp_enqueue_style("talampaya_backend_scripts", $file, false, $version, "all");
+		}
 	}
 
 	public function setPostTypeSupport()
@@ -125,10 +118,5 @@ class TalampayaSetup
 	{
 		global $wp_admin_bar;
 		$wp_admin_bar->remove_menu("comments");
-	}
-
-	function updateAdminFooter()
-	{
-		echo 'Developed by <a href="https://guillo.dev" target="_blank">@guillorrr</a>';
 	}
 }
