@@ -335,9 +335,13 @@ if (!function_exists("talampaya_directory_iterator_group_by_folder")):
 				$explode_directories = explode("/", $directory->getPathname());
 				$last_directory = end($explode_directories);
 
+				$data[$last_directory] = [];
 				foreach ($files = new DirectoryIterator($directory->getPathname()) as $file) {
 					if ($file->isFile() && $file->getExtension() === $extension) {
-						$data[$last_directory] = require_once $file->getPathname();
+						$data[$last_directory] = array_merge(
+							$data[$last_directory],
+							require_once $file->getPathname()
+						);
 					}
 				}
 			}
