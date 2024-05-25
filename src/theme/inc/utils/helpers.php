@@ -398,3 +398,22 @@ if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
 		return $array;
 	}
 endif;
+
+// -----------------------------------------------------------------------------
+// Filter array by key and value
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_filter_array_by_key_and_value")):
+	function talampaya_filter_array_by_key_and_value($field, $value, $arrays)
+	{
+		foreach ($arrays as $array) {
+			if (isset($array[$field]) && $array[$field] == $value) {
+				return $array;
+			}
+		}
+		return null;
+	}
+endif;
+
+// -----------------------------------------------------------------------------
+// CUSTOM HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
