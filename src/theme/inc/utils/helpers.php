@@ -415,5 +415,17 @@ if (!function_exists("talampaya_filter_array_by_key_and_value")):
 endif;
 
 // -----------------------------------------------------------------------------
+// Get JSON data from URL
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_get_json_data_from_url")):
+	function talampaya_get_json_data_from_url($url)
+	{
+		$response = wp_remote_get($url);
+		$body = wp_remote_retrieve_body($response);
+		return json_decode($body, true);
+	}
+endif;
+
+// -----------------------------------------------------------------------------
 // CUSTOM HELPER FUNCTIONS
 // -----------------------------------------------------------------------------
