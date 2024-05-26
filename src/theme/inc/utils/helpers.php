@@ -427,5 +427,47 @@ if (!function_exists("talampaya_get_json_data_from_url")):
 endif;
 
 // -----------------------------------------------------------------------------
+// Update Title with ACF Custom Title
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_update_title_with_acf_custom_title")):
+	function talampaya_update_title_with_acf_custom_title($post_id, $post_type, $title_field)
+	{
+		if (get_post_type($post_id) == $post_type) {
+			$custom_post_type_title = get_field($title_field, $post_id);
+			if ($custom_post_type_title) {
+				$post_args = [
+					"ID" => $post_id,
+					"post_title" => $custom_post_type_title,
+					"post_name" => sanitize_title($custom_post_type_title),
+				];
+				wp_update_post($post_args);
+			}
+		}
+	}
+endif;
+
+// -----------------------------------------------------------------------------
+// Save Custom Thumbnail as Featured Image
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_save_custom_thumbnail_as_featured_image")):
+	function talampaya_save_custom_thumbnail_as_featured_image(
+		$post_id,
+		$post_type,
+		$thumbnail_field
+	) {
+		if (get_post_type($post_id) == $post_type) {
+			remove_action("save_post", "talampaya_save_custom_thumbnail_as_featured_image");
+			$custom_thumbnail_id = get_field($thumbnail_field, $post_id);
+			if ($custom_thumbnail_id) {
+				set_post_thumbnail($post_id, $custom_thumbnail_id["ID"]);
+			} else {
+				delete_post_thumbnail($post_id);
+			}
+			add_action("save_post", "talampaya_save_custom_thumbnail_as_featured_image");
+		}
+	}
+endif;
+
+// -----------------------------------------------------------------------------
 // CUSTOM HELPER FUNCTIONS
 // -----------------------------------------------------------------------------
