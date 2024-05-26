@@ -122,7 +122,8 @@
 		"timber/timber": "^2.1",
 		"twig/html-extra": "^3.0",
 		"twig/extra-bundle": "^3.0",
-		"vlucas/phpdotenv": "^5.6"
+		"vlucas/phpdotenv": "^5.6",
+		"illuminate/support": "^10.0"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
