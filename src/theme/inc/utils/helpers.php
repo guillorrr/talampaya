@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 // -----------------------------------------------------------------------------
 // Define Constants
 // -----------------------------------------------------------------------------
@@ -423,6 +425,71 @@ if (!function_exists("talampaya_get_json_data_from_url")):
 		$response = wp_remote_get($url);
 		$body = wp_remote_retrieve_body($response);
 		return json_decode($body, true);
+	}
+endif;
+
+// -----------------------------------------------------------------------------
+// Create ACF Field dynamically
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_create_acf_field")):
+	function talampaya_create_acf_field(
+		string $name,
+		string $type = "text",
+		int $wrapper_width = null,
+		string $label = null,
+		int $required = 0,
+		array $additional_args = [],
+		int $wpml = 0,
+		string $prefix = ""
+	): array {
+		if ($wrapper_width !== null) {
+			$wrapper_width = ["wrapper" => ["width" => $wrapper_width . "%"]];
+		} else {
+			$wrapper_width = [];
+		}
+
+		$wpml = ["wpml_cf_preferences" => $wpml];
+
+		$key_name = Str::snake($name);
+		$label_name = Str::title(str_replace("_", " ", $name));
+		return array_merge(
+			[
+				"key" => "field_" . $prefix . $key_name,
+				"name" => $prefix . $key_name,
+				"label" => $label ?? $label_name,
+				"type" => $type,
+				"required" => $required,
+			],
+			$wrapper_width,
+			$wpml,
+			$additional_args
+		);
+	}
+endif;
+
+// -----------------------------------------------------------------------------
+// Create ACF Group Fields dynamically
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_create_acf_group_fields")):
+	function talampaya_create_acf_group_fields(
+		array $fields,
+		string $prefix = "",
+		int $wpml = 0
+	): array {
+		$group_fields = [];
+		foreach ($fields as $field) {
+			$group_fields[] = talampaya_create_acf_field(
+				$field[0],
+				isset($field[1]) ? $field[1] : "text",
+				isset($field[2]) ? $field[2] : null,
+				isset($field[3]) ? $field[3] : null,
+				isset($field[4]) ? $field[4] : 0,
+				isset($field[5]) ? $field[5] : [],
+				$wpml,
+				$prefix
+			);
+		}
+		return $group_fields;
 	}
 endif;
 
