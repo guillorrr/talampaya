@@ -451,7 +451,7 @@ if (!function_exists("talampaya_create_acf_field")):
 		$wpml = ["wpml_cf_preferences" => $wpml];
 
 		$key_name = Str::snake($name);
-		$label_name = Str::title(str_replace("_", " ", $name));
+		$label_name = Str::title(str_replace("_", " ", $key_name));
 		return array_merge(
 			[
 				"key" => "field_" . $prefix . $key_name,
@@ -459,6 +459,48 @@ if (!function_exists("talampaya_create_acf_field")):
 				"label" => $label ?? $label_name,
 				"type" => $type,
 				"required" => $required,
+			],
+			$wrapper_width,
+			$wpml,
+			$additional_args
+		);
+	}
+endif;
+
+// -----------------------------------------------------------------------------
+// Create ACF Field Repeater dynamically
+// -----------------------------------------------------------------------------
+if (!function_exists("talampaya_create_acf_field_repeater")):
+	function talampaya_create_acf_field_repeater(
+		string $name,
+		array $subfields = [],
+		int $wrapper_width = null,
+		string $label = null,
+		int $required = 0,
+		array $additional_args = [],
+		int $wpml = 0,
+		string $prefix = "",
+		string $layout = "block"
+	): array {
+		if ($wrapper_width !== null) {
+			$wrapper_width = ["wrapper" => ["width" => $wrapper_width . "%"]];
+		} else {
+			$wrapper_width = [];
+		}
+
+		$wpml = ["wpml_cf_preferences" => $wpml];
+
+		$key_name = Str::snake($name);
+		$label_name = Str::title(str_replace("_", " ", $key_name));
+		return array_merge(
+			[
+				"key" => "field_" . $prefix . $key_name,
+				"name" => $prefix . $key_name,
+				"label" => $label ?? $label_name,
+				"type" => "repeater",
+				"required" => $required,
+				"sub_fields" => $subfields,
+				"layout" => $layout ?? "block",
 			],
 			$wrapper_width,
 			$wpml,
