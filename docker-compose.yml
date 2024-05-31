@@ -120,11 +120,12 @@ services:
       context: ./
       dockerfile: ./docker/patternlab/Dockerfile
     container_name: ${APP_NAME}-patternlab
+    working_dir: /app/patternlab
     ports:
       - '${PATTERNLAB_PORT:-3000}:${PATTERNLAB_PORT:-3000}'
     volumes:
       - './patternlab:/app/patternlab'
-    command: npm run start
+    command: /bin/sh -c "npm install && npm run start"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
