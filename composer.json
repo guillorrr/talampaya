@@ -85,9 +85,59 @@
 					"ffraenz/private-composer-installer": "^5.0"
 				}
 			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/wpml-import",
+				"version": "1.0.1",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=14356615&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "wpml/wpml-all-import",
+				"version": "2.3.0",
+				"type": "wordpress-plugin",
+				"dist": {
+					"type": "zip",
+					"url": "https://wpml.org/?download=720221&user_id={%WORDPRESS_WPML_USER_ID}&subscription_key={%WORDPRESS_WPML_KEY}&version={%VERSION}"
+				},
+				"require": {
+					"ffraenz/private-composer-installer": "^5.0"
+				}
+			}
 		}
 	],
 	"require": {
+		"johnbillion/extended-template-parts": "^2.2.1",
+		"timber/timber": "^2.1",
+		"twig/html-extra": "^3.0",
+		"twig/extra-bundle": "^3.0",
+		"vlucas/phpdotenv": "^5.6",
+		"illuminate/support": "^10.0"
+	},
+	"require-dev": {
+		"automattic/wordbless": "^0.4.2",
+		"yoast/wp-test-utils": "^1.0",
+		"wpackagist-plugin/wordpress-importer": "*",
+		"wpackagist-plugin/classic-editor": "*",
+		"wpackagist-plugin/classic-widgets": "*",
+		"wpackagist-plugin/check-email": "*",
+		"wpackagist-plugin/moving-media-library": "*",
+		"wpackagist-plugin/moving-users": "*",
+		"wpackagist-plugin/media-sync": "*",
+		"wpackagist-plugin/user-switching": "*",
+		"wpackagist-plugin/debug-bar-timber": "*",
+		"wpackagist-plugin/debug-bar": "*",
 		"wpackagist-plugin/disable-admin-notices": "*",
 		"wpackagist-plugin/post-type-switcher": "*",
 		"wpackagist-plugin/duplicate-page": "*",
@@ -113,31 +163,16 @@
 		"wpackagist-plugin/login-lockdown": "*",
 		"wpackagist-plugin/disable-user-login": "*",
 		"wpackagist-plugin/wp-native-php-sessions": "*",
+		"wpackagist-plugin/wp-all-import": "*",
+		"wpackagist-plugin/migrate-wp-cron-to-action-scheduler": "*",
 		"wpackagist-theme/poema": "*",
 		"advanced-custom-fields/advanced-custom-fields-pro": "*",
 		"wpml/sitepress-multilingual-cms": "*",
 		"wpml/wpml-string-translation": "*",
 		"wpml/wp-seo-multilingual": "*",
 		"wpml/acfml": "*",
-		"timber/timber": "^2.1",
-		"twig/html-extra": "^3.0",
-		"twig/extra-bundle": "^3.0",
-		"vlucas/phpdotenv": "^5.6",
-		"illuminate/support": "^10.0"
-	},
-	"require-dev": {
-		"automattic/wordbless": "^0.4.2",
-		"yoast/wp-test-utils": "^1.0",
-		"wpackagist-plugin/wordpress-importer": "*",
-		"wpackagist-plugin/classic-editor": "*",
-		"wpackagist-plugin/classic-widgets": "*",
-		"wpackagist-plugin/check-email": "*",
-		"wpackagist-plugin/moving-media-library": "*",
-		"wpackagist-plugin/moving-users": "*",
-		"wpackagist-plugin/media-sync": "*",
-		"wpackagist-plugin/user-switching": "*",
-		"wpackagist-plugin/debug-bar-timber": "*",
-		"wpackagist-plugin/debug-bar": "*",
+		"wpml/wpml-import": "*",
+		"wpml/wpml-all-import": "*",
 		"hellonico/timber-dump-extension": "*"
 	},
 	"extra": {
