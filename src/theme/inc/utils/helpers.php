@@ -382,8 +382,12 @@ endif;
 // Replace keys from ACF register fields
 // -----------------------------------------------------------------------------
 if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
-	function talampaya_replace_keys_from_acf_register_fields($array, $key = "", $type = "block")
-	{
+	function talampaya_replace_keys_from_acf_register_fields(
+		$array,
+		$key = "",
+		$type = "block",
+		$is_subfield = false
+	) {
 		if (isset($array["key"])) {
 			$array["key"] = "group_" . $type . "_" . $key;
 		}
@@ -393,14 +397,17 @@ if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
 				if (isset($field["key"])) {
 					$field["key"] = "field_" . $type . "_" . $key . "_" . $field["key"];
 				}
-				if (isset($field["name"])) {
+
+				if (!$is_subfield && isset($field["name"])) {
 					$field["name"] = $type . "_" . $key . "_" . $field["name"];
 				}
 
 				if (isset($field["sub_fields"]) && is_array($field["sub_fields"])) {
 					$field["sub_fields"] = talampaya_replace_keys_from_acf_register_fields(
 						["fields" => $field["sub_fields"]],
-						$key
+						$key,
+						$type,
+						true
 					)["fields"];
 				}
 			}
@@ -448,8 +455,7 @@ if (!function_exists("talampaya_create_acf_field")):
 		string $label = null,
 		int $required = 0,
 		array $additional_args = [],
-		int $wpml = 0,
-		string $prefix = ""
+		int $wpml = 0
 	): array {
 		if ($wrapper_width !== null) {
 			$wrapper_width = ["wrapper" => ["width" => $wrapper_width . "%"]];
@@ -463,8 +469,8 @@ if (!function_exists("talampaya_create_acf_field")):
 		$label_name = Str::title(str_replace("_", " ", $key_name));
 		return array_merge(
 			[
-				"key" => "field_" . $prefix . $key_name,
-				"name" => $prefix . $key_name,
+				"key" => $key_name,
+				"name" => $key_name,
 				"label" => $label ?? $label_name,
 				"type" => $type,
 				"required" => $required,
@@ -488,7 +494,6 @@ if (!function_exists("talampaya_create_acf_field_repeater")):
 		int $required = 0,
 		array $additional_args = [],
 		int $wpml = 0,
-		string $prefix = "",
 		string $layout = "block"
 	): array {
 		if ($wrapper_width !== null) {
@@ -503,8 +508,8 @@ if (!function_exists("talampaya_create_acf_field_repeater")):
 		$label_name = Str::title(str_replace("_", " ", $key_name));
 		return array_merge(
 			[
-				"key" => "field_" . $prefix . $key_name,
-				"name" => $prefix . $key_name,
+				"key" => $key_name,
+				"name" => $key_name,
 				"label" => $label ?? $label_name,
 				"type" => "repeater",
 				"required" => $required,
@@ -522,11 +527,8 @@ endif;
 // Create ACF Group Fields dynamically
 // -----------------------------------------------------------------------------
 if (!function_exists("talampaya_create_acf_group_fields")):
-	function talampaya_create_acf_group_fields(
-		array $fields,
-		string $prefix = "",
-		int $wpml = 0
-	): array {
+	function talampaya_create_acf_group_fields(array $fields, int $wpml = 0): array
+	{
 		$group_fields = [];
 		foreach ($fields as $field) {
 			$group_fields[] = talampaya_create_acf_field(
@@ -536,8 +538,7 @@ if (!function_exists("talampaya_create_acf_group_fields")):
 				isset($field[3]) ? $field[3] : null,
 				isset($field[4]) ? $field[4] : 0,
 				isset($field[5]) ? $field[5] : [],
-				$wpml,
-				$prefix
+				$wpml
 			);
 		}
 		return $group_fields;
