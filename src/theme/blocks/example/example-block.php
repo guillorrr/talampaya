@@ -9,59 +9,59 @@ function add_acf_block_example()
 	$block_key = str_replace("_", "-", $block_name);
 
 	$title = [
-		"key" => "field_title",
+		"key" => "title",
 		"name" => "title",
 		"label" => __("Title", "talampaya"),
 		"type" => "text",
 	];
 
 	$subtitle = [
-		"key" => "field_subtitle",
+		"key" => "subtitle",
 		"name" => "subtitle",
 		"label" => __("Subtitle", "talampaya"),
 		"type" => "text",
 	];
 
 	$intro = [
-		"key" => "field_intro",
+		"key" => "intro",
 		"name" => "intro",
 		"label" => __("Intro", "talampaya"),
 		"type" => "text",
 	];
 
 	$bg_color = [
-		"key" => "field_bg_color",
+		"key" => "bg_color",
 		"name" => "bg_color",
 		"label" => __("Background Color", "talampaya"),
 		"type" => "color_picker",
 	];
 
 	$image = [
-		"key" => "field_image",
-		"label" => "Desktop Image",
+		"key" => "image",
 		"name" => "image",
 		"type" => "image",
 		"return_format" => "array", //'array', 'url', 'id'
+		"label" => "Desktop Image",
 	];
 
 	$list_text = [
-		"key" => "field_list_text",
-		"label" => "Text",
+		"key" => "list_text",
 		"name" => "list_text",
+		"label" => "Text",
 		"type" => "text",
 	];
 
 	$list = [
-		"key" => "field_list",
-		"label" => "List",
+		"key" => "list",
 		"name" => "list",
+		"label" => "List",
 		"type" => "repeater",
 		"layout" => "block",
 		"sub_fields" => [$list_text],
 	];
 
 	$field_group = [
-		"key" => "group_block",
+		"key" => "block", // don't change this key
 		"title" => $block_title,
 		"fields" => [$intro, $title, $subtitle, $bg_color, $image, $list],
 		"location" => [
