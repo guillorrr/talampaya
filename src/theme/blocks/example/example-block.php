@@ -8,77 +8,45 @@ function add_acf_block_example()
 	$block_name = sanitize_title($key);
 	$block_key = str_replace("_", "-", $block_name);
 
-	$title = [
-		"key" => "title",
-		"name" => "title",
-		"label" => __("Title", "talampaya"),
-		"type" => "text",
+	$fields = [
+		["title"],
+		["subtitle"],
+		["intro"],
+		["background_color", "color_picker"],
+		["image", "image", 100, null, 0, ["return_format" => "array"]],
+		[
+			"list",
+			"repeater",
+			100,
+			null,
+			0,
+			["layout" => "block", "sub_fields" => [talampaya_create_acf_field("text")]],
+		],
 	];
 
-	$subtitle = [
-		"key" => "subtitle",
-		"name" => "subtitle",
-		"label" => __("Subtitle", "talampaya"),
-		"type" => "text",
-	];
+	$groups = [[$block_title, talampaya_create_acf_group_fields($fields), 1]];
 
-	$intro = [
-		"key" => "intro",
-		"name" => "intro",
-		"label" => __("Intro", "talampaya"),
-		"type" => "text",
-	];
-
-	$bg_color = [
-		"key" => "bg_color",
-		"name" => "bg_color",
-		"label" => __("Background Color", "talampaya"),
-		"type" => "color_picker",
-	];
-
-	$image = [
-		"key" => "image",
-		"name" => "image",
-		"type" => "image",
-		"return_format" => "array", //'array', 'url', 'id'
-		"label" => "Desktop Image",
-	];
-
-	$list_text = [
-		"key" => "list_text",
-		"name" => "list_text",
-		"label" => "Text",
-		"type" => "text",
-	];
-
-	$list = [
-		"key" => "list",
-		"name" => "list",
-		"label" => "List",
-		"type" => "repeater",
-		"layout" => "block",
-		"sub_fields" => [$list_text],
-	];
-
-	$field_group = [
-		"key" => "block", // don't change this key
-		"title" => $block_title,
-		"fields" => [$intro, $title, $subtitle, $bg_color, $image, $list],
-		"location" => [
-			[
+	foreach ($groups as $group) {
+		$field_group = [
+			"key" => "block", // don't change this key
+			"title" => __($group[0], "talampaya"),
+			"fields" => $group[1],
+			"location" => [
 				[
-					"param" => "block",
-					"operator" => "==",
-					"value" => "acf/" . $block_name,
+					[
+						"param" => "block",
+						"operator" => "==",
+						"value" => "acf/" . $block_name,
+					],
 				],
 			],
-		],
-		"show_in_rest" => true,
-		"menu_order" => 99999,
-	];
+			"show_in_rest" => true,
+			"menu_order" => $group[2],
+		];
 
-	acf_add_local_field_group(
-		talampaya_replace_keys_from_acf_register_fields($field_group, $block_key)
-	);
+		acf_add_local_field_group(
+			talampaya_replace_keys_from_acf_register_fields($field_group, $block_key)
+		);
+	}
 }
 add_action("acf/init", "add_acf_block_example", 10);

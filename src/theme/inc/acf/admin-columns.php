@@ -18,10 +18,10 @@ function custom_post_type_custom_column($column, $post_id)
 {
 	switch ($column) {
 		case "start_date":
-			echo get_post_meta($post_id, "custom_post_type_start_date", true);
+			echo get_post_meta($post_id, "post_type_custom_post_type_start_date", true);
 			break;
 		case "end_date":
-			echo get_post_meta($post_id, "custom_post_type_end_date", true);
+			echo get_post_meta($post_id, "post_type_custom_post_type_end_date", true);
 			break;
 	}
 }
