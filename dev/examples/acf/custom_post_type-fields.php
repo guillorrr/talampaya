@@ -37,7 +37,7 @@ function add_acf_custom_post_type_fields()
 		];
 
 		acf_add_local_field_group(
-			talampaya_replace_keys_from_acf_register_fields($field_group, $post_type . "post_type")
+			talampaya_replace_keys_from_acf_register_fields($field_group, $post_type, "post_type")
 		);
 	}
 }
