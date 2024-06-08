@@ -7,7 +7,8 @@
 	"icon": "format-aside",
 	"keywords": ["example", "block"],
 	"acf": {
-		"mode": "preview",
-		"renderCallback": "my_acf_block_render_callback"
+		"mode": "edit",
+		"renderCallback": "my_acf_block_render_callback",
+		"usePostMeta": "true"
 	}
 }
