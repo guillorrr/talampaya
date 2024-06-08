@@ -1,6 +1,8 @@
 <?php
 // Block Key: 'example'
 
+use Illuminate\Support\Str;
+
 function add_acf_block_example()
 {
 	$key = "example";
@@ -28,7 +30,7 @@ function add_acf_block_example()
 
 	foreach ($groups as $group) {
 		$field_group = [
-			"key" => "block", // don't change this key
+			"key" => Str::snake($group[0]),
 			"title" => __($group[0], "talampaya"),
 			"fields" => $group[1],
 			"location" => [

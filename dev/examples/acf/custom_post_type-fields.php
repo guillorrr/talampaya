@@ -1,5 +1,7 @@
 <?php
 // Post Type Key: custom_post_type
+use Illuminate\Support\Str;
+
 function add_acf_custom_post_type_fields()
 {
 	$post_type = "custom_post_type";
@@ -20,7 +22,7 @@ function add_acf_custom_post_type_fields()
 
 	foreach ($groups as $group) {
 		$field_group = [
-			"key" => "post_type", // don't change this key
+			"key" => Str::snake($group[0]),
 			"title" => __($group[0], "talampaya"),
 			"fields" => $group[1],
 			"location" => [

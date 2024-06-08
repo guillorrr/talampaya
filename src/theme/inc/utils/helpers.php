@@ -389,7 +389,7 @@ if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
 		$is_subfield = false
 	) {
 		if (isset($array["key"])) {
-			$array["key"] = "group_" . $type . "_" . $key;
+			$array["key"] = "group_" . $type . "_" . $key . "_" . $array["key"];
 		}
 
 		if (isset($array["fields"]) && is_array($array["fields"])) {
