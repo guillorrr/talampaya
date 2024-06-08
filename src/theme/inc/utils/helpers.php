@@ -382,21 +382,30 @@ endif;
 // Replace keys from ACF register fields
 // -----------------------------------------------------------------------------
 if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
-	function talampaya_replace_keys_from_acf_register_fields($array, $prefix)
+	function talampaya_replace_keys_from_acf_register_fields($array, $key = "", $type = "block")
 	{
-		foreach ($array as $key => &$value) {
-			if (is_array($value)) {
-				$value = talampaya_replace_keys_from_acf_register_fields($value, $prefix);
-			} else {
-				if (is_string($value)) {
-					if (str_starts_with($value, "field_")) {
-						$value = str_replace("field_", "field_" . $prefix . "_", $value);
-					} elseif (str_starts_with($value, "group_")) {
-						$value = str_replace("group_", "group_" . $prefix . "_", $value);
-					}
+		if (isset($array["key"])) {
+			$array["key"] = "group_" . $type . "_" . $key;
+		}
+
+		if (isset($array["fields"]) && is_array($array["fields"])) {
+			foreach ($array["fields"] as &$field) {
+				if (isset($field["key"])) {
+					$field["key"] = "field_" . $type . "_" . $key . "_" . $field["key"];
+				}
+				if (isset($field["name"])) {
+					$field["name"] = $type . "_" . $key . "_" . $field["name"];
+				}
+
+				if (isset($field["sub_fields"]) && is_array($field["sub_fields"])) {
+					$field["sub_fields"] = talampaya_replace_keys_from_acf_register_fields(
+						["fields" => $field["sub_fields"]],
+						$key
+					)["fields"];
 				}
 			}
 		}
+
 		return $array;
 	}
 endif;
