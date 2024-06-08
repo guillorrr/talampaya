@@ -1,0 +1,27 @@
+<div id="talampaya-block-example" style="background-color: {{ fields.bg_color }}">
+	<h1>
+		{{ fields.title }}
+	</h1>
+	<h2>
+		{{ fields.subtitle }}
+	</h2>
+	<p>
+		{{ fields.intro }}
+	</p>
+
+	{% if fields.image %}
+		<img src="{{ fields.image.url }}" alt="{{ fields.image.alt }}" />
+	{% endif %}
+
+	{% if fields.list %}
+		<ul>
+			{% for field in fields.list %}
+				<li>
+					<h4>
+						{{ field.list_text }}
+					</h4>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+</div>
