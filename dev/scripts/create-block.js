@@ -37,7 +37,10 @@ const sanitizedTemplateBlock = sanitizeName(templateBlock);
 
 const blocksDir = path.join(__dirname, '../../src/theme/blocks');
 const newBlockDir = path.join(blocksDir, sanitizedBlockName);
-const templateBlockDir = path.join(blocksDir, sanitizedTemplateBlock);
+const templateBlockDir =
+	templateBlock === 'example'
+		? path.join(__dirname, '../examples/blocks/example')
+		: path.join(blocksDir, sanitizedTemplateBlock);
 
 if (!fs.existsSync(templateBlockDir)) {
 	console.error(`El bloque plantilla '${sanitizedTemplateBlock}' no existe.`);
