@@ -30,6 +30,7 @@
 		"prepare": "husky",
 		"test": "jest",
 		"start": "docker compose up",
+		"patternlab": "docker compose -f docker-compose.patternlab.yml up",
 		"docker:build": "docker compose build --no-cache",
 		"docker:delete": "docker compose down -v",
 		"docker:rebuild": "docker compose down -v && docker compose build --no-cache",
