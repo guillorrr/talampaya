@@ -6,9 +6,10 @@ use Illuminate\Support\Str;
 function add_acf_block_example()
 {
 	$key = "example";
-	$title = Str::title(str_replace("_", " ", $key));
+	$key_undescore = Str::snake($key);
+	$key_dash = Str::snake($key, "-");
+	$title = Str::title(str_replace("_", " ", $key_undescore));
 	$block_title = __($title, "talampaya");
-	$block_key = str_replace("_", "-", sanitize_title($key));
 
 	$fields = [
 		["title"],
@@ -38,7 +39,7 @@ function add_acf_block_example()
 					[
 						"param" => "block",
 						"operator" => "==",
-						"value" => "acf/" . $block_key,
+						"value" => "acf/" . $key_dash,
 					],
 				],
 			],
@@ -47,7 +48,7 @@ function add_acf_block_example()
 		];
 
 		acf_add_local_field_group(
-			talampaya_replace_keys_from_acf_register_fields($field_group, $block_key)
+			talampaya_replace_keys_from_acf_register_fields($field_group, $key_undescore)
 		);
 	}
 }
