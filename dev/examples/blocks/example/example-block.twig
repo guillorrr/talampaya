@@ -1,21 +1,21 @@
-<div id="talampaya-block-example" style="background-color: {{ fields.bg_color }}">
+<div id="block-example" style="background-color: {{ fields.block_example_bg_color }}">
 	<h1>
-		{{ fields.title }}
+		{{ fields.block_example_title }}
 	</h1>
 	<h2>
-		{{ fields.subtitle }}
+		{{ fields.block_example_subtitle }}
 	</h2>
 	<p>
-		{{ fields.intro }}
+		{{ fields.block_example_intro }}
 	</p>
 
-	{% if fields.image %}
-		<img src="{{ fields.image.url }}" alt="{{ fields.image.alt }}" />
+	{% if fields.block_example_image %}
+		<img src="{{ fields.block_example_image.url }}" alt="{{ fields.block_example_image.alt }}" />
 	{% endif %}
 
-	{% if fields.list %}
+	{% if fields.block_example_list %}
 		<ul>
-			{% for field in fields.list %}
+			{% for field in fields.block_example_list %}
 				<li>
 					<h4>
 						{{ field.list_text }}
@@ -25,3 +25,4 @@
 		</ul>
 	{% endif %}
 </div>
+{% dump fields %}

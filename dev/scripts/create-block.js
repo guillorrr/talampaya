@@ -22,6 +22,14 @@ function toKebabCase(str) {
 		.toLowerCase();
 }
 
+// Función para convertir a camelCase con espacios en blanco
+function toCamelCaseWithSpaces(str) {
+	return str
+		.replace(/[_-]/g, ' ') // Replace underscores and hyphens with spaces
+		.replace(/\b\w/g, char => char.toUpperCase()) // Capitalize each word
+		.replace(/\s+/g, ' '); // Remove extra spaces
+}
+
 const blockName = process.argv[2];
 const templateBlock = process.argv[3] || 'example';
 
@@ -53,30 +61,49 @@ const filesToCopy = fs.readdirSync(templateBlockDir);
 
 filesToCopy.forEach(file => {
 	const filePath = path.join(templateBlockDir, file);
-	const fileContent = fs.readFileSync(filePath, 'utf8');
+	let fileContent = fs.readFileSync(filePath, 'utf8');
 	const newFileName = file.replace(new RegExp(sanitizedTemplateBlock, 'g'), sanitizedBlockName);
 	const newFilePath = path.join(newBlockDir, newFileName);
 
 	// Reemplazos específicos según la extensión del archivo
-	let newFileContent;
-	if (['.css', '.json', '.twig'].some(ext => file.endsWith(ext))) {
-		newFileContent = fileContent.replace(
+	if (['.css', '.json'].some(ext => file.endsWith(ext))) {
+		fileContent = fileContent.replace(
 			new RegExp(sanitizedTemplateBlock, 'g'),
 			toKebabCase(sanitizedBlockName)
 		);
 	} else if (file.endsWith('.php')) {
-		newFileContent = fileContent.replace(
+		fileContent = fileContent.replace(
 			new RegExp(sanitizedTemplateBlock, 'g'),
 			toSnakeCase(sanitizedBlockName)
 		);
+	} else if (file.endsWith('.twig')) {
+		// Reemplazar solo la primera ocurrencia con kebab-case y las siguientes con snake_case
+		let isFirst = true;
+		fileContent = fileContent.replace(new RegExp(sanitizedTemplateBlock, 'g'), match => {
+			if (isFirst) {
+				isFirst = false;
+				return toKebabCase(sanitizedBlockName);
+			} else {
+				return toSnakeCase(sanitizedBlockName);
+			}
+		});
 	} else {
-		newFileContent = fileContent.replace(
+		fileContent = fileContent.replace(
 			new RegExp(sanitizedTemplateBlock, 'g'),
 			sanitizedBlockName
 		);
 	}
 
-	fs.writeFileSync(newFilePath, newFileContent);
+	// Si el archivo es JSON, reemplazar el campo "title"
+	if (file.endsWith('.json')) {
+		const jsonContent = JSON.parse(fileContent);
+		if (jsonContent.title) {
+			jsonContent.title = toCamelCaseWithSpaces(sanitizedBlockName);
+			fileContent = JSON.stringify(jsonContent, null, 2);
+		}
+	}
+
+	fs.writeFileSync(newFilePath, fileContent);
 });
 
 console.log(`Bloque '${sanitizedBlockName}' creado exitosamente.`);
