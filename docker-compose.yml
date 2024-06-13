@@ -111,6 +111,7 @@ services:
       - './build:/usr/src/app/build'
       - './backups:/usr/src/app/backups'
       - './certs:/var/www/ssl'
+      - './node_modules:/usr/src/app/node_modules'
     depends_on:
       - nginx
     command: npm run dev
