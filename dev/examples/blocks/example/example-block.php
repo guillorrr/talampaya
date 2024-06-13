@@ -6,7 +6,8 @@ use Illuminate\Support\Str;
 function add_acf_block_example()
 {
 	$key = "example";
-	$block_title = __("Example Block", "talampaya");
+	$title = Str::title(str_replace("_", " ", $key));
+	$block_title = __($title, "talampaya");
 	$block_name = sanitize_title($key);
 	$block_key = str_replace("_", "-", $block_name);
 

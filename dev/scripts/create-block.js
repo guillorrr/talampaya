@@ -6,22 +6,20 @@ function sanitizeName(name) {
 	return name.replace(/[^a-zA-Z0-9-_]/g, '');
 }
 
-// Funciones para diferentes casos
-function toCamelCase(str) {
-	return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+// Función para convertir cualquier formato a snake_case
+function toSnakeCase(str) {
+	return str
+		.replace(/([a-z])([A-Z])/g, '$1_$2') // camelCase or PascalCase to snake_case
+		.replace(/-/g, '_') // kebab-case to snake_case
+		.toLowerCase();
 }
 
-function toPascalCase(str) {
-	const camelCase = toCamelCase(str);
-	return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-}
-
-function toUpperCase(str) {
-	return str.toUpperCase();
-}
-
-function toLowerCase(str) {
-	return str.toLowerCase();
+// Función para convertir cualquier formato a kebab-case
+function toKebabCase(str) {
+	return str
+		.replace(/([a-z])([A-Z])/g, '$1-$2') // camelCase or PascalCase to kebab-case
+		.replace(/_/g, '-') // snake_case to kebab-case
+		.toLowerCase();
 }
 
 const blockName = process.argv[2];
@@ -39,7 +37,7 @@ const blocksDir = path.join(__dirname, '../../src/theme/blocks');
 const newBlockDir = path.join(blocksDir, sanitizedBlockName);
 const templateBlockDir =
 	templateBlock === 'example'
-		? path.join(__dirname, '../examples/blocks/example')
+		? path.join(__dirname, '../../dev/examples/blocks/example')
 		: path.join(blocksDir, sanitizedTemplateBlock);
 
 if (!fs.existsSync(templateBlockDir)) {
@@ -59,25 +57,24 @@ filesToCopy.forEach(file => {
 	const newFileName = file.replace(new RegExp(sanitizedTemplateBlock, 'g'), sanitizedBlockName);
 	const newFilePath = path.join(newBlockDir, newFileName);
 
-	// Reemplaza el nombre de la plantilla por el nuevo nombre del bloque en el contenido del archivo
-	const newFileContent = fileContent
-		.replace(new RegExp(sanitizedTemplateBlock, 'g'), sanitizedBlockName)
-		.replace(
-			new RegExp(toCamelCase(sanitizedTemplateBlock), 'g'),
-			toCamelCase(sanitizedBlockName)
-		)
-		.replace(
-			new RegExp(toPascalCase(sanitizedTemplateBlock), 'g'),
-			toPascalCase(sanitizedBlockName)
-		)
-		.replace(
-			new RegExp(toUpperCase(sanitizedTemplateBlock), 'g'),
-			toUpperCase(sanitizedBlockName)
-		)
-		.replace(
-			new RegExp(toLowerCase(sanitizedTemplateBlock), 'g'),
-			toLowerCase(sanitizedBlockName)
+	// Reemplazos específicos según la extensión del archivo
+	let newFileContent;
+	if (['.css', '.json', '.twig'].some(ext => file.endsWith(ext))) {
+		newFileContent = fileContent.replace(
+			new RegExp(sanitizedTemplateBlock, 'g'),
+			toKebabCase(sanitizedBlockName)
 		);
+	} else if (file.endsWith('.php')) {
+		newFileContent = fileContent.replace(
+			new RegExp(sanitizedTemplateBlock, 'g'),
+			toSnakeCase(sanitizedBlockName)
+		);
+	} else {
+		newFileContent = fileContent.replace(
+			new RegExp(sanitizedTemplateBlock, 'g'),
+			sanitizedBlockName
+		);
+	}
 
 	fs.writeFileSync(newFilePath, newFileContent);
 });
