@@ -8,8 +8,7 @@ function add_acf_block_example()
 	$key = "example";
 	$title = Str::title(str_replace("_", " ", $key));
 	$block_title = __($title, "talampaya");
-	$block_name = sanitize_title($key);
-	$block_key = str_replace("_", "-", $block_name);
+	$block_key = str_replace("_", "-", sanitize_title($key));
 
 	$fields = [
 		["title"],
@@ -39,7 +38,7 @@ function add_acf_block_example()
 					[
 						"param" => "block",
 						"operator" => "==",
-						"value" => "acf/" . $block_name,
+						"value" => "acf/" . $block_key,
 					],
 				],
 			],
