@@ -7,7 +7,7 @@ function add_acf_block_example()
 {
 	$key = "example";
 	$key_undescore = Str::snake($key);
-	$key_dash = Str::snake($key, "-");
+	$key_dash = str_replace("_", "-", $key_undescore);
 	$title = Str::title(str_replace("_", " ", $key_undescore));
 	$block_title = __($title, "talampaya");
 
