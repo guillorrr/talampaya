@@ -404,11 +404,11 @@ if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
 
 				if (isset($field["sub_fields"]) && is_array($field["sub_fields"])) {
 					$field["sub_fields"] = talampaya_replace_keys_from_acf_register_fields(
-						["fields" => $field["sub_fields"]],
+						$field["sub_fields"],
 						$key,
 						$type,
 						true
-					)["fields"];
+					);
 				}
 			}
 		}
