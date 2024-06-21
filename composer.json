@@ -169,6 +169,7 @@
 		"wpackagist-plugin/wp-native-php-sessions": "*",
 		"wpackagist-plugin/wp-all-import": "*",
 		"wpackagist-plugin/migrate-wp-cron-to-action-scheduler": "*",
+		"wpackagist-plugin/maintenance": "*",
 		"wpackagist-theme/poema": "*",
 		"wpengine/advanced-custom-fields-pro": "6.3.1.2",
 		"wpml/sitepress-multilingual-cms": "*",
