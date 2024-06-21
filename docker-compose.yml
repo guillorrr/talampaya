@@ -151,7 +151,17 @@ services:
       - './build:/var/www/html'
       - './composer.json:/var/www/html/composer.json'
       - '.env:/var/www/html/.env'
-    command: composer update
+    environment:
+        COMPOSER_AUTH: >
+            {
+              "http-basic": {
+                "connect.advancedcustomfields.com": {
+                  "username": "${WORDPRESS_PLUGIN_ACF_KEY}",
+                  "password": "${PROTOCOL}://${DOMAIN}"
+                }
+              }
+            }
+    command: composer update --ignore-platform-reqs --no-scripts
 
   mkcert:
     build: ./docker/mkcert/
