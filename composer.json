@@ -17,22 +17,6 @@
 		{
 			"type": "package",
 			"package": {
-				"name": "advanced-custom-fields/advanced-custom-fields-pro",
-				"version": "6.3.0.1",
-				"type": "wordpress-plugin",
-				"dist": {
-					"type": "zip",
-					"url": "https://connect.advancedcustomfields.com/index.php?a=download&p=pro&k={%WORDPRESS_PLUGIN_ACF_KEY}&t={%VERSION}"
-				},
-				"require": {
-					"composer/installers": "^1.4",
-					"ffraenz/private-composer-installer": "^5.0"
-				}
-			}
-		},
-		{
-			"type": "package",
-			"package": {
 				"name": "wpml/sitepress-multilingual-cms",
 				"version": "4.6.11",
 				"type": "wordpress-plugin",
