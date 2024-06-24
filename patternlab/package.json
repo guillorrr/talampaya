@@ -5,14 +5,16 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"build:uikit": "cross-env-shell PL_CONFIG_PATH='${INIT_CWD}/.patternlabrc.js' npm run build --prefix node_modules/@pattern-lab/uikit-workshop -- --patternlabrc '$PL_CONFIG_PATH'",
-		"build": "patternlab build --config ./patternlab-config.json",
-		"help": "patternlab --help",
-		"install": "patternlab install --config ./patternlab-config.json",
-		"serve": "patternlab serve --config ./patternlab-config.json",
-		"start": "npm run serve",
-		"version": "patternlab --version",
-		"dev": "node ./node_modules/@pattern-lab/uikit-workshop/build-tools.js"
+		"dev": "node ./node_modules/@pattern-lab/uikit-workshop/build-tools.js",
+		"pl:build:uikit": "cross-env-shell PL_CONFIG_PATH='${INIT_CWD}/.patternlabrc.js' npm run build --prefix node_modules/@pattern-lab/uikit-workshop -- --patternlabrc '$PL_CONFIG_PATH'",
+		"pl:build": "patternlab build --config ./patternlab-config.json",
+		"pl:help": "patternlab --help",
+		"pl:install": "patternlab install --config ./patternlab-config.json",
+		"pl:serve": "patternlab serve --config ./patternlab-config.json",
+		"pl:version": "patternlab --version",
+		"pl:wait": "wait-on http://127.0.0.1:3000 && gulp",
+		"start": "npm-run-all --parallel pl:serve pl:wait",
+		"build": "gulp build"
 	},
 	"keywords": [],
 	"author": "",
@@ -22,6 +24,19 @@
 		"@pattern-lab/core": "^6.1.0",
 		"@pattern-lab/engine-twig-php": "6.0.1",
 		"@pattern-lab/starterkit-twig-demo": "^6.1.0",
-		"@pattern-lab/uikit-workshop": "^6.1.0"
+		"@pattern-lab/uikit-workshop": "^6.1.0",
+		"browser-sync": "^3.0.2",
+		"sass": "^1.77.6"
+	},
+	"devDependencies": {
+		"cross-env": "^7.0.3",
+		"gulp": "^5.0.0",
+		"gulp-concat": "^2.6.1",
+		"gulp-environments": "^1.0.1",
+		"gulp-order": "^1.2.0",
+		"gulp-replace": "^1.1.4",
+		"gulp-sass": "^5.1.0",
+		"npm-run-all": "^4.1.5",
+		"wait-on": "^7.2.0"
 	}
 }
