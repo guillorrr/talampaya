@@ -74,7 +74,8 @@
 	"renderFlatPatternsOnViewAllPages": false,
 	"transformedAssetTypes": ["scss"],
 	"serverOptions": {
-		"wait": 1000
+		"wait": 1000,
+		"port": 4000
 	},
 	"starterkitSubDir": "dist",
 	"styleGuideExcludes": [],

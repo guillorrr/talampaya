@@ -6,15 +6,15 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "node ./node_modules/@pattern-lab/uikit-workshop/build-tools.js",
-		"pl:build:uikit": "cross-env-shell PL_CONFIG_PATH='${INIT_CWD}/.patternlabrc.js' npm run build --prefix node_modules/@pattern-lab/uikit-workshop -- --patternlabrc '$PL_CONFIG_PATH'",
+		"pl:build:uikit": "cross-env-shell PL_CONFIG_PATH='${INIT_CWD}/.patternlabrc.js' npm run pl:build --prefix node_modules/@pattern-lab/uikit-workshop -- --patternlabrc '$PL_CONFIG_PATH'",
 		"pl:build": "patternlab build --config ./patternlab-config.json",
 		"pl:help": "patternlab --help",
 		"pl:install": "patternlab install --config ./patternlab-config.json",
 		"pl:serve": "patternlab serve --config ./patternlab-config.json",
 		"pl:version": "patternlab --version",
-		"pl:wait": "wait-on http://127.0.0.1:3000 && gulp",
+		"pl:wait": "wait-on http://127.0.0.1:4000 && gulp",
 		"start": "npm-run-all --parallel pl:serve pl:wait",
-		"build": "gulp build"
+		"build": "npm run pl:build && gulp build"
 	},
 	"keywords": [],
 	"author": "",
