@@ -51,9 +51,9 @@ gulp.task('sass', function () {
 		.pipe(sass().on('error', sass.logError))
 		.pipe(concat('style.css'));
 
-	// if (production()) {
-	//     stream = stream.pipe(replace('../../', '../'));
-	// }
+	if (production()) {
+		stream = stream.pipe(replace('../../', '../'));
+	}
 
 	return stream.pipe(gulp.dest('./public/css')).pipe(browserSync.stream());
 });
