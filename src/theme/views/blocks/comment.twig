@@ -1,16 +1,14 @@
-<div class="blog-comment {{ comment.comment_type }}" id="blog-comment-{{ comment.ID }}">
+<div class="blog-comment" id="blog-comment-{{ comment.id }}">
 	<h5 class="comment-author">
 		{{ comment.author.name }} says
 	</h5>
 	<div class="comment-content">
-		{{ comment.comment_content|wpautop }}
+		{{ comment.content|wpautop }}
 	</div>
 
 	<section class="comment-box">
-		<!-- comment form -->
 		{% include "blocks/comment-form.twig" %}
 
-		<!-- child comments -->
 		{% if post.comments %}
 			<h4>
 				replies

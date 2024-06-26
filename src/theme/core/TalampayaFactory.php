@@ -1,7 +1,6 @@
 <?php
-/**
- * Factory to make Wordpress objects
- */
+namespace App;
+
 class TalampayaFactory
 {
 	protected $post_types;

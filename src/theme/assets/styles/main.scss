@@ -9,10 +9,4 @@ Text Domain: talampaya
 Tags: responsive, clean, minimal, modern
 */
 
-$background-color: #f1f1f1;
-$foreground-color: #1e1e1e;
-
-body {
-	background-color: $background-color;
-	color: $foreground-color;
-}
+@import "demo";
