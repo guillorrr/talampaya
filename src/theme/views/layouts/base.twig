@@ -34,6 +34,7 @@
 
 		{% endblock head %}
 
+		{% do action("get_header") %}
 		{{ function("wp_head") }}
 	</head>
 
@@ -42,7 +43,7 @@
 
 		{% include "blocks/header.twig" %}
 
-		<main id="content" role="main" class="content-wrapper">
+		<main id="content" class="content-wrapper">
 			{% if title %}
 				<h1>
 					{{ title }}
@@ -53,14 +54,11 @@
 					Sorry, no content
 				{% endblock content %}
 			</div>
-			{% if sidebar %}
-				<aside class="layout-sidebar">
-					{{ sidebar }}
-				</aside>
-			{% endif %}
 		</main>
 
-		{% include "blocks/footer.twig" %}
+		{% block footer %}
+			{% include "blocks/footer.twig" %}
+		{% endblock footer %}
 
 		{# include 'blocks/video-modal.twig' #}
 
@@ -75,5 +73,7 @@
 		{% endblock scripts %}
 
 		{{ function("wp_footer") }}
+
+		{% do action("get_footer") %}
 	</body>
 </html>

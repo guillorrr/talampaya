@@ -1,9 +1,6 @@
 <?php
-/**
- * Setup class
- *
- * @link https://codex.wordpress.org/Post_Formats
- */
+namespace App;
+
 class TalampayaSetup
 {
 	public function __construct()

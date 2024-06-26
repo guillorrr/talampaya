@@ -1,6 +1,8 @@
 <?php
+namespace App;
 
 use Timber\Site;
+use Timber\Timber;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Extra\Html\HtmlExtension;
 
