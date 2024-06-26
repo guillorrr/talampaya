@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
 	entry: {
-		main: './src/assets/js/main.js',
+		main: './src/theme/assets/scripts/main.js',
 	},
 	output: {
 		filename: '[name].min.js',

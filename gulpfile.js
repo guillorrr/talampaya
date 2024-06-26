@@ -24,15 +24,12 @@ const themeName = process.env.APP_NAME.toLowerCase() || 'talampaya';
 /* -------------------------------------------------------------------------------------------------
 Styles Bundles
 -------------------------------------------------------------------------------------------------- */
-const frontendStyles = [
-	'./src/assets/scss/main.scss',
-	'./src/theme/template-parts/blocks/**/*.scss',
-];
+const frontendStyles = ['./src/theme/assets/styles/main.scss', './src/theme/blocks/**/*.scss'];
 
 const backendStyles = [
-	'./src/assets/scss/backend-*.scss',
-	'./src/assets/scss/backend-*.css',
-	'./src/theme/template-parts/blocks/**/backend-*.scss',
+	'./src/theme/assets/styles/backend-*.scss',
+	'./src/theme/assets/styles/backend-*.css',
+	'./src/theme/blocks/**/backend-*.scss',
 ];
 
 /* -------------------------------------------------------------------------------------------------
@@ -43,21 +40,21 @@ const headerJS = [
 ];
 
 const footerJS = [
-	'./src/assets/js/**',
-	'./src/theme/template-parts/blocks/**/*.js',
-	'!./src/assets/js/backend-**',
+	'./src/theme/assets/scripts/**',
+	'./src/theme/blocks/**/*.js',
+	'!./src/theme/assets/scripts/backend-**',
 ];
 
-const backendJS = ['./src/assets/js/backend-**'];
+const backendJS = ['./src/theme/assets/scripts/backend-**'];
 
 /* -------------------------------------------------------------------------------------------------
 Assets
 -------------------------------------------------------------------------------------------------- */
 const assetsFiles = [
-	'./src/assets/img/**',
-	'./src/assets/fonts/**',
-	'!./src/assets/scss/**',
-	'!./src/assets/js/**',
+	'./src/theme/assets/images/**',
+	'./src/theme/assets/fonts/**',
+	'!./src/theme/assets/styles/**',
+	'!./src/theme/assets/scripts/**',
 ];
 
 /* -------------------------------------------------------------------------------------------------
@@ -65,14 +62,19 @@ Wordpress Theme files
 -------------------------------------------------------------------------------------------------- */
 const themeFiles = [
 	'./src/theme/**',
-	'!./src/theme/template-parts/blocks/**/*.scss',
-	'!./src/theme/template-parts/blocks/**/*.js',
+	'!./src/theme/blocks/**/*.scss',
+	'!./src/theme/blocks/**/*.js',
 ];
 
 /* -------------------------------------------------------------------------------------------------
 Wordpress Plugin files
 -------------------------------------------------------------------------------------------------- */
 const pluginsFiles = ['./src/plugins/**'];
+
+/* -------------------------------------------------------------------------------------------------
+Wordpress Languages files
+-------------------------------------------------------------------------------------------------- */
+const languagesFiles = ['./src/languages/**'];
 
 /* -------------------------------------------------------------------------------------------------
 Environment Tasks
@@ -168,7 +170,7 @@ function copyAssetsDev() {
 }
 
 function copyLanguagesDev() {
-	return src(['./src/assets/languages/**'])
+	return src(languagesFiles)
 		.pipe(
 			rename(function (path) {
 				if (path.basename === 'talampaya') {
@@ -307,7 +309,7 @@ function copyAssetsProd() {
 }
 
 function copyLanguagesProd() {
-	return src(['./src/assets/languages/**'])
+	return src(['./src/theme/assets/languages/**'])
 		.pipe(
 			rename(function (path) {
 				if (path.basename === 'talampaya') {
