@@ -4,7 +4,9 @@ const path = require('path');
 
 module.exports = {
 	entry: {
-		main: './src/theme/assets/scripts/main.js',
+		main: './patternlab/source/js/main.js',
+		scripts: './src/theme/assets/scripts/scripts.js',
+		backend: './src/theme/assets/scripts/backend.js',
 	},
 	output: {
 		filename: '[name].min.js',
