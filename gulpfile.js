@@ -24,44 +24,38 @@ const themeName = process.env.APP_NAME.toLowerCase() || 'talampaya';
 /* -------------------------------------------------------------------------------------------------
 Styles Bundles
 -------------------------------------------------------------------------------------------------- */
-const frontendStyles = ['./src/theme/assets/styles/main.scss', './src/theme/blocks/**/*.scss'];
+const frontendStyles = [
+	'./src/theme/assets/styles/main.scss',
+	'./patternlab/source/css/style.scss',
+];
 
 const backendStyles = [
 	'./src/theme/assets/styles/backend-*.scss',
 	'./src/theme/assets/styles/backend-*.css',
-	'./src/theme/blocks/**/backend-*.scss',
 ];
 
 /* -------------------------------------------------------------------------------------------------
-Header & Footer JavaScript Bundles
+JavaScript Files
 -------------------------------------------------------------------------------------------------- */
-const headerJS = [
-	//'./node_modules/jquery/dist/jquery.js'
+const scriptsFiles = [
+	'./src/theme/assets/scripts/scripts.js',
+	'./patternlab/source/js/main.js',
+	'./src/theme/assets/scripts/backend.js',
 ];
-
-const footerJS = [
-	'./src/theme/assets/scripts/**',
-	'./src/theme/blocks/**/*.js',
-	'!./src/theme/assets/scripts/backend-**',
-];
-
-const backendJS = ['./src/theme/assets/scripts/backend-**'];
 
 /* -------------------------------------------------------------------------------------------------
 Assets
 -------------------------------------------------------------------------------------------------- */
-const assetsFiles = [
-	'./src/theme/assets/images/**',
-	'./src/theme/assets/fonts/**',
-	'!./src/theme/assets/styles/**',
-	'!./src/theme/assets/scripts/**',
-];
+const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
+
+const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
 
 /* -------------------------------------------------------------------------------------------------
 Wordpress Theme files
 -------------------------------------------------------------------------------------------------- */
 const themeFiles = [
 	'./src/theme/**',
+	'!./src/theme/assets/**',
 	'!./src/theme/blocks/**/*.scss',
 	'!./src/theme/blocks/**/*.js',
 ];
@@ -74,7 +68,7 @@ const pluginsFiles = ['./src/plugins/**'];
 /* -------------------------------------------------------------------------------------------------
 Wordpress Languages files
 -------------------------------------------------------------------------------------------------- */
-const languagesFiles = ['./src/languages/**'];
+const languagesFiles = ['./src/theme/assets/languages/**'];
 
 /* -------------------------------------------------------------------------------------------------
 Environment Tasks
@@ -165,8 +159,12 @@ function copyModifiedThemeFile(filePath) {
 	}
 }
 
-function copyAssetsDev() {
-	return src(assetsFiles).pipe(dest('./build/wp-content/themes/' + themeName));
+function copyFontsDev() {
+	return src(fontsFiles).pipe(dest('./build/wp-content/themes/' + themeName + '/fonts'));
+}
+
+function copyImagesDev() {
+	return src(imagesFiles).pipe(dest('./build/wp-content/themes/' + themeName + '/images'));
 }
 
 function copyLanguagesDev() {
@@ -207,22 +205,6 @@ function webpackScriptsDev() {
 		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
 }
 
-function headerScriptsDev() {
-	return src(headerJS)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(sourcemaps.init())
-		.pipe(concat('header-bundle.js'))
-		.pipe(sourcemaps.write('.'))
-		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
-}
-
-function backendScriptsDev() {
-	return src(backendJS)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(concat('backend-scripts.js'))
-		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
-}
-
 function pluginsDev() {
 	return src(pluginsFiles).pipe(dest('./build/wp-content/plugins'));
 }
@@ -236,7 +218,7 @@ function watchFiles() {
 		stylesDev();
 		backendStylesDev();
 	});
-	watch(footerJS, {
+	watch(scriptsFiles, {
 		interval: 1000,
 		usePolling: true,
 	}).on('change', function (path, stats) {
@@ -244,12 +226,13 @@ function watchFiles() {
 		webpackScriptsDev();
 		Reload();
 	});
-	watch(assetsFiles, {
+	watch(fontsFiles.concat(imagesFiles), {
 		interval: 1000,
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		copyAssetsDev();
+		copyImagesDev();
+		copyFontsDev();
 		Reload();
 	});
 	watch(themeFiles, {
@@ -275,11 +258,10 @@ function watchFiles() {
 const dev = series(
 	registerCleanup,
 	copyThemeDev,
-	copyAssetsDev,
+	copyImagesDev,
+	copyFontsDev,
 	stylesDev,
 	backendStylesDev,
-	//headerScriptsDev,
-	backendScriptsDev,
 	webpackScriptsDev,
 	pluginsDev,
 	copyLanguagesDev,
@@ -302,10 +284,16 @@ function copyThemeProd() {
 		.pipe(dest('./dist/themes/' + themeName));
 }
 
-function copyAssetsProd() {
-	return src(assetsFiles)
+function copyFontsProd() {
+	return src(fontsFiles)
 		.pipe(plumber({ errorHandler: onError }))
-		.pipe(dest('./dist/themes/' + themeName));
+		.pipe(dest('./dist/themes/' + themeName + '/fonts'));
+}
+
+function copyImagesProd() {
+	return src(imagesFiles)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(dest('./dist/themes/' + themeName + '/images'));
 }
 
 function copyLanguagesProd() {
@@ -341,21 +329,6 @@ function webpackScriptsProd() {
 		.pipe(dest('./dist/themes/' + themeName + '/js'));
 }
 
-function headerScriptsProd() {
-	return src(headerJS)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(concat('header-bundle.js'))
-		.pipe(uglify())
-		.pipe(dest('./dist/themes/' + themeName + '/js'));
-}
-
-function backendScriptsProd() {
-	return src(backendJS)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(concat('backend-scripts.js'))
-		.pipe(dest('./dist/themes/' + themeName + '/js'));
-}
-
 function pluginsProd() {
 	return src(pluginsFiles).pipe(dest('./dist/plugins'));
 }
@@ -372,11 +345,10 @@ function zipProd() {
 const prod = series(
 	cleanProd,
 	copyThemeProd,
-	copyAssetsProd,
+	copyFontsProd,
+	copyImagesProd,
 	stylesProd,
 	backendStylesProd,
-	//headerScriptsProd,
-	backendScriptsProd,
 	webpackScriptsProd,
 	pluginsProd,
 	copyLanguagesProd,
