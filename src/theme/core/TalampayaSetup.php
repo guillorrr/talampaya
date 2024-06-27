@@ -56,6 +56,14 @@ class TalampayaSetup
 			true
 		);
 
+		wp_enqueue_script(
+			"talampaya_scripts",
+			get_template_directory_uri() . "/js/scripts.min.js",
+			[],
+			$version,
+			true
+		);
+
 		// REMOVE COMMENT TO ACTIVE
 		//        if (is_page('example-slug')){
 		//            wp_enqueue_script('talampaya_example', get_template_directory_uri() . '/js/example.js', array(), talampaya_theme_version(), TRUE);
@@ -87,7 +95,7 @@ class TalampayaSetup
 	{
 		global $theme_version;
 
-		$file = get_stylesheet_directory() . "/css/backend-scripts.css";
+		$file = get_stylesheet_directory() . "/js/backend.min.js";
 
 		if (file_exists($file)) {
 			$version = $theme_version . "." . filemtime($file);
