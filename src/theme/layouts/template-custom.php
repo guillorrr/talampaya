@@ -2,6 +2,7 @@
 /*
 Template Name: Template Custom
 */
+
 $context = Timber::context();
 
 $timber_post = Timber::get_post();

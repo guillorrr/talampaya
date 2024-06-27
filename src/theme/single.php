@@ -1,11 +1,8 @@
 <?php
-
 /**
  * The Template for displaying all single posts
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  */
-
-namespace App;
 
 use Timber\Timber;
 

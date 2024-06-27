@@ -1,7 +1,4 @@
 <?php
-namespace App;
-
-use Timber\Timber;
 
 // Load Composer dependencies.
 require_once __DIR__ . "/../../vendor/autoload.php";
@@ -14,7 +11,7 @@ require_once __DIR__ . "/core/TalampayaTimber.php";
 require_once __DIR__ . "/inc/utils/helpers.php";
 require_once __DIR__ . "/inc/plugins.php";
 
-Timber::init();
+Timber\Timber::init();
 Timber::$dirname = ["templates", "views"];
 
 $paths = require_once __DIR__ . "/inc/utils/paths.php";
