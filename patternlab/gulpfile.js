@@ -5,6 +5,8 @@ const concat = require('gulp-concat');
 const order = require('gulp-order');
 const environments = require('gulp-environments');
 const replace = require('gulp-replace');
+const gulpIf = require('gulp-if');
+const print = require('gulp-print').default;
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -46,16 +48,14 @@ gulp.task('js', function () {
 });
 
 gulp.task('sass', function () {
-	let stream = gulp
-		.src(filesStyles)
+	return gulp
+		.src(filesStyles, { allowEmpty: true })
+		.pipe(print(filepath => `SCSS File: ${filepath}`))
 		.pipe(sass().on('error', sass.logError))
-		.pipe(concat('style.css'));
-
-	if (production()) {
-		stream = stream.pipe(replace('../../', '../'));
-	}
-
-	return stream.pipe(gulp.dest('./public/css')).pipe(browserSync.stream());
+		.pipe(concat('style.css'))
+		.pipe(gulpIf(production(), replace('../../', '../')))
+		.pipe(gulp.dest('./public/css'))
+		.pipe(browserSync.stream());
 });
 
 gulp.task('serve', function () {
