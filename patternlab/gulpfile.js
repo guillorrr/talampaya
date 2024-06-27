@@ -48,14 +48,16 @@ gulp.task('js', function () {
 });
 
 gulp.task('sass', function () {
-	return gulp
-		.src(filesStyles, { allowEmpty: true })
-		.pipe(print(filepath => `SCSS File: ${filepath}`))
-		.pipe(sass().on('error', sass.logError))
-		.pipe(concat('style.css'))
-		.pipe(gulpIf(production(), replace('../../', '../')))
-		.pipe(gulp.dest('./public/css'))
-		.pipe(browserSync.stream());
+	return (
+		gulp
+			.src(filesStyles, { allowEmpty: true })
+			//.pipe(print(filepath => `SCSS File: ${filepath}`))
+			.pipe(sass().on('error', sass.logError))
+			.pipe(concat('style.css'))
+			.pipe(gulpIf(production(), replace('../../', '../')))
+			.pipe(gulp.dest('./public/css'))
+			.pipe(browserSync.stream())
+	);
 });
 
 gulp.task('serve', function () {
