@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The template for displaying all pages.
  *
@@ -9,8 +8,6 @@
  * different template.
  *
  */
-
-namespace App;
 
 use Timber\Timber;
 

@@ -10,8 +10,6 @@
  *
  */
 
-namespace App;
-
 use Timber\Timber;
 
 $templates = ["pages/archive.twig", "pages/index.twig"];

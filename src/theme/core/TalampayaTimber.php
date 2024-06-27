@@ -1,5 +1,4 @@
 <?php
-namespace App;
 
 use Timber\Site;
 use Timber\Timber;
