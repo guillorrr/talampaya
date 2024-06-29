@@ -186,6 +186,7 @@ function stylesDev() {
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat('style.css'))
 		.pipe(sourcemaps.write('.'))
+		.pipe(replace('../../', './'))
 		.pipe(dest('./build/wp-content/themes/' + themeName))
 		.pipe(browserSync.stream());
 }
@@ -195,6 +196,7 @@ function backendStylesDev() {
 		.pipe(plumber({ errorHandler: onError }))
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat('backend-styles.css'))
+		.pipe(replace('../../', './'))
 		.pipe(dest('./build/wp-content/themes/' + themeName + '/css'))
 		.pipe(browserSync.stream());
 }
@@ -312,6 +314,7 @@ function stylesProd() {
 	return src(frontendStyles)
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat('style.css'))
+		.pipe(replace('../../', './'))
 		.pipe(dest('./dist/themes/' + themeName));
 }
 
@@ -320,6 +323,7 @@ function backendStylesProd() {
 		.pipe(plumber({ errorHandler: onError }))
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat('backend-styles.css'))
+		.pipe(replace('../../', './'))
 		.pipe(dest('./dist/themes/' + themeName + '/css'));
 }
 

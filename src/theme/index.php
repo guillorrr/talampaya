@@ -18,8 +18,6 @@ if (is_home()) {
 	array_unshift($templates, "pages/front-page.twig", "pages/home.twig");
 }
 
-$context = Timber::context([
-	"foo" => "bar",
-]);
+$context = Timber::context();
 
 Timber::render($templates, $context);

@@ -9,17 +9,6 @@
 	"semi": true,
 	"singleAttributePerLine": false,
 	"arrowParens": "avoid",
-	"twigOutputEndblockName": true,
-	"twigPrintWidth": 120,
-	"twigSingleQuote": false,
-	"twigMultiTags": [
-		"nav,endnav",
-		"minify,endminify",
-		"switch,case,default,endswitch",
-		"ifchildren,endifchildren",
-		"cache,endcache",
-		"js,endjs"
-	],
 	"overrides": [
 		{
 			"files": "**/*.hbs",
@@ -34,7 +23,26 @@
 				"parser": "php",
 				"singleQuote": false
 			}
-		}
+        },
+        {
+            "files": "**/*.twig",
+            "options": {
+                "parser": "melody",
+                "twigOutputEndblockName": true,
+                "twigPrintWidth": 120,
+                "twigSingleQuote": false,
+                "twigAlwaysBreakObjects": false,
+                "twigMultiTags": [
+                    "nav,endnav",
+                    "minify,endminify",
+                    "switch,case,default,endswitch",
+                    "ifchildren,endifchildren",
+                    "cache,endcache",
+                    "js,endjs",
+                    "css,endcss"
+                ]
+            }
+        }
 	],
 	"plugins": ["@zackad/prettier-plugin-twig-melody", "@prettier/plugin-php"]
 }
