@@ -87,7 +87,13 @@ class TalampayaSetup
 		if (file_exists($file)) {
 			$version = $theme_version . "." . filemtime($file);
 
-			wp_enqueue_style("talampaya_backend_styles", $file, false, $version, "all");
+			wp_enqueue_style(
+				"talampaya_backend_styles",
+				get_template_directory_uri() . "/css/backend-styles.css",
+				false,
+				$version,
+				"all"
+			);
 		}
 	}
 
@@ -100,7 +106,13 @@ class TalampayaSetup
 		if (file_exists($file)) {
 			$version = $theme_version . "." . filemtime($file);
 
-			wp_enqueue_style("talampaya_backend_scripts", $file, false, $version, "all");
+			wp_enqueue_style(
+				"talampaya_backend_scripts",
+				get_template_directory_uri() . "/js/backend.min.js",
+				false,
+				$version,
+				"all"
+			);
 		}
 	}
 
