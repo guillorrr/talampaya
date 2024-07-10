@@ -17,7 +17,7 @@ class TalampayaFactory
 		$this->sidebars = $sidebars;
 
 		add_action("init", [$this, "make_post_types"]);
-		add_action("init", [$this, "make_taxonomies"]);
+		add_action("init", [$this, "make_taxonomies"], 0);
 		add_action("after_setup_theme", [$this, "make_nav_menus"]);
 		add_action("widgets_init", [$this, "make_sidebars"]);
 	}
