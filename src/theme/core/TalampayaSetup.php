@@ -106,7 +106,7 @@ class TalampayaSetup
 		if (file_exists($file)) {
 			$version = $theme_version . "." . filemtime($file);
 
-			wp_enqueue_style(
+			wp_enqueue_script(
 				"talampaya_backend_scripts",
 				get_template_directory_uri() . "/js/backend.min.js",
 				false,
