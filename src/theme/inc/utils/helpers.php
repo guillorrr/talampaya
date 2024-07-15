@@ -588,5 +588,74 @@ if (!function_exists("talampaya_save_custom_thumbnail_as_featured_image")):
 endif;
 
 // -----------------------------------------------------------------------------
+// Get Related Posts
+// -----------------------------------------------------------------------------
+function get_related_posts(
+	$post_id,
+	$taxonomy,
+	$post_type = "post",
+	$number = 3
+): array|\Timber\PostCollectionInterface|null {
+	$terms = wp_get_post_terms($post_id, $taxonomy);
+
+	if (!empty($terms) && !is_wp_error($terms)) {
+		$term_ids = wp_list_pluck($terms, "term_id");
+
+		$args = [
+			"post_type" => $post_type,
+			"posts_per_page" => $number,
+			"post__not_in" => [$post_id],
+			"tax_query" => [
+				[
+					"taxonomy" => $taxonomy,
+					"field" => "id",
+					"terms" => $term_ids,
+				],
+			],
+		];
+
+		return Timber::get_posts($args);
+	}
+
+	return [];
+}
+
+// -----------------------------------------------------------------------------
+// Get Block Content from Custom Path
+// -----------------------------------------------------------------------------
+function get_block_from_page_by_path(string $block_name, string $path = "home"): string
+{
+	$page = get_page_by_path($path);
+
+	$blocks = parse_blocks($page->post_content);
+
+	foreach ($blocks as $block) {
+		if ($block["blockName"] === $block_name) {
+			return render_block($block);
+		}
+	}
+
+	return "";
+}
+
+// -----------------------------------------------------------------------------
+// Get Block Data from Custom Path
+// -----------------------------------------------------------------------------
+function get_block_data_from_page_by_path(string $block_name, string $path = "home"): array
+{
+	$page = get_page_by_path($path);
+
+	$blocks = parse_blocks($page->post_content);
+
+	foreach ($blocks as $block) {
+		if ($block["blockName"] === $block_name) {
+			return $block["attrs"]["data"];
+		}
+	}
+
+	return [];
+}
+
+// -----------------------------------------------------------------------------
 // CUSTOM HELPER FUNCTIONS
 // -----------------------------------------------------------------------------
