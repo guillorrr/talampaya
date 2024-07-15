@@ -571,8 +571,8 @@ endif;
 if (!function_exists("talampaya_save_custom_thumbnail_as_featured_image")):
 	function talampaya_save_custom_thumbnail_as_featured_image(
 		$post_id,
-		$post_type,
-		$thumbnail_field
+		$post_type = "post",
+		$thumbnail_field = "thumbnail"
 	) {
 		if (get_post_type($post_id) == $post_type) {
 			remove_action("save_post", "talampaya_save_custom_thumbnail_as_featured_image");
