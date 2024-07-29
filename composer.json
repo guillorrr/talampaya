@@ -155,6 +155,7 @@
 		"wpackagist-plugin/maintenance": "*",
 		"wpackagist-plugin/wp-mail-smtp": "*",
 		"wpackagist-plugin/regenerate-thumbnails": "*",
+		"wpackagist-plugin/image-regenerate-select-crop": "*",
 		"wpackagist-theme/poema": "*",
 		"wpengine/advanced-custom-fields-pro": "^6.3.2",
 		"wpml/sitepress-multilingual-cms": "*",
