@@ -38,8 +38,9 @@
 		"docker:prettier:check": "docker compose run --rm node npm run prettier:check",
 		"docker:prettier:write": "docker compose run --rm node npm run prettier:write",
 		"docker:permissions": "docker compose run --rm chmod",
-		"docker:composer:update": "docker compose run composer update",
-		"docker:composer:dump": "docker compose run composer dump-autoload",
+		"docker:composer:update": "docker compose run --rm composer update",
+		"docker:composer:dump": "docker compose run --rm composer dump-autoload",
+		"docker:composer:remove": "rm -rf build/wp-content/vendor && rm build/composer.lock",
 		"dev:create-block": "node ./dev/scripts/create-block.js"
 	},
 	"lint-staged": {
