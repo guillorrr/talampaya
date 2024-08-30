@@ -394,21 +394,27 @@ if (!function_exists("talampaya_replace_keys_from_acf_register_fields")):
 
 		if (isset($array["fields"]) && is_array($array["fields"])) {
 			foreach ($array["fields"] as &$field) {
-				if (isset($field["key"])) {
+				if (!$is_subfield && isset($field["key"])) {
 					$field["key"] = "field_" . $type . "_" . $key . "_" . $field["key"];
+				} elseif ($is_subfield && isset($field["key"])) {
+					$field["key"] = "field_" . $key . "_" . $field["key"];
 				}
 
 				if (!$is_subfield && isset($field["name"])) {
 					$field["name"] = $type . "_" . $key . "_" . $field["name"];
+				} elseif ($is_subfield && isset($field["name"])) {
+					$field["name"] = $key . "_" . $field["name"];
 				}
 
 				if (isset($field["sub_fields"]) && is_array($field["sub_fields"])) {
-					$field["sub_fields"] = talampaya_replace_keys_from_acf_register_fields(
-						$field["sub_fields"],
+					$fake_array["fields"] = $field["sub_fields"];
+					$new_subfields = talampaya_replace_keys_from_acf_register_fields(
+						$fake_array,
 						$key,
 						$type,
 						true
 					);
+					$field["sub_fields"] = $new_subfields["fields"];
 				}
 			}
 		}
