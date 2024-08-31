@@ -9,5 +9,8 @@
 		"mode": "edit",
 		"renderCallback": "my_acf_block_render_callback",
 		"usePostMeta": "true"
+	},
+	"supports": {
+		"anchor": true
 	}
 }
