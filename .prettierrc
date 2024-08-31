@@ -27,7 +27,6 @@
         {
             "files": "**/*.twig",
             "options": {
-                "parser": "melody",
                 "twigOutputEndblockName": true,
                 "twigPrintWidth": 120,
                 "twigSingleQuote": false,
@@ -44,5 +43,5 @@
             }
         }
 	],
-	"plugins": ["@zackad/prettier-plugin-twig-melody", "@prettier/plugin-php"]
+    "plugins": ["@zackad/prettier-plugin-twig", "@prettier/plugin-php"]
 }
