@@ -41,8 +41,10 @@
 		"docker:composer:update": "docker compose run --rm composer update",
 		"docker:composer:dump": "docker compose run --rm composer dump-autoload",
 		"docker:composer:remove": "rm -rf build/wp-content/vendor && rm build/composer.lock",
-		"node:remove": "rm -rf node_modules && rm package-lock.json",
-		"dev:create-block": "node ./dev/scripts/create-block.js"
+		"wp:delete-posts": "POST_TYPE=page docker exec -it forcadell-wp wp post delete $(docker exec forcadell-wp wp post list --post_type=$POST_TYPE --format=ids --allow-root) --allow-root",
+		"dev:create-block": "node ./dev/scripts/create-block.js",
+		"clean:node": "rm -rf node_modules && rm package-lock.json",
+		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
