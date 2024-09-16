@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - db-data:/var/lib/mysql
+      - './docker/db/my.cnf:/etc/mysql/conf.d/my.cnf'
     ports:
       - '${FORWARD_DB_PORT:-3306}:3306'
 
