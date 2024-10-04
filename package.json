@@ -20,7 +20,7 @@
 	},
 	"scripts": {
 		"build": "NODE_ENV=production gulp prod",
-		"dev": "gulp dev",
+		"dev": "NODE_ENV=development gulp dev",
 		"webpack": "webpack --mode=development",
 		"lint:js": "eslint ./src --ext .js,.ts",
 		"lint:fix": "eslint ./src --ext .js,.ts --fix",
