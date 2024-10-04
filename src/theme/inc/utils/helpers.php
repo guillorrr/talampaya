@@ -663,5 +663,65 @@ function get_block_data_from_page_by_path(string $block_name, string $path = "ho
 }
 
 // -----------------------------------------------------------------------------
+// Get Current Language
+// -----------------------------------------------------------------------------
+function get_current_language(): string
+{
+	$current_language = "es";
+	if (defined("ICL_LANGUAGE_CODE")) {
+		$current_language = ICL_LANGUAGE_CODE;
+	}
+
+	return $current_language;
+}
+
+// -----------------------------------------------------------------------------
+// Get Current Locale
+// -----------------------------------------------------------------------------
+function get_current_locale(): string
+{
+	$current_language = get_current_language();
+
+	$locale = "en_US";
+	switch ($current_language) {
+		case "es":
+			$locale = "es_ES";
+			break;
+		case "en":
+			$locale = "en_US";
+			break;
+		case "ca":
+			$locale = "ca_ES";
+			break;
+	}
+
+	return $locale;
+}
+
+// -----------------------------------------------------------------------------
+// Make Curl Request
+// -----------------------------------------------------------------------------
+function makeRequest($url, $method, $data = null, $headers = []): array
+{
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+	if ($method === "POST") {
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	}
+
+	if (!empty($headers)) {
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	}
+
+	$response = curl_exec($ch);
+	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	curl_close($ch);
+
+	return ["response" => $response, "http_code" => $httpCode];
+}
+
+// -----------------------------------------------------------------------------
 // CUSTOM HELPER FUNCTIONS
 // -----------------------------------------------------------------------------

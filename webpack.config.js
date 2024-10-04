@@ -25,4 +25,8 @@ module.exports = {
 		],
 	},
 	mode: process.env.NODE_ENV == 'production' ? 'production' : 'development',
+	optimization: {
+		minimize: process.env.NODE_ENV === 'production',
+	},
+	devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
 };
