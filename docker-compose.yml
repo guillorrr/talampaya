@@ -145,7 +145,7 @@ services:
       - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
 
   composer:
-    image: composer
+    image: composer:2.8
     container_name: ${APP_NAME}-composer
     working_dir: /var/www/html
     restart: 'no'
