@@ -6,6 +6,7 @@ const path = require('path');
 const del = require('del');
 const log = require('fancy-log');
 const fs = require('fs');
+const through2 = require('through2');
 const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
@@ -82,9 +83,45 @@ function registerCleanup(done) {
 }
 
 function replaceThemeName() {
-	return replace('talampaya', themeName)
-		.pipe(replace('Talampaya', themeName.charAt(0).toUpperCase() + themeName.slice(1)))
-		.pipe(replace('TALAMPAYA', themeName.toUpperCase()));
+	const themeNameCapitalized = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+	const themeNameUppercase = themeName.toUpperCase();
+	const themeNameLowercase = themeName.toLowerCase();
+
+	return through2.obj(function (file, encoding, callback) {
+		if (file.isBuffer()) {
+			let content = file.contents.toString(encoding);
+
+			content = content.replace(/Talampaya/g, themeNameCapitalized);
+			content = content.replace(/talampaya/g, themeNameLowercase);
+			content = content.replace(/TALAMPAYA/g, themeNameUppercase);
+			content = content.replace(/talampaya-/g, themeNameLowercase + '-');
+			content = content.replace(/talampaya_/g, themeNameLowercase + '_');
+
+			file.contents = Buffer.from(content, encoding);
+		}
+
+		this.push(file);
+		callback();
+	});
+}
+
+function renameFile() {
+	const themeNameCapitalized = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+	const themeNameUppercase = themeName.toUpperCase();
+	const themeNameLowercase = themeName.toLowerCase();
+
+	return rename(function (path) {
+		// Reemplazo en el nombre del archivo (base) según PascalCase, camelCase, etc.
+		path.basename = path.basename
+			.replace(/Talampaya/g, themeNameCapitalized) // PascalCase
+			.replace(/talampaya/g, themeNameLowercase) // camelCase
+			.replace(/TALAMPAYA/g, themeNameUppercase); // Uppercase
+
+		// Reemplazo en el nombre del archivo con kebab-case y snake_case
+		path.basename = path.basename
+			.replace(/talampaya-/g, themeNameLowercase + '-')
+			.replace(/talampaya_/g, themeNameLowercase + '_');
+	});
 }
 
 /* -------------------------------------------------------------------------------------------------
@@ -132,12 +169,14 @@ function Reload() {
 }
 
 function copyThemeDev() {
+	console.log('Copying theme files..., themeName: ' + themeName);
 	if (!fs.existsSync('./build')) {
 		log(buildNotFound);
 		process.exit(1);
 	} else {
 		return src(themeFiles)
 			.pipe(replaceThemeName())
+			.pipe(renameFile())
 			.pipe(dest('./build/wp-content/themes/' + themeName));
 	}
 }
@@ -154,7 +193,10 @@ function copyModifiedThemeFile(filePath) {
 			const destination =
 				'./build/wp-content/themes/' + themeName + '/' + path.dirname(relativePath);
 
-			return src(filePath).pipe(replaceThemeName()).pipe(dest(destination));
+			return src(filePath)
+				.pipe(replaceThemeName())
+				.pipe(renameFile())
+				.pipe(dest(destination));
 		}
 	}
 }
@@ -176,6 +218,7 @@ function copyLanguagesDev() {
 				}
 			})
 		)
+		.pipe(replaceThemeName())
 		.pipe(dest('./build/wp-content/themes/' + themeName + '/languages'));
 }
 
@@ -187,6 +230,7 @@ function stylesDev() {
 		.pipe(concat('style.css'))
 		.pipe(sourcemaps.write('.'))
 		.pipe(replace('../../', './'))
+		.pipe(replaceThemeName())
 		.pipe(dest('./build/wp-content/themes/' + themeName))
 		.pipe(browserSync.stream());
 }
@@ -283,6 +327,7 @@ async function cleanProd() {
 function copyThemeProd() {
 	return src(themeFiles)
 		.pipe(replaceThemeName())
+		.pipe(renameFile())
 		.pipe(dest('./dist/themes/' + themeName));
 }
 
@@ -307,6 +352,7 @@ function copyLanguagesProd() {
 				}
 			})
 		)
+		.pipe(replaceThemeName())
 		.pipe(dest('./dist/themes/' + themeName + '/languages'));
 }
 
@@ -315,6 +361,7 @@ function stylesProd() {
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat('style.css'))
 		.pipe(replace('../../', './'))
+		.pipe(replaceThemeName())
 		.pipe(dest('./dist/themes/' + themeName));
 }
 
