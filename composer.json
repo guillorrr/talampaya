@@ -164,7 +164,8 @@
 		"wpml/acfml": "*",
 		"wpml/wpml-import": "*",
 		"wpml/wpml-all-import": "*",
-		"hellonico/timber-dump-extension": "*"
+		"hellonico/timber-dump-extension": "*",
+		"timber/wp-i18n-twig": "^1.0"
 	},
 	"extra": {
 		"wordpress-install-dir": "./",
