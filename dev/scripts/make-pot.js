@@ -3,16 +3,16 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const themeName = process.env.APP_NAME;
+const themeName = process.env.APP_NAME || 'talampaya';
 
 if (!themeName) {
-	console.error("No se ha encontrado 'THEME_NAME' en el archivo .env.");
+	console.error("No se ha encontrado 'APP_NAME' en el archivo .env.");
 	process.exit(1);
 }
 
 console.log(`Generando archivo .pot para el tema: ${themeName}`);
 
-const command = `docker exec ${themeName}-wp wp i18n make-pot ./wp-content/themes/${themeName} ./wp-content/themes/${themeName}/languages/${themeName}.pot --allow-root`;
+const command = `docker compose run --rm composer wp-content/vendor/bin/wp i18n make-pot /var/www/html/wp-content/themes/${themeName} wp-content/themes/${themeName}/languages/${themeName}.pot --debug --allow-root`;
 
 exec(command, (error, stdout, stderr) => {
 	if (error) {

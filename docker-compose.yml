@@ -42,6 +42,7 @@ services:
       - './docker/wp/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini'
       - './logs:/tmp/xdebug'
       - './logs:/tmp/wordpress'
+      - './composer.json:/var/www/html/composer.json'
     depends_on:
       - db
       - redis

@@ -108,10 +108,11 @@
 	"require": {
 		"johnbillion/extended-template-parts": "^2.2.1",
 		"timber/timber": "^2.1",
-		"twig/html-extra": "^3.0",
+		"twig/html-extra": "^3.0 <3.13.0",
 		"twig/extra-bundle": "^3.0",
 		"vlucas/phpdotenv": "^5.6",
-		"illuminate/support": "^10.0"
+		"illuminate/support": "^10.0",
+		"timber/wp-i18n-twig": "^1.0"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
@@ -165,7 +166,7 @@
 		"wpml/wpml-import": "*",
 		"wpml/wpml-all-import": "*",
 		"hellonico/timber-dump-extension": "*",
-		"timber/wp-i18n-twig": "^1.0"
+		"wp-cli/wp-cli-bundle": "^2.11"
 	},
 	"extra": {
 		"wordpress-install-dir": "./",
@@ -195,6 +196,7 @@
 	},
 	"scripts": {
 		"test": "phpunit",
-		"env": "printenv COMPOSER_AUTH"
+		"env": "printenv COMPOSER_AUTH",
+		"wp": "wp-content/vendor/bin/wp"
 	}
 }
