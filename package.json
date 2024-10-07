@@ -45,6 +45,7 @@
 		"wp:delete-posts": "POST_TYPE=page docker exec -it forcadell-wp wp post delete $(docker exec forcadell-wp wp post list --post_type=$POST_TYPE --format=ids --allow-root) --allow-root",
 		"wp:make-pot": "node ./dev/scripts/make-pot.js",
 		"dev:create-block": "node ./dev/scripts/create-block.js",
+		"dev:create-patternlab-examples": "node ./dev/scripts/pl-make-twig-examples.js",
 		"clean:node": "rm -rf node_modules && rm package-lock.json",
 		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log"
 	},
