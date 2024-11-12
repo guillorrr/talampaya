@@ -7,6 +7,7 @@ const environments = require('gulp-environments');
 const replace = require('gulp-replace');
 const gulpIf = require('gulp-if');
 const print = require('gulp-print').default;
+const webpack = require('webpack-stream');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -24,6 +25,7 @@ const filesStyles = [
 
 const filesScripts = [
 	//'./source/js/*.js',
+	'./source/js/main.js',
 	'./source/_patterns/**/*.js',
 ];
 
@@ -35,16 +37,11 @@ const libScripts = [
 ];
 
 gulp.task('js', function () {
-	let stream = gulp
-		.src(filesScripts)
-		.pipe(order(['*.js']))
-		.pipe(concat('scripts.js'));
-
-	// if (production()) {
-	//
-	// }
-
-	return stream.pipe(gulp.dest('./public/js')).pipe(browserSync.stream());
+	return gulp
+		.src('./source/js/main.js')
+		.pipe(webpack(require('./webpack.config')))
+		.pipe(gulp.dest('./public/js'))
+		.pipe(browserSync.stream());
 });
 
 gulp.task('sass', function () {
@@ -74,7 +71,6 @@ gulp.task('serve', function () {
 
 	gulp.watch(filesStyles, gulp.series('sass'));
 	gulp.watch(filesScripts, gulp.series('js'));
-	gulp.watch(libScripts).on('change', browserSync.reload);
 	gulp.watch('source/_patterns/**/*.twig').on('change', browserSync.reload);
 });
 
