@@ -6,6 +6,7 @@ const path = require('path');
 const del = require('del');
 const log = require('fancy-log');
 const fs = require('fs');
+const gulpIf = require('gulp-if');
 const through2 = require('through2');
 const plumber = require('gulp-plumber');
 const sourcemaps = require('gulp-sourcemaps');
@@ -124,6 +125,10 @@ function renameFile() {
 	});
 }
 
+function isNotZip(file) {
+	return !file.path.endsWith('.zip');
+}
+
 /* -------------------------------------------------------------------------------------------------
 Development Tasks
 -------------------------------------------------------------------------------------------------- */
@@ -174,9 +179,9 @@ function copyThemeDev() {
 		log(buildNotFound);
 		process.exit(1);
 	} else {
-		return src(themeFiles)
-			.pipe(replaceThemeName())
-			.pipe(renameFile())
+		return src(themeFiles, { encoding: false })
+			.pipe(gulpIf(isNotZip, replaceThemeName()))
+			.pipe(gulpIf(isNotZip, renameFile()))
 			.pipe(dest('./build/wp-content/themes/' + themeName));
 	}
 }
@@ -193,9 +198,9 @@ function copyModifiedThemeFile(filePath) {
 			const destination =
 				'./build/wp-content/themes/' + themeName + '/' + path.dirname(relativePath);
 
-			return src(filePath)
-				.pipe(replaceThemeName())
-				.pipe(renameFile())
+			return src(filePath, { encoding: false })
+				.pipe(gulpIf(isNotZip, replaceThemeName()))
+				.pipe(gulpIf(isNotZip, renameFile()))
 				.pipe(dest(destination));
 		}
 	}
