@@ -36,6 +36,7 @@ services:
         define( 'FS_DIRECT', true );
         define( 'ALLOW_UNFILTERED_UPLOADS', true);
         define( 'WP_REDIS_HOST', '${APP_NAME}-cache' );
+        define( 'WP_MEMORY_LIMIT', '512M' );
     volumes:
       - './build:/var/www/html'
       - './docker/wp/php.ini:/usr/local/etc/php/conf.d/overrides.ini'
@@ -58,6 +59,7 @@ services:
       - './build:/var/www/html'
     entrypoint: >
       /bin/sh -c "
+      [ ! -d wp-content/languages ] && mkdir wp-content/languages;
       chmod -R 777 wp-content;
       chmod 664 composer.json;
       exit 0;
