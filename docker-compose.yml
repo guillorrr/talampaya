@@ -59,6 +59,7 @@ services:
       - './build:/var/www/html'
     entrypoint: >
       /bin/sh -c "
+      [ ! -d wp-content/languages ] && mkdir wp-content/languages;
       chmod -R 777 wp-content;
       chmod 664 composer.json;
       exit 0;
