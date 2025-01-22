@@ -46,6 +46,7 @@
 		"wp:make-pot": "node ./dev/scripts/make-pot.js",
 		"dev:create-block": "node ./dev/scripts/create-block.js",
 		"dev:create-patternlab-examples": "node ./dev/scripts/pl-make-twig-examples.js",
+		"clean:build": "rm -rf build/*",
 		"clean:node": "rm -rf node_modules && rm package-lock.json",
 		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log"
 	},
