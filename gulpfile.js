@@ -60,7 +60,13 @@ const themeFiles = [
 	'!./src/theme/assets/**',
 	'!./src/theme/blocks/**/*.scss',
 	'!./src/theme/blocks/**/*.js',
+	'!./src/theme/acf-json/**/*.json',
 ];
+
+/* -------------------------------------------------------------------------------------------------
+ACF JSON files
+-------------------------------------------------------------------------------------------------- */
+const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
 
 /* -------------------------------------------------------------------------------------------------
 Wordpress Plugin files
@@ -171,6 +177,16 @@ function devServer() {
 
 function Reload() {
 	browserSync.reload();
+}
+
+function copyAcfJsonFiles() {
+	console.log('Copying ACF Json files...');
+	if (!fs.existsSync('./src/theme/acf-json')) {
+		log('No ACF Json dir found');
+		process.exit(1);
+	} else {
+		return src(acfJsonFiles, { encoding: false }).pipe(dest('./src/theme/acf-json'));
+	}
 }
 
 function copyThemeDev() {
@@ -304,6 +320,13 @@ function watchFiles() {
 		pluginsDev();
 		Reload();
 	});
+	watch(acfJsonFiles, {
+		interval: 1000,
+		usePolling: true,
+	}).on('change', function (path, stats) {
+		console.log(`File ${path} was changed`);
+		copyAcfJsonFiles();
+	});
 }
 
 const dev = series(
@@ -316,6 +339,7 @@ const dev = series(
 	webpackScriptsDev,
 	pluginsDev,
 	copyLanguagesDev,
+	copyAcfJsonFiles,
 	devServer
 );
 dev.displayName = 'dev';
@@ -408,6 +432,7 @@ const prod = series(
 	webpackScriptsProd,
 	pluginsProd,
 	copyLanguagesProd,
+	//copyAcfJsonFiles,
 	zipProd
 );
 prod.displayName = 'prod';
