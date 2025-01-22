@@ -9,5 +9,5 @@ if (!function_exists("talampaya_acf_hide_admin_menu_item")):
 	{
 		return false;
 	}
-	add_filter("acf/settings/show_admin", "talampaya_acf_hide_admin_menu_item");
+	//add_filter("acf/settings/show_admin", "talampaya_acf_hide_admin_menu_item");
 endif;
