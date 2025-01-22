@@ -14,11 +14,6 @@ require_once __DIR__ . "/inc/plugins.php";
 Timber\Timber::init();
 Timber::$dirname = ["templates", "views"];
 
-$paths = require_once __DIR__ . "/inc/utils/paths.php";
-$theme = wp_get_theme();
-$theme_version = $theme->get("Version");
-$theme_text_domain = $theme->get("Text Domain");
-
 if (class_exists("TalampayaBase")) {
 	new TalampayaBase();
 }

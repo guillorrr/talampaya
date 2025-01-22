@@ -16,7 +16,8 @@ class TalampayaSetup
 
 	public function setup()
 	{
-		global $theme_text_domain;
+		$theme = wp_get_theme();
+		$theme_text_domain = $theme->get("Text Domain");
 
 		$html5 = ["search-form", "comment-form", "comment-list", "gallery", "caption"];
 		$formats = ["aside", "image", "video", "quote", "link", "gallery", "audio"];

@@ -21,7 +21,9 @@ class TalampayaTimber extends Site
 
 	public function add_to_context(array $context): array
 	{
-		global $paths, $theme_version;
+		$theme = wp_get_theme();
+		$theme_version = $theme->get("Version");
+		$paths = require_once __DIR__ . "./../inc/utils/paths.php";
 
 		$context["foo"] = "bar";
 		//		$context["FACEBOOK_PIXEL_ID"] = $this->facebook_pixel_ids;
