@@ -10,6 +10,7 @@ require_once __DIR__ . "/core/TalampayaTimber.php";
 
 require_once __DIR__ . "/inc/utils/helpers.php";
 require_once __DIR__ . "/inc/plugins.php";
+require_once __DIR__ . "/inc/cli.php";
 
 Timber\Timber::init();
 Timber::$dirname = ["templates", "views"];
