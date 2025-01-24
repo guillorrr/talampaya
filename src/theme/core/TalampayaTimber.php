@@ -15,8 +15,25 @@ class TalampayaTimber extends Site
 		add_filter("timber/context", [$this, "add_to_context"]);
 		add_filter("timber/twig", [$this, "add_to_twig"]);
 		add_filter("timber/twig/environment/options", [$this, "update_twig_environment_options"]);
+		add_filter("timber/locations", [$this, "add_locations"]);
 
 		parent::__construct();
+	}
+
+	public function add_locations($paths)
+	{
+		$paths["atoms"] = [__DIR__ . "/../views/atoms"];
+		$paths["molecules"] = [__DIR__ . "/../views/molecules"];
+		$paths["organisms"] = [__DIR__ . "/../views/organisms"];
+		$paths["templates"] = [__DIR__ . "/../views/templates"];
+		$paths["macros"] = [__DIR__ . "/../views/macros"];
+		$paths["pages"] = [__DIR__ . "/../views/pages"];
+		$paths["layouts"] = [__DIR__ . "/../views/layouts"];
+		$paths["blocks"] = [__DIR__ . "/../views/blocks"];
+		$paths["components"] = [__DIR__ . "/../views/components"];
+		$paths["sections"] = [__DIR__ . "/../views/sections"];
+
+		return $paths;
 	}
 
 	public function add_to_context(array $context): array
