@@ -20,7 +20,7 @@
 	},
 	"scripts": {
 		"build": "NODE_ENV=production gulp prod",
-		"dev": "NODE_ENV=development gulp dev",
+		"dev": "NODE_ENV=development NODE_OPTIONS='--max-old-space-size=4096' gulp dev",
 		"webpack": "webpack --mode=development",
 		"lint:js": "eslint ./src --ext .js,.ts",
 		"lint:fix": "eslint ./src --ext .js,.ts --fix",
@@ -42,7 +42,7 @@
 		"docker:composer:update": "docker compose run --rm composer update",
 		"docker:composer:dump": "docker compose run --rm composer dump-autoload",
 		"docker:composer:remove": "rm -rf build/wp-content/vendor && rm build/composer.lock",
-		"wp:delete-posts": "POST_TYPE=page docker exec -it forcadell-wp wp post delete $(docker exec forcadell-wp wp post list --post_type=$POST_TYPE --format=ids --allow-root) --allow-root",
+		"wp:delete-posts": "CONTAINER_NAME=$(docker ps --filter 'name=wp*' --format '{{.Names}}') && POST_TYPE=${npm_config_post_type:-page} && docker exec -it $CONTAINER_NAME wp post delete $(docker exec $CONTAINER_NAME wp post list --post_type=$POST_TYPE --format=ids --allow-root) --force --allow-root",
 		"wp:make-pot": "node ./dev/scripts/make-pot.js",
 		"dev:create-block": "node ./dev/scripts/create-block.js",
 		"dev:create-patternlab-examples": "node ./dev/scripts/pl-make-twig-examples.js",
