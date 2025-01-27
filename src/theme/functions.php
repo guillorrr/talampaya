@@ -11,6 +11,7 @@ require_once __DIR__ . "/core/TalampayaTimber.php";
 require_once __DIR__ . "/inc/utils/helpers.php";
 require_once __DIR__ . "/inc/plugins.php";
 require_once __DIR__ . "/inc/cli.php";
+require_once __DIR__ . "/inc/imports/import.php";
 
 Timber\Timber::init();
 Timber::$dirname = ["templates", "views"];
@@ -35,6 +36,8 @@ if (class_exists("ACF")) {
 }
 
 $filters = talampaya_directory_iterator(__DIR__ . "/inc/filters");
-foreach ($filters as $f) {
-	require_once $f;
+if (!empty($filters)) {
+	foreach ($filters as $f) {
+		require_once $f;
+	}
 }
