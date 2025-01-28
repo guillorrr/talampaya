@@ -20,6 +20,14 @@ function talampaya_create_category($category_name)
 
 function talampaya_create_post($data, $category_id = null): WP_Error|int
 {
+	$author_id = null;
+	if (!empty($data["author_email"])) {
+		$author_id = talampaya_get_or_create_author($data["author_email"]);
+		if (is_wp_error($author_id)) {
+			return $author_id;
+		}
+	}
+
 	$post_data = [
 		"post_title" => $data["title"],
 		"post_content" => $data["content"],
@@ -34,6 +42,10 @@ function talampaya_create_post($data, $category_id = null): WP_Error|int
 
 	if ($category_id) {
 		$post_data["post_category"] = [$category_id];
+	}
+
+	if ($author_id) {
+		$post_data["post_author"] = $author_id;
 	}
 
 	add_filter("wp_insert_post_data", "talampaya_create_post_with_post_modified", PHP_INT_MAX, 2);
@@ -52,6 +64,38 @@ function talampaya_create_post_with_post_modified($data, $array)
 		$data["post_modified"] ?? get_date_from_gmt($data["post_modified_gmt"]);
 
 	return $data;
+}
+
+function talampaya_get_or_create_author($email): int|WP_Error
+{
+	if (empty($email)) {
+		return new WP_Error(
+			"missing_email",
+			"El correo electrónico es obligatorio para buscar o crear un autor."
+		);
+	}
+
+	$user = get_user_by("email", $email);
+	if ($user) {
+		return $user->ID;
+	}
+
+	$username = sanitize_user(current(explode("@", $email)));
+	$user_id = wp_create_user($username, wp_generate_password(), $email);
+
+	if (is_wp_error($user_id)) {
+		return new WP_Error(
+			"user_creation_failed",
+			"No se pudo crear el usuario: " . $user_id->get_error_message()
+		);
+	}
+
+	wp_update_user([
+		"ID" => $user_id,
+		"role" => "author",
+	]);
+
+	return $user_id;
 }
 
 function get_image_id_by_filename($filename)
