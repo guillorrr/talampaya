@@ -27,14 +27,31 @@ function talampaya_create_post($data, $category_id = null): WP_Error|int
 		"post_type" => $data["post_type"],
 		"post_name" => $data["post_slug"],
 		"post_date" => $data["post_date"],
+		"post_date_gmt" => $data["post_date"],
 		"post_modified" => $data["post_modified"],
+		"post_modified_gmt" => $data["post_modified"],
 	];
 
 	if ($category_id) {
 		$post_data["post_category"] = [$category_id];
 	}
 
-	return wp_insert_post($post_data);
+	add_filter("wp_insert_post_data", "talampaya_create_post_with_post_modified", PHP_INT_MAX, 2);
+	$post = wp_insert_post($post_data);
+	remove_filter("wp_insert_post_data", "talampaya_create_post_with_post_modified", PHP_INT_MAX);
+
+	return $post;
+}
+
+function talampaya_create_post_with_post_modified($data, $array)
+{
+	$data["post_modified"] = $array["post_modified"] ?? null;
+	$data["post_modified_gmt"] =
+		$array["post_modified_gmt"] ?? get_gmt_from_date($data["post_modified"]);
+	$data["post_modified"] =
+		$data["post_modified"] ?? get_date_from_gmt($data["post_modified_gmt"]);
+
+	return $data;
 }
 
 function get_image_id_by_filename($filename)
