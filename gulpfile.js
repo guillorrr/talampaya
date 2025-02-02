@@ -278,15 +278,19 @@ function copyModifiedThemeFile(filePath) {
 }
 
 function copyFontsDev() {
-	return src(fontsFiles).pipe(dest('./build/wp-content/themes/' + themeName + '/fonts'));
+	return src(fontsFiles, { encoding: false }).pipe(
+		dest('./build/wp-content/themes/' + themeName + '/fonts')
+	);
 }
 
 function copyImagesDev() {
-	return src(imagesFiles).pipe(dest('./build/wp-content/themes/' + themeName + '/images'));
+	return src(imagesFiles, { encoding: false }).pipe(
+		dest('./build/wp-content/themes/' + themeName + '/images')
+	);
 }
 
 function copyLanguagesDev() {
-	return src(languagesFiles)
+	return src(languagesFiles, { encoding: false })
 		.pipe(
 			rename(function (path) {
 				if (path.basename === 'talampaya') {
@@ -419,26 +423,26 @@ async function cleanProd() {
 }
 
 function copyThemeProd() {
-	return src(themeFiles)
+	return src(themeFiles, { encoding: false })
 		.pipe(replaceThemeName())
 		.pipe(renameFile())
 		.pipe(dest('./dist/themes/' + themeName));
 }
 
 function copyFontsProd() {
-	return src(fontsFiles)
+	return src(fontsFiles, { encoding: false })
 		.pipe(plumber({ errorHandler: onError }))
 		.pipe(dest('./dist/themes/' + themeName + '/fonts'));
 }
 
 function copyImagesProd() {
-	return src(imagesFiles)
+	return src(imagesFiles, { encoding: false })
 		.pipe(plumber({ errorHandler: onError }))
 		.pipe(dest('./dist/themes/' + themeName + '/images'));
 }
 
 function copyLanguagesProd() {
-	return src(['./src/theme/assets/languages/**'])
+	return src(['./src/theme/assets/languages/**'], { encoding: false })
 		.pipe(
 			rename(function (path) {
 				if (path.basename === 'talampaya') {
@@ -498,7 +502,7 @@ function patternlabTemplatesProd() {
 }
 
 function zipProd() {
-	return src('./dist/themes/' + themeName + '/**/*')
+	return src('./dist/themes/' + themeName + '/**/*', { encoding: false })
 		.pipe(zip.dest('./dist/' + themeName + '.zip'))
 		.on('end', () => {
 			log(pluginsGenerated);
@@ -537,7 +541,7 @@ function Backup() {
 		log(buildNotFound);
 		process.exit(1);
 	} else {
-		return src('./build/**/*')
+		return src('./build/**/*', { encoding: false })
 			.pipe(zip.dest('./backups/' + date + '.zip'))
 			.on('end', () => {
 				log(backupsGenerated);
