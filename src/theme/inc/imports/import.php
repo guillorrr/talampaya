@@ -98,22 +98,26 @@ function talampaya_get_or_create_author($email): int|WP_Error
 	return $user_id;
 }
 
-function get_image_id_by_filename($filename)
+function get_image_id_by_filename($filename, $debug = false): ?int
 {
 	global $wpdb;
 
 	$basename = basename($filename);
 
-	echo "Basename: " . $basename . "\n";
-	echo PHP_EOL;
+	if ($debug) {
+		echo "Basename: " . $basename . "\n";
+		echo PHP_EOL;
+	}
 
 	$sanitized_basename =
 		sanitize_file_name(pathinfo($basename, PATHINFO_FILENAME)) .
 		"." .
 		pathinfo($basename, PATHINFO_EXTENSION);
 
-	echo "Sanitized basename: " . $sanitized_basename . "\n";
-	echo PHP_EOL;
+	if ($debug) {
+		echo "Sanitized basename: " . $sanitized_basename . "\n";
+		echo PHP_EOL;
+	}
 
 	$query = "
         SELECT ID
@@ -129,16 +133,20 @@ function get_image_id_by_filename($filename)
 	return $image_id ? intval($image_id) : null;
 }
 
-function set_post_thumbnail_if_exists($post_id, $image_url, $title): void
+function set_post_thumbnail_if_exists($post_id, $image_url, $title, $debug = false): void
 {
 	if (!empty($image_url)) {
-		echo "Image URL: " . $image_url . "\n";
-		echo PHP_EOL;
+		if ($debug) {
+			echo "Image URL: " . $image_url . "\n";
+			echo PHP_EOL;
+		}
 
 		$filename = basename($image_url);
 
-		echo "Filename: " . $filename . "\n";
-		echo PHP_EOL;
+		if ($debug) {
+			echo "Filename: " . $filename . "\n";
+			echo PHP_EOL;
+		}
 
 		$image_id = get_image_id_by_filename($filename);
 
@@ -147,8 +155,10 @@ function set_post_thumbnail_if_exists($post_id, $image_url, $title): void
 		} else {
 			$image_id = media_sideload_image($image_url, $post_id, $title, "id");
 
-			echo "Image ID: " . $image_id . "\n";
-			echo PHP_EOL;
+			if ($debug) {
+				echo "Image ID: " . $image_id . "\n";
+				echo PHP_EOL;
+			}
 
 			if (!is_wp_error($image_id)) {
 				set_post_thumbnail($post_id, $image_id);

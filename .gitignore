@@ -4,6 +4,7 @@ coverage
 build
 certs/*
 patternlab/public/*
+backups/*
 logs/*.xt
 .idea
 .vscode
