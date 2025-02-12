@@ -43,11 +43,13 @@
 		"docker:composer:dump": "docker compose run --rm composer dump-autoload",
 		"docker:composer:remove": "rm -rf build/wp-content/vendor && rm build/composer.lock",
 		"wp:delete-posts": "CONTAINER_NAME=$(docker ps --filter 'name=wp*' --format '{{.Names}}') && POST_TYPE=${npm_config_post_type:-page} && docker exec -it $CONTAINER_NAME wp post delete $(docker exec $CONTAINER_NAME wp post list --post_type=$POST_TYPE --format=ids --allow-root) --force --allow-root",
+		"wp:delete-terms": "CONTAINER_NAME=$(docker ps --filter 'name=wp*' --format '{{.Names}}') && TAXONOMY=${npm_config_taxonomy:-category} && docker exec -it $CONTAINER_NAME wp term delete $TAXONOMY $(docker exec $CONTAINER_NAME wp term list $TAXONOMY --format=ids --allow-root) --allow-root",
 		"wp:backup": "CONTAINER_NAME=$(docker ps --filter 'name=wp*' --format '{{.Names}}') && docker exec $CONTAINER_NAME wp db export - --allow-root > backups/db_backup_$(date +\"%Y%m%d_%H%M%S\").sql",
 		"wp:make-pot": "node ./dev/scripts/make-pot.js",
 		"dev:create-block": "node ./dev/scripts/create-block.js",
 		"dev:create-patternlab-examples": "node ./dev/scripts/pl-make-twig-examples.js",
 		"clean:build": "rm -rf build/*",
+		"clean:themes": "rm -rf build/wp-content/themes/*",
 		"clean:node": "rm -rf node_modules && rm package-lock.json",
 		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log"
 	},
