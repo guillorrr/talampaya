@@ -167,20 +167,21 @@ function set_post_thumbnail_if_exists($post_id, $image_url, $title, $debug = fal
 	}
 }
 
-function set_image_on_custom_field($post_id, $image_url, $custom_field, $title = null): void
+function set_image_on_custom_field($post_id, $image_url, $custom_field, $title = null): bool
 {
 	if (!empty($image_url)) {
 		$filename = basename($image_url);
 		$image_id = get_image_id_by_filename($filename);
 
 		if ($image_id) {
-			update_field($custom_field, $image_id, $post_id);
+			return update_field($custom_field, $image_id, $post_id);
 		} else {
+			$post_id = $post_id == "option" ? 0 : $post_id;
 			$image_id = media_sideload_image($image_url, $post_id, $title, "id");
-
 			if (!is_wp_error($image_id)) {
-				update_field($custom_field, $image_id, $post_id);
+				return update_field($custom_field, $image_id, $post_id);
 			}
 		}
 	}
+	return false;
 }
