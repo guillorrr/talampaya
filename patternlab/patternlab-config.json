@@ -129,9 +129,18 @@
 			"alterTwigEnv": [
 				{
 					"file": "alter-twig.php",
-					"functions": ["addCustomExtension"]
+					"functions": ["addCustomExtensions", "addCustomFunctions", "addCustomFilters"]
 				}
 			]
+		}
+	},
+	"plugins": {
+		"@tonyisworking/plugin-node-faker": {
+			"enabled": true,
+			"initialized": false,
+			"options": {
+				"tabsToAdd": []
+			}
 		}
 	},
 	"uikits": [
