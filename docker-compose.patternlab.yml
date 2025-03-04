@@ -15,4 +15,4 @@ services:
             UI_PORT: ${PATTERNLAB_BROWSERSYNC_UI_PORT:-4002}
         volumes:
             - './patternlab:/app/patternlab'
-        command: /bin/sh -c "npm install && npm run start"
+        command: /bin/sh -c "composer install && npm install && npm run start"
