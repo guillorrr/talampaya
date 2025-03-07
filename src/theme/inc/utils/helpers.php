@@ -627,6 +627,28 @@ function get_related_posts(
 }
 
 // -----------------------------------------------------------------------------
+// Get Posts by Meta Key
+// -----------------------------------------------------------------------------
+function get_posts_by_meta_key(
+	string $key,
+	string $post_type = "post",
+	int $quantity = 1,
+	string $sort = "ASC",
+	string $order_by = "meta_value",
+	$post__not_in = []
+): array|WP_Post|null {
+	$args = [
+		"post_type" => $post_type,
+		"posts_per_page" => $quantity,
+		"meta_key" => $key,
+		"orderby" => $order_by,
+		"order" => $sort,
+		"post__not_in" => $post__not_in,
+	];
+	return get_posts($args);
+}
+
+// -----------------------------------------------------------------------------
 // Get Block Content from Custom Path
 // -----------------------------------------------------------------------------
 function get_block_from_page_by_path(string $block_name, string $path = "home"): string

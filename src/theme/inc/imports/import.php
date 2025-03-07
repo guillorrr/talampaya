@@ -176,7 +176,7 @@ function set_image_on_custom_field($post_id, $image_url, $custom_field, $title =
 		if ($image_id) {
 			return update_field($custom_field, $image_id, $post_id);
 		} else {
-			$post_id = $post_id == "option" ? 0 : $post_id;
+			$post_id = is_int($post_id) ? $post_id : 0;
 			$image_id = media_sideload_image($image_url, $post_id, $title, "id");
 			if (!is_wp_error($image_id)) {
 				return update_field($custom_field, $image_id, $post_id);
