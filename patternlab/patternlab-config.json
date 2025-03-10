@@ -141,6 +141,16 @@
 			"options": {
 				"tabsToAdd": []
 			}
+		},
+		"patternlab-pattern-data": {
+			"enabled": true
+		},
+		"@pattern-lab/plugin-tab": {
+			"enabled": true,
+			"initialized": false,
+			"options": {
+				"tabsToAdd": ["scss", "js", "json"]
+			}
 		}
 	},
 	"uikits": [

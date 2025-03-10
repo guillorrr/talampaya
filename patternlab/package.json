@@ -23,10 +23,12 @@
 		"@pattern-lab/cli": "^6.1.0",
 		"@pattern-lab/core": "^6.1.0",
 		"@pattern-lab/engine-twig-php": "6.0.1",
+		"@pattern-lab/plugin-tab": "^6.1.0",
 		"@pattern-lab/starterkit-twig-demo": "^6.1.0",
 		"@pattern-lab/uikit-workshop": "^6.1.0",
 		"@tonyisworking/plugin-node-faker": "^2.0.2",
 		"browser-sync": "^3.0.2",
+		"patternlab-pattern-data": "^1.0.0",
 		"sass": "^1.77.6"
 	},
 	"devDependencies": {
