@@ -68,6 +68,8 @@ class TalampayaFactory
 			$sidebars = $this->sidebars;
 		}
 		foreach ($sidebars as $sidebar) {
+			$sidebar["name"] = esc_html__($sidebar["name"], "talampaya");
+			$sidebar["description"] = esc_html__($sidebar["description"], "talampaya");
 			register_sidebar($sidebar);
 		}
 	}
