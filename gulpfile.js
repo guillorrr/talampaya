@@ -89,6 +89,11 @@ const patternlabFiles = [
 
 const patternlabTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
 
+const patternlabJson = [
+	'./patternlab/source/_data/**/*.json',
+	'./patternlab/source/_patterns/pages/*.json',
+];
+
 /* -------------------------------------------------------------------------------------------------
 Environment Tasks
 -------------------------------------------------------------------------------------------------- */
@@ -208,6 +213,18 @@ function copyPatternlabFiles() {
 	} else {
 		return src(patternlabFiles, { encoding: false }).pipe(
 			dest('./build/wp-content/themes/' + themeName + '/views')
+		);
+	}
+}
+
+function copyPatternlabJson() {
+	console.log('Copying Patternlab JSON files...');
+	if (!fs.existsSync('./patternlab/source/_data')) {
+		log('No Patternlab data dir found');
+		process.exit(1);
+	} else {
+		return src(patternlabJson, { encoding: false }).pipe(
+			dest('./build/wp-content/themes/' + themeName + '/inc/mockups')
 		);
 	}
 }
@@ -424,6 +441,7 @@ const dev = series(
 	copyLanguagesDev,
 	copyAcfJsonFiles,
 	copyPatternlabFiles,
+	copyPatternlabJson,
 	copyPatternlabTemplates,
 	devServer
 );
