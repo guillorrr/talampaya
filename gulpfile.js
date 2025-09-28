@@ -671,6 +671,7 @@ function watchFiles() {
 		console.log(`File ${path} was changed`);
 		devCopyPatterns();
 		devCopyPatternsTemplates();
+		devCopyJson();
 		Reload();
 	});
 }
