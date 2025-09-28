@@ -24,77 +24,6 @@ Theme Name
 const themeName = process.env.APP_NAME.toLowerCase() || 'talampaya';
 
 /* -------------------------------------------------------------------------------------------------
-Styles Bundles
--------------------------------------------------------------------------------------------------- */
-const frontendStyles = [
-	'./src/theme/assets/styles/main.scss',
-	'./patternlab/source/css/style.scss',
-];
-
-const backendStyles = [
-	'./src/theme/assets/styles/backend-*.scss',
-	'./src/theme/assets/styles/backend-*.css',
-];
-
-/* -------------------------------------------------------------------------------------------------
-JavaScript Files
--------------------------------------------------------------------------------------------------- */
-const scriptsFiles = [
-	'./src/theme/assets/scripts/scripts.js',
-	'./patternlab/source/js/main.js',
-	'./src/theme/assets/scripts/backend.js',
-];
-
-/* -------------------------------------------------------------------------------------------------
-Assets
--------------------------------------------------------------------------------------------------- */
-const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
-
-const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Theme files
--------------------------------------------------------------------------------------------------- */
-const themeFiles = [
-	'./src/theme/**',
-	'!./src/theme/assets/**',
-	'!./src/theme/blocks/**/*.scss',
-	'!./src/theme/blocks/**/*.js',
-	'!./src/theme/acf-json/**/*.json',
-];
-
-/* -------------------------------------------------------------------------------------------------
-ACF JSON files
--------------------------------------------------------------------------------------------------- */
-const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Plugin files
--------------------------------------------------------------------------------------------------- */
-const pluginsFiles = ['./src/plugins/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Languages files
--------------------------------------------------------------------------------------------------- */
-const languagesFiles = ['./src/theme/assets/languages/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Patternlab files
--------------------------------------------------------------------------------------------------- */
-const patternlabFiles = [
-	'./patternlab/source/_patterns/**/*.twig',
-	'!./patternlab/source/_patterns/templates/**',
-	'!./patternlab/source/_patterns/pages/**',
-];
-
-const patternlabTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
-
-const patternlabJson = [
-	'./patternlab/source/_data/**/*.json',
-	'./patternlab/source/_patterns/pages/*.json',
-];
-
-/* -------------------------------------------------------------------------------------------------
 Environment Tasks
 -------------------------------------------------------------------------------------------------- */
 
@@ -195,6 +124,12 @@ function Reload() {
 	browserSync.reload();
 }
 
+/* -------------------------------------------------------------------------------------------------
+ACF Json
+-------------------------------------------------------------------------------------------------- */
+
+const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
+
 function copyAcfJsonFiles() {
 	console.log('Copying ACF Json files...');
 	if (!fs.existsSync('./src/theme/acf-json')) {
@@ -204,6 +139,16 @@ function copyAcfJsonFiles() {
 		return src(acfJsonFiles, { encoding: false }).pipe(dest('./src/theme/acf-json'));
 	}
 }
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Twig files
+-------------------------------------------------------------------------------------------------- */
+
+const patternlabFiles = [
+	'./patternlab/source/_patterns/**/*.twig',
+	'!./patternlab/source/_patterns/templates/**',
+	'!./patternlab/source/_patterns/pages/**',
+];
 
 function copyPatternlabFiles() {
 	console.log('Copying Patternlab files...');
@@ -217,6 +162,19 @@ function copyPatternlabFiles() {
 	}
 }
 
+function patternlabProd() {
+	return src(patternlabFiles).pipe(dest('./dist/themes/' + themeName + '/views'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Json files
+-------------------------------------------------------------------------------------------------- */
+
+const patternlabJson = [
+	'./patternlab/source/_data/**/*.json',
+	'./patternlab/source/_patterns/pages/*.json',
+];
+
 function copyPatternlabJson() {
 	console.log('Copying Patternlab JSON files...');
 	if (!fs.existsSync('./patternlab/source/_data')) {
@@ -228,6 +186,12 @@ function copyPatternlabJson() {
 		);
 	}
 }
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Templates Twig files
+-------------------------------------------------------------------------------------------------- */
+
+const patternlabTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
 
 function wrapWithTemplate(content) {
 	// Verificar si el contenido ya tiene una directiva extends
@@ -277,6 +241,42 @@ function copyPatternlabTemplates() {
 	}
 }
 
+function patternlabTemplatesProd() {
+	return src(patternlabTemplates)
+		.pipe(
+			through2.obj(function (file, _, cb) {
+				if (file.isBuffer()) {
+					const fileContent = file.contents.toString();
+
+					// Detectar si ya tiene una directiva extends
+					const hasExtends = fileContent.trim().startsWith('{% extends');
+
+					// Solo aplicamos la transformación si es necesario
+					const transformedContent = hasExtends
+						? fileContent
+						: wrapWithTemplate(fileContent);
+
+					// Actualizar el contenido del archivo
+					file.contents = Buffer.from(transformedContent);
+				}
+				cb(null, file);
+			})
+		)
+		.pipe(dest('./dist/themes/' + themeName + '/views/templates'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Theme Files
+-------------------------------------------------------------------------------------------------- */
+
+const themeFiles = [
+	'./src/theme/**',
+	'!./src/theme/assets/**',
+	'!./src/theme/blocks/**/*.scss',
+	'!./src/theme/blocks/**/*.js',
+	'!./src/theme/acf-json/**/*.json',
+];
+
 function copyThemeDev() {
 	console.log('Copying theme files..., themeName: ' + themeName);
 	if (!fs.existsSync('./build')) {
@@ -310,17 +310,54 @@ function copyModifiedThemeFile(filePath) {
 	}
 }
 
+function copyThemeProd() {
+	return src(themeFiles, { encoding: false })
+		.pipe(replaceThemeName())
+		.pipe(renameFile())
+		.pipe(dest('./dist/themes/' + themeName));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Fonts
+-------------------------------------------------------------------------------------------------- */
+
+const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
+
 function copyFontsDev() {
 	return src(fontsFiles, { encoding: false }).pipe(
 		dest('./build/wp-content/themes/' + themeName + '/fonts')
 	);
 }
 
+function copyFontsProd() {
+	return src(fontsFiles, { encoding: false })
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(dest('./dist/themes/' + themeName + '/fonts'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Images
+-------------------------------------------------------------------------------------------------- */
+
+const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
+
 function copyImagesDev() {
 	return src(imagesFiles, { encoding: false }).pipe(
 		dest('./build/wp-content/themes/' + themeName + '/images')
 	);
 }
+
+function copyImagesProd() {
+	return src(imagesFiles, { encoding: false })
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(dest('./dist/themes/' + themeName + '/images'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Languages
+-------------------------------------------------------------------------------------------------- */
+
+const languagesFiles = ['./src/theme/assets/languages/**'];
 
 function copyLanguagesDev() {
 	return src(languagesFiles, { encoding: false })
@@ -334,6 +371,33 @@ function copyLanguagesDev() {
 		.pipe(replaceThemeName())
 		.pipe(dest('./build/wp-content/themes/' + themeName + '/languages'));
 }
+
+function copyLanguagesProd() {
+	return src(['./src/theme/assets/languages/**'], { encoding: false })
+		.pipe(
+			rename(function (path) {
+				if (path.basename === 'talampaya') {
+					path.basename = themeName;
+				}
+			})
+		)
+		.pipe(replaceThemeName())
+		.pipe(dest('./dist/themes/' + themeName + '/languages'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Styles
+-------------------------------------------------------------------------------------------------- */
+
+const frontendStyles = [
+	'./src/theme/assets/styles/main.scss',
+	'./patternlab/source/css/style.scss',
+];
+
+const backendStyles = [
+	'./src/theme/assets/styles/backend-*.scss',
+	'./src/theme/assets/styles/backend-*.css',
+];
 
 function stylesDev() {
 	console.log('Compiling styles...');
@@ -358,15 +422,63 @@ function backendStylesDev() {
 		.pipe(browserSync.stream());
 }
 
+function stylesProd() {
+	return src(frontendStyles)
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('style.css'))
+		.pipe(replace('../../', './'))
+		.pipe(replaceThemeName())
+		.pipe(dest('./dist/themes/' + themeName));
+}
+
+function backendStylesProd() {
+	return src(backendStyles)
+		.pipe(plumber({ errorHandler: onError }))
+		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(concat('backend-styles.css'))
+		.pipe(replace('../../', './'))
+		.pipe(dest('./dist/themes/' + themeName + '/css'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Scripts
+-------------------------------------------------------------------------------------------------- */
+
+const scriptsFiles = [
+	'./src/theme/assets/scripts/scripts.js',
+	'./patternlab/source/js/main.js',
+	'./src/theme/assets/scripts/backend.js',
+];
+
 function webpackScriptsDev() {
 	return src('.')
 		.pipe(webpack(require('./webpack.config.js')))
 		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
 }
 
+function webpackScriptsProd() {
+	return src('.')
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(dest('./dist/themes/' + themeName + '/js'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Plugins
+-------------------------------------------------------------------------------------------------- */
+
+const pluginsFiles = ['./src/plugins/**'];
+
 function pluginsDev() {
 	return src(pluginsFiles).pipe(dest('./build/wp-content/plugins'));
 }
+
+function pluginsProd() {
+	return src(pluginsFiles).pipe(dest('./dist/plugins'));
+}
+
+/* -------------------------------------------------------------------------------------------------
+Watch Files
+-------------------------------------------------------------------------------------------------- */
 
 function watchFiles() {
 	watch(frontendStyles.concat(backendStyles), {
@@ -454,94 +566,6 @@ Production Tasks
 -------------------------------------------------------------------------------------------------- */
 async function cleanProd() {
 	await del(['./dist/*']);
-}
-
-function copyThemeProd() {
-	return src(themeFiles, { encoding: false })
-		.pipe(replaceThemeName())
-		.pipe(renameFile())
-		.pipe(dest('./dist/themes/' + themeName));
-}
-
-function copyFontsProd() {
-	return src(fontsFiles, { encoding: false })
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(dest('./dist/themes/' + themeName + '/fonts'));
-}
-
-function copyImagesProd() {
-	return src(imagesFiles, { encoding: false })
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(dest('./dist/themes/' + themeName + '/images'));
-}
-
-function copyLanguagesProd() {
-	return src(['./src/theme/assets/languages/**'], { encoding: false })
-		.pipe(
-			rename(function (path) {
-				if (path.basename === 'talampaya') {
-					path.basename = themeName;
-				}
-			})
-		)
-		.pipe(replaceThemeName())
-		.pipe(dest('./dist/themes/' + themeName + '/languages'));
-}
-
-function stylesProd() {
-	return src(frontendStyles)
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('style.css'))
-		.pipe(replace('../../', './'))
-		.pipe(replaceThemeName())
-		.pipe(dest('./dist/themes/' + themeName));
-}
-
-function backendStylesProd() {
-	return src(backendStyles)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('backend-styles.css'))
-		.pipe(replace('../../', './'))
-		.pipe(dest('./dist/themes/' + themeName + '/css'));
-}
-
-function webpackScriptsProd() {
-	return src('.')
-		.pipe(webpack(require('./webpack.config.js')))
-		.pipe(dest('./dist/themes/' + themeName + '/js'));
-}
-
-function pluginsProd() {
-	return src(pluginsFiles).pipe(dest('./dist/plugins'));
-}
-
-function patternlabProd() {
-	return src(patternlabFiles).pipe(dest('./dist/themes/' + themeName + '/views'));
-}
-
-function patternlabTemplatesProd() {
-	return src(patternlabTemplates)
-		.pipe(
-			through2.obj(function (file, _, cb) {
-				if (file.isBuffer()) {
-					const fileContent = file.contents.toString();
-
-					// Detectar si ya tiene una directiva extends
-					const hasExtends = fileContent.trim().startsWith('{% extends');
-
-					// Solo aplicamos la transformación si es necesario
-					const transformedContent = hasExtends
-						? fileContent
-						: wrapWithTemplate(fileContent);
-
-					// Actualizar el contenido del archivo
-					file.contents = Buffer.from(transformedContent);
-				}
-				cb(null, file);
-			})
-		)
-		.pipe(dest('./dist/themes/' + themeName + '/views/templates'));
 }
 
 function zipProd() {
