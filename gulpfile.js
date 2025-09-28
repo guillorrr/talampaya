@@ -213,13 +213,20 @@ function copyPatternlabFiles() {
 }
 
 function wrapWithTemplate(content) {
-	const template = `{% extends "layouts/base.twig" %}
+	// Verificar si el contenido ya tiene una directiva extends
+	if (content.trim().startsWith('{% extends')) {
+		// Si ya extiende una plantilla, no lo envolvemos
+		return content;
+	} else {
+		// Si no tiene extends, aplicamos el wrapper
+		const template = `{% extends "layouts/base.twig" %}
 
 {% block content %}
 ###CONTENT###
 {% endblock content %}
 `;
-	return template.replace('###CONTENT###', content);
+		return template.replace('###CONTENT###', content);
+	}
 }
 
 function copyPatternlabTemplates() {
@@ -234,7 +241,16 @@ function copyPatternlabTemplates() {
 				through2.obj(function (file, _, cb) {
 					if (file.isBuffer()) {
 						const fileContent = file.contents.toString();
-						const transformedContent = wrapWithTemplate(fileContent);
+
+						// Primero detectamos si ya tiene una directiva extends
+						const hasExtends = fileContent.trim().startsWith('{% extends');
+
+						// Solo aplicamos la transformación si es necesario
+						const transformedContent = hasExtends
+							? fileContent
+							: wrapWithTemplate(fileContent);
+
+						// Actualizar el contenido del archivo
 						file.contents = Buffer.from(transformedContent);
 					}
 					cb(null, file);
@@ -492,7 +508,16 @@ function patternlabTemplatesProd() {
 			through2.obj(function (file, _, cb) {
 				if (file.isBuffer()) {
 					const fileContent = file.contents.toString();
-					const transformedContent = wrapWithTemplate(fileContent);
+
+					// Detectar si ya tiene una directiva extends
+					const hasExtends = fileContent.trim().startsWith('{% extends');
+
+					// Solo aplicamos la transformación si es necesario
+					const transformedContent = hasExtends
+						? fileContent
+						: wrapWithTemplate(fileContent);
+
+					// Actualizar el contenido del archivo
 					file.contents = Buffer.from(transformedContent);
 				}
 				cb(null, file);
