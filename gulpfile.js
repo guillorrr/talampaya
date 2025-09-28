@@ -270,21 +270,20 @@ function transformTemplates() {
 	});
 }
 
-function processTemplates(isDev = true) {
+function copyPatternlabTemplates() {
 	return copyFiles(patternlabTemplates, '/views/templates', {
-		isDev,
-		checkDir: isDev ? './patternlab/source/_patterns/templates' : null,
+		isDev: true,
+		checkDir: './patternlab/source/_patterns/templates',
 		transforms: [transformTemplates()],
-		extraMessage: 'and transforming Patternlab Templates',
 	});
 }
 
-function copyPatternlabTemplates() {
-	return processTemplates(true);
-}
-
 function patternlabTemplatesProd() {
-	return processTemplates(false);
+	return copyFiles(patternlabTemplates, '/views/templates', {
+		isDev: false,
+		checkDir: './patternlab/source/_patterns/templates',
+		transforms: [transformTemplates()],
+	});
 }
 
 /* -------------------------------------------------------------------------------------------------
@@ -300,16 +299,17 @@ const themeFiles = [
 ];
 
 function copyThemeDev() {
-	console.log('Copying theme files..., themeName: ' + themeName);
-	if (!fs.existsSync('./build')) {
-		log(buildNotFound);
-		process.exit(1);
-	} else {
-		return src(themeFiles, { encoding: false })
-			.pipe(gulpIf(isNotZip, replaceThemeName()))
-			.pipe(gulpIf(isNotZip, renameFile()))
-			.pipe(dest('./build/wp-content/themes/' + themeName));
-	}
+	return copyFiles(themeFiles, '', {
+		isDev: true,
+		transforms: [gulpIf(isNotZip, replaceThemeName()), gulpIf(isNotZip, renameFile())],
+	});
+}
+
+function copyThemeProd() {
+	return copyFiles(themeFiles, '', {
+		isDev: false,
+		transforms: [replaceThemeName(), renameFile()],
+	});
 }
 
 function copyModifiedThemeFile(filePath) {
@@ -330,13 +330,6 @@ function copyModifiedThemeFile(filePath) {
 				.pipe(dest(destination));
 		}
 	}
-}
-
-function copyThemeProd() {
-	return src(themeFiles, { encoding: false })
-		.pipe(replaceThemeName())
-		.pipe(renameFile())
-		.pipe(dest('./dist/themes/' + themeName));
 }
 
 /* -------------------------------------------------------------------------------------------------
