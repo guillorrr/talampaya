@@ -1,1 +1,5 @@
-<a href="{{ link['pages-homepage'] }}"><img src="../../images/logo.png" width="350" height="100" class="logo" alt="Logo Alt Text" /></a>
+<a href="{{ link.homepage|default(link["pages-homepage"]) }}">
+	{% include "@atoms/images/image.twig" with {
+		img: { src: "../../images/logo.png", alt: "Logo Alt Text", width: "350", height: "350" }
+	} %}
+</a>

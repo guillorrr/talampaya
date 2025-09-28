@@ -1,1 +1,3 @@
-<img src="{{img.avatar.src}}" width="{{img.avatar.width}}" height="{{img.avatar.height}}" alt="Avatar" />
+{% include "@atoms/images/image.twig" with {
+	img: { src: img.avatar.src, alt: "Avatar", width: img.avatar.width, height: img.avatar.height }
+} %}
