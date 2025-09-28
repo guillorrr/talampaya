@@ -231,12 +231,95 @@ const patternsJson = [
 	'./patternlab/source/_patterns/pages/*.json',
 ];
 
+// Función auxiliar para procesar objetos JSON (declarada fuera para evitar inner-declarations)
+function processJsonObject(obj) {
+	if (!obj || typeof obj !== 'object') return;
+
+	// Si es un array, procesamos cada elemento
+	if (Array.isArray(obj)) {
+		obj.forEach(item => processJsonObject(item));
+		return;
+	}
+
+	// Iteramos por las propiedades del objeto
+	for (const key in obj) {
+		// Si el valor es un objeto o array, procesamos recursivamente
+		if (obj[key] && typeof obj[key] === 'object') {
+			processJsonObject(obj[key]);
+		}
+		// Si es una propiedad src o href y su valor es un string
+		else if ((key === 'src' || key === 'href') && typeof obj[key] === 'string') {
+			const value = obj[key];
+
+			// Verificamos que no comience con http o https
+			if (!value.match(/^https?:\/\//)) {
+				// Eliminamos patrones como "../../" o "./" del inicio
+				let cleanPath = value.replace(/^(?:\.\.\/)+|^\.\//, '');
+
+				// Agregamos el prefijo de la URL del tema de WordPress
+				obj[key] = `<?php echo get_template_directory_uri(); ?>/${cleanPath}`;
+				console.log(`Transformed URL: ${value} -> ${obj[key]}`);
+			}
+		}
+	}
+}
+
+function transformJsonUrls() {
+	console.log('Iniciando transformación de URLs en archivos JSON');
+	return through2.obj(function (file, encoding, callback) {
+		console.log(`Procesando archivo: ${file.path}`);
+
+		if (file.isBuffer()) {
+			try {
+				// Convertir el contenido del archivo a string
+				let content = file.contents.toString(encoding);
+
+				// Verificar si el contenido parece ser JSON válido
+				if (!content.trim().startsWith('{') && !content.trim().startsWith('[')) {
+					console.log(`El archivo no parece contener JSON válido: ${file.path}`);
+					this.push(file);
+					return callback();
+				}
+
+				// Parsear el JSON
+				let jsonData = JSON.parse(content);
+				console.log(`JSON parseado correctamente: ${file.path}`);
+
+				// Procesar el objeto JSON con la función externa
+				processJsonObject(jsonData);
+
+				// Convertir de nuevo a string con formato
+				const newContent = JSON.stringify(jsonData, null, 2);
+
+				// Actualizar el contenido del archivo
+				file.contents = Buffer.from(newContent, encoding);
+
+				console.log(`JSON URLs transformadas en: ${file.path}`);
+			} catch (error) {
+				console.error(`Error procesando archivo JSON: ${file.path}`, error.message);
+			}
+		} else {
+			console.log(`El archivo no es un buffer: ${file.path}`);
+		}
+
+		this.push(file);
+		callback();
+	});
+}
+
 function devCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', './patternlab/source/_data');
+	return copyFiles(patternsJson, '/inc/mockups', {
+		checkDir: './patternlab/source/_data',
+		transforms: [transformJsonUrls()],
+		extraMessage: 'and transforming JSON URLs',
+	});
 }
 
 function prodCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', './patternlab/source/_data');
+	return copyFiles(patternsJson, '/inc/mockups', {
+		isDev: false,
+		transforms: [transformJsonUrls()],
+	});
 }
 
 /* -------------------------------------------------------------------------------------------------
