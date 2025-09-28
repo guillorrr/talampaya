@@ -233,6 +233,10 @@ const patternsJson = [
 
 // Función auxiliar para procesar objetos JSON (declarada fuera para evitar inner-declarations)
 function processJsonObject(obj) {
+	const domain = process.env.DOMAIN || 'localhost';
+	const protocol = process.env.PROTOCOL || 'http';
+	const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
+
 	if (!obj || typeof obj !== 'object') return;
 
 	// Si es un array, procesamos cada elemento
@@ -257,7 +261,7 @@ function processJsonObject(obj) {
 				let cleanPath = value.replace(/^(?:\.\.\/)+|^\.\//, '');
 
 				// Agregamos el prefijo de la URL del tema de WordPress
-				obj[key] = `<?php echo get_template_directory_uri(); ?>/${cleanPath}`;
+				obj[key] = `${themeUrl}/${cleanPath}`;
 				console.log(`Transformed URL: ${value} -> ${obj[key]}`);
 			}
 		}
