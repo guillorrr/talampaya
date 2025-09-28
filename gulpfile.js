@@ -130,11 +130,21 @@ ACF Json
 
 const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
 
-function copyAcfJsonFiles() {
+function devCopyAcfJson() {
 	return copyFiles(acfJsonFiles, '', {
 		checkDir: './src/theme/acf-json',
 		customDestPath: './src/theme/acf-json',
 		extraMessage: 'ACF Json files',
+	});
+}
+
+function prodCopyAcfJson() {
+	return copyFiles(acfJsonFiles, '', {
+		checkDir: './src/theme/acf-json',
+		customDestPath: './src/theme/acf-json',
+		extraMessage: 'ACF Json files',
+		isDev: false,
+		skipPlumber: true,
 	});
 }
 
@@ -198,42 +208,42 @@ function copyFiles(sourceFiles, destinationPath, options = {}) {
 Patternlab Twig files
 -------------------------------------------------------------------------------------------------- */
 
-const patternlabFiles = [
+const patternsTwig = [
 	'./patternlab/source/_patterns/**/*.twig',
 	'!./patternlab/source/_patterns/templates/**',
 	'!./patternlab/source/_patterns/pages/**',
 ];
 
-function copyPatternlabFiles() {
-	return copyFiles(patternlabFiles, '/views', './patternlab/source/_patterns');
+function devCopyPatterns() {
+	return copyFiles(patternsTwig, '/views', './patternlab/source/_patterns');
 }
 
-function patternlabProd() {
-	return copyFiles(patternlabFiles, '/views');
+function prodCopyPatterns() {
+	return copyFiles(patternsTwig, '/views', './patternlab/source/_patterns');
 }
 
 /* -------------------------------------------------------------------------------------------------
 Patternlab Json files
 -------------------------------------------------------------------------------------------------- */
 
-const patternlabJson = [
+const patternsJson = [
 	'./patternlab/source/_data/**/*.json',
 	'./patternlab/source/_patterns/pages/*.json',
 ];
 
-function copyPatternlabJson() {
-	return copyFiles(patternlabJson, '/inc/mockups', './patternlab/source/_data');
+function devCopyJson() {
+	return copyFiles(patternsJson, '/inc/mockups', './patternlab/source/_data');
 }
 
-function patternlabJsonProd() {
-	return copyFiles(patternlabJson, '/inc/mockups');
+function prodCopyJson() {
+	return copyFiles(patternsJson, '/inc/mockups', './patternlab/source/_data');
 }
 
 /* -------------------------------------------------------------------------------------------------
 Patternlab Templates Twig files
 -------------------------------------------------------------------------------------------------- */
 
-const patternlabTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
+const patternsTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
 
 function wrapWithTemplate(content) {
 	// Verificar si el contenido ya tiene una directiva extends
@@ -270,16 +280,16 @@ function transformTemplates() {
 	});
 }
 
-function copyPatternlabTemplates() {
-	return copyFiles(patternlabTemplates, '/views/templates', {
+function devCopyPatternsTemplates() {
+	return copyFiles(patternsTemplates, '/views/templates', {
 		isDev: true,
 		checkDir: './patternlab/source/_patterns/templates',
 		transforms: [transformTemplates()],
 	});
 }
 
-function patternlabTemplatesProd() {
-	return copyFiles(patternlabTemplates, '/views/templates', {
+function prodCopyPatternsTemplates() {
+	return copyFiles(patternsTemplates, '/views/templates', {
 		isDev: false,
 		checkDir: './patternlab/source/_patterns/templates',
 		transforms: [transformTemplates()],
@@ -298,14 +308,14 @@ const themeFiles = [
 	'!./src/theme/acf-json/**/*.json',
 ];
 
-function copyThemeDev() {
+function devCopyTheme() {
 	return copyFiles(themeFiles, '', {
 		isDev: true,
 		transforms: [gulpIf(isNotZip, replaceThemeName()), gulpIf(isNotZip, renameFile())],
 	});
 }
 
-function copyThemeProd() {
+function prodCopyTheme() {
 	return copyFiles(themeFiles, '', {
 		isDev: false,
 		transforms: [replaceThemeName(), renameFile()],
@@ -338,12 +348,12 @@ Fonts
 
 const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
 
-function copyFontsDev() {
-	return copyFiles(imagesFiles, '/fonts', { isDev: true });
+function devCopyFonts() {
+	return copyFiles(fontsFiles, '/fonts', { isDev: true });
 }
 
-function copyFontsProd() {
-	return copyFiles(imagesFiles, '/fonts', { isDev: false });
+function prodCopyFonts() {
+	return copyFiles(fontsFiles, '/fonts', { isDev: false });
 }
 
 /* -------------------------------------------------------------------------------------------------
@@ -352,11 +362,11 @@ Images
 
 const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
 
-function copyImagesDev() {
+function devCopyImages() {
 	return copyFiles(imagesFiles, '/images', { isDev: true });
 }
 
-function copyImagesProd() {
+function prodCopyImages() {
 	return copyFiles(imagesFiles, '/images', { isDev: false });
 }
 
@@ -379,11 +389,11 @@ function processLanguages(isDev = true) {
 	});
 }
 
-function copyLanguagesDev() {
+function devCopyLanguages() {
 	return processLanguages(true);
 }
 
-function copyLanguagesProd() {
+function prodCopyLanguages() {
 	return processLanguages(false);
 }
 
@@ -440,19 +450,19 @@ function processStyles(files, outputFile, subDir = '', isDev = true) {
 	return pipeline;
 }
 
-function stylesDev() {
+function devCopyStylesFront() {
 	return processStyles(frontendStyles, 'style.css', '', true);
 }
 
-function backendStylesDev() {
+function devCopyStylesBack() {
 	return processStyles(backendStyles, 'backend-styles.css', 'css', true);
 }
 
-function stylesProd() {
+function prodCopyStylesFront() {
 	return processStyles(frontendStyles, 'style.css', '', false);
 }
 
-function backendStylesProd() {
+function prodCopyStylesBack() {
 	return processStyles(backendStyles, 'backend-styles.css', 'css', false);
 }
 
@@ -476,11 +486,11 @@ function processScripts(isDev = true) {
 		.pipe(dest(destPath));
 }
 
-function webpackScriptsDev() {
+function devWebpackScripts() {
 	return processScripts(true);
 }
 
-function webpackScriptsProd() {
+function prodWebpackScripts() {
 	return processScripts(false);
 }
 
@@ -496,11 +506,11 @@ function processPlugins(isDev = true) {
 	return src(pluginsFiles).pipe(dest(destPath));
 }
 
-function pluginsDev() {
+function devCopyPlugins() {
 	return processPlugins(true);
 }
 
-function pluginsProd() {
+function prodCopyPlugins() {
 	return processPlugins(false);
 }
 
@@ -514,15 +524,16 @@ function watchFiles() {
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		stylesDev();
-		backendStylesDev();
+		devCopyStylesFront();
+		devCopyStylesBack();
+		Reload();
 	});
 	watch(scriptsFiles, {
 		interval: 1000,
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		webpackScriptsDev();
+		devWebpackScripts();
 		Reload();
 	});
 	watch(fontsFiles.concat(imagesFiles), {
@@ -530,8 +541,8 @@ function watchFiles() {
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		copyImagesDev();
-		copyFontsDev();
+		devCopyImages();
+		devCopyFonts();
 		Reload();
 	});
 	watch(themeFiles, {
@@ -540,8 +551,8 @@ function watchFiles() {
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
 		copyModifiedThemeFile(path);
-		stylesDev();
-		backendStylesDev();
+		devCopyStylesFront();
+		devCopyStylesBack();
 		Reload();
 	});
 	watch(pluginsFiles, {
@@ -549,7 +560,7 @@ function watchFiles() {
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		pluginsDev();
+		devCopyPlugins();
 		Reload();
 	});
 	watch(acfJsonFiles, {
@@ -557,32 +568,33 @@ function watchFiles() {
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		copyAcfJsonFiles();
+		devCopyAcfJson();
 	});
-	watch(patternlabFiles, {
+	watch(patternsTwig, {
 		interval: 1000,
 		usePolling: true,
 	}).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
-		copyPatternlabFiles();
-		copyPatternlabTemplates();
+		devCopyPatterns();
+		devCopyPatternsTemplates();
+		Reload();
 	});
 }
 
 const dev = series(
 	registerCleanup,
-	copyThemeDev,
-	copyImagesDev,
-	copyFontsDev,
-	stylesDev,
-	backendStylesDev,
-	webpackScriptsDev,
-	pluginsDev,
-	copyLanguagesDev,
-	copyAcfJsonFiles,
-	copyPatternlabFiles,
-	copyPatternlabJson,
-	copyPatternlabTemplates,
+	devCopyTheme,
+	devCopyImages,
+	devCopyFonts,
+	devCopyStylesFront,
+	devCopyStylesBack,
+	devWebpackScripts,
+	devCopyPlugins,
+	devCopyLanguages,
+	devCopyAcfJson,
+	devCopyPatterns,
+	devCopyJson,
+	devCopyPatternsTemplates,
 	devServer
 );
 dev.displayName = 'dev';
@@ -607,18 +619,18 @@ function zipProd() {
 
 const prod = series(
 	cleanProd,
-	copyThemeProd,
-	copyFontsProd,
-	copyImagesProd,
-	stylesProd,
-	backendStylesProd,
-	webpackScriptsProd,
-	pluginsProd,
-	copyLanguagesProd,
-	//copyAcfJsonFiles,
-	patternlabProd,
-	patternlabJsonProd,
-	patternlabTemplatesProd,
+	prodCopyTheme,
+	prodCopyFonts,
+	prodCopyImages,
+	prodCopyStylesFront,
+	prodCopyStylesBack,
+	prodWebpackScripts,
+	prodCopyPlugins,
+	prodCopyLanguages,
+	prodCopyAcfJson,
+	prodCopyPatterns,
+	prodCopyJson,
+	prodCopyPatternsTemplates,
 	zipProd
 );
 prod.displayName = 'prod';
