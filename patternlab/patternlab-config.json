@@ -25,7 +25,7 @@
 		"m": [500, 800],
 		"l": [800, 2600]
 	},
-	"logLevel": "info",
+	"logLevel": "warning",
 	"outputFileSuffixes": {
 		"rendered": ".rendered",
 		"rawTemplate": "",
