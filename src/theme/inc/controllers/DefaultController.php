@@ -20,6 +20,26 @@ class DefaultController
 		return array_merge($context, $data);
 	}
 
+	public static function get_single_context($context = []): array
+	{
+		$data = self::load_json_data("data", $context);
+		$data = self::load_json_data("article", $data);
+
+		$data["title"] = get_the_title();
+		$data["content"] = apply_filters(
+			"the_content",
+			get_post_field("post_content", get_the_ID())
+		);
+
+		$author = get_user_by("id", get_post_field("post_author", get_the_ID()));
+		$data["author"] = [
+			"first_name" => $author->first_name,
+			"last_name" => $author->last_name,
+		];
+
+		return array_merge($context, $data);
+	}
+
 	/**
 	 * Carga datos de un JSON específico
 	 *
