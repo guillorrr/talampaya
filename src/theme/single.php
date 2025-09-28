@@ -14,4 +14,6 @@ if (post_password_required($post->ID)) {
 	$templates = "pages/single-password.twig";
 }
 
-Timber::render($templates, $context);
+$controller = new DefaultController();
+
+Timber::render("@pages/single.twig", $controller->get_single_context($context));
