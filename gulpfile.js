@@ -657,7 +657,7 @@ function watchFiles() {
 		console.log(`File ${path} was changed`);
 		devCopyAcfJson();
 	});
-	watch(patternsTwig, {
+	watch(['./patternlab/source/_patterns/**/*.twig'], {
 		interval: 1000,
 		usePolling: true,
 	}).on('change', function (path, stats) {
