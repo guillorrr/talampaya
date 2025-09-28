@@ -657,10 +657,17 @@ function watchFiles() {
 		console.log(`File ${path} was changed`);
 		devCopyAcfJson();
 	});
-	watch(['./patternlab/source/_patterns/**/*.twig'], {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path, stats) {
+	watch(
+		[
+			'./patternlab/source/_patterns/**/*.twig',
+			'./patternlab/source/_patterns/**/*.json',
+			'./patternlab/source/_data/**/*.json',
+		],
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path, stats) {
 		console.log(`File ${path} was changed`);
 		devCopyPatterns();
 		devCopyPatternsTemplates();
