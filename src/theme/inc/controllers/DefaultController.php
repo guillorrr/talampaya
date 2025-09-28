@@ -4,12 +4,15 @@ class DefaultController
 {
 	public static function get_home_context($context = []): array
 	{
-		return self::load_json_data("homepage", $context);
+		$data = self::load_json_data("data", []);
+		$data = self::load_json_data("homepage", $data);
+
+		return array_merge($data, $context);
 	}
 
 	public static function get_page_context($context = []): array
 	{
-		$data = self::load_json_data("data", $context);
+		$data = self::load_json_data("data", []);
 		$data = self::load_json_data("article", $data);
 
 		$data["title"] = get_the_title();
@@ -18,12 +21,12 @@ class DefaultController
 			get_post_field("post_content", get_the_ID())
 		);
 
-		return array_merge($context, $data);
+		return array_merge($data, $context);
 	}
 
 	public static function get_single_context($context = []): array
 	{
-		$data = self::load_json_data("data", $context);
+		$data = self::load_json_data("data", []);
 		$data = self::load_json_data("article", $data);
 
 		$data["title"] = get_the_title();
@@ -38,7 +41,7 @@ class DefaultController
 			"last_name" => $author->last_name,
 		];
 
-		return array_merge($context, $data);
+		return array_merge($data, $context);
 	}
 
 	/**
