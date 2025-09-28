@@ -13,4 +13,6 @@ use Timber\Timber;
 
 $context = Timber::context();
 
-Timber::render("pages/page.twig", $context);
+$controller = new DefaultController();
+
+Timber::render("@pages/page.twig", $controller->get_page_context($context));

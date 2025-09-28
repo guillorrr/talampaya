@@ -20,6 +20,6 @@ if (is_home()) {
 
 $context = Timber::context();
 
-$controller = new HomeController();
+$controller = new DefaultController();
 
-Timber::render($templates, $controller->index($context));
+Timber::render($templates, $controller->get_home_context($context));
