@@ -49,6 +49,7 @@ class TalampayaTimber extends Site
 		$context["paths"] = $paths;
 		$context["version"] = $theme_version;
 		$context["site"] = $this;
+		$context["links"]["home"] = home_url("/");
 
 		return $context;
 	}
