@@ -25,12 +25,15 @@ class TalampayaFactory
 	/**
 	 * @link https://developer.wordpress.org/reference/functions/register_post_type/
 	 */
-	public function make_post_types($post_types)
+	public function make_post_types($post_types = [])
 	{
-		if (empty($post_types) || count($post_types) < 1) {
+		if (empty($post_types)) {
 			$post_types = $this->post_types;
 		}
 		foreach ($post_types as $slug => $args) {
+			if (is_callable($args)) {
+				$args = $args();
+			}
 			register_post_type($slug, $args);
 		}
 	}
