@@ -35,9 +35,22 @@ if (class_exists("ACF")) {
 	require_once __DIR__ . "/inc/acf.php";
 }
 
-$filters = talampaya_directory_iterator(__DIR__ . "/inc/filters");
-if (!empty($filters)) {
-	foreach ($filters as $f) {
-		require_once $f;
+$directories = [
+	__DIR__ . "/inc/filters",
+	//    __DIR__ . "/inc/models",
+	//    __DIR__ . "/inc/services",
+	//    __DIR__ . "/inc/defaults",
+	__DIR__ . "/inc/controllers",
+	//    __DIR__ . "/inc/endpoints",
+	//    __DIR__ . "/inc/helpers",
+	//    __DIR__ . "/inc/cron",
+];
+
+foreach ($directories as $dir) {
+	$files = talampaya_directory_iterator($dir);
+	if (!empty($files)) {
+		foreach ($files as $file) {
+			require_once $file;
+		}
 	}
 }
