@@ -9,7 +9,8 @@ class DefaultController
 
 	public static function get_page_context($context = []): array
 	{
-		$data = self::load_json_data("article", $context);
+		$data = self::load_json_data("data", $context);
+		$data = self::load_json_data("article", $data);
 
 		$data["title"] = get_the_title();
 		$data["content"] = apply_filters(
