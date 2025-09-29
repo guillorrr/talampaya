@@ -17,5 +17,5 @@ if wp option get auto_setup_completed --allow-root &>/dev/null; then
     echo "Para forzar la reconfiguración, ejecuta: wp option delete auto_setup_completed --allow-root"
 else
     echo "Ejecutando configuración inicial..."
-    /var/www/scripts/wp-setup.sh
+    bash /var/www/scripts/wp-setup.sh
 fi

@@ -51,10 +51,10 @@ services:
       - redis
     command: >
             bash -c "
-            chmod +x /var/www/scripts/*.sh &&
+            chmod -R 755 /var/www/scripts &&
             php-fpm &
             if [ \"${WORDPRESS_AUTO_SETUP:-true}\" = \"true\" ]; then
-              /var/www/scripts/wp-init.sh &
+              bash /var/www/scripts/wp-init.sh &
             fi &&
             wait
             "
