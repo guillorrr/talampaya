@@ -1,0 +1,8 @@
+{
+	"emergency": {
+		"additionalClasses": "error",
+		"excerpt": {
+			"short": "Sorry, we couldn't find what you're looking for. 404 Error"
+		}
+	}
+}
