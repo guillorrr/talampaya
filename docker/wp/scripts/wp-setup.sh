@@ -22,11 +22,11 @@ wp rewrite structure '/%postname%/' --allow-root
 echo "Estructura de permalink establecida a post name"
 
 # Configurar categoría base a "seccion"
-wp rewrite category-base seccion --allow-root
+wp option update category_base seccion --allow-root
 echo "Base de categorías establecida a 'seccion'"
 
 # Configurar tag base a "tema"
-wp rewrite tag-base tema --allow-root
+wp option update tag_base tema --allow-root
 echo "Base de etiquetas establecida a 'tema'"
 
 # Configurar idioma a español de España

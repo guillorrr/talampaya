@@ -7,21 +7,21 @@ echo "Iniciando eliminación de la configuración base..."
 # 1. Eliminar páginas creadas por el script de configuración
 echo "Eliminando páginas..."
 # Home
-HOME_ID=$(wp post list --post_type=page --name=home --field=ID --allow-root)
+HOME_ID=$(wp post list --post_type=page --name=inicio --field=ID --allow-root)
 if [ ! -z "$HOME_ID" ]; then
     wp post delete $HOME_ID --force --allow-root
     echo "Página Home eliminada"
 fi
 
 # Contact
-CONTACT_ID=$(wp post list --post_type=page --name=contact --field=ID --allow-root)
+CONTACT_ID=$(wp post list --post_type=page --name=contacto --field=ID --allow-root)
 if [ ! -z "$CONTACT_ID" ]; then
     wp post delete $CONTACT_ID --force --allow-root
     echo "Página Contact eliminada"
 fi
 
 # About
-ABOUT_ID=$(wp post list --post_type=page --name=about --field=ID --allow-root)
+ABOUT_ID=$(wp post list --post_type=page --name=nosotros --field=ID --allow-root)
 if [ ! -z "$ABOUT_ID" ]; then
     wp post delete $ABOUT_ID --force --allow-root
     echo "Página About eliminada"
@@ -41,8 +41,8 @@ wp option delete page_on_front --allow-root
 wp option delete page_for_posts --allow-root
 wp option update blog_public 1 --allow-root
 wp rewrite structure '/%year%/%monthnum%/%day%/%postname%/' --allow-root
-wp rewrite category-base category --allow-root
-wp rewrite tag-base tag --allow-root
+wp option delete category_base category --allow-root
+wp option delete tag_base tag --allow-root
 wp language core install en_US --allow-root
 wp site switch-language en_US --allow-root
 wp option update timezone_string 'UTC' --allow-root
