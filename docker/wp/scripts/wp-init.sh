@@ -9,5 +9,13 @@ until $(wp core is-installed --allow-root); do
     echo "Esperando a que la base de datos esté lista..."
 done
 
-echo "WordPress está listo. Ejecutando configuración..."
-/var/www/scripts/wp-setup.sh
+echo "WordPress está listo."
+
+# Verificar si la configuración ya se realizó
+if wp option get auto_setup_completed --allow-root &>/dev/null; then
+    echo "La configuración ya fue realizada previamente."
+    echo "Para forzar la reconfiguración, ejecuta: wp option delete auto_setup_completed --allow-root"
+else
+    echo "Ejecutando configuración inicial..."
+    /var/www/scripts/wp-setup.sh
+fi

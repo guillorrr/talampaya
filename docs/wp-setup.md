@@ -30,3 +30,13 @@ Los scripts se encuentran en `docker/wp/scripts/`:
 ### Contraseña de usuarios
 
 Todos los usuarios se crean con la contraseña definida en la variable `WORDPRESS_ADMIN_PASS` del archivo `.env`.
+
+## Ejecución de scripts
+
+### Ejecución automática
+
+La configuración se ejecuta automáticamente cuando se inicia el proyecto:
+
+```bash
+# Inicia todos los servicios, incluida la configuración automática
+npm run start
