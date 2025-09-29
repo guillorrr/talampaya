@@ -50,6 +50,8 @@
 		"wp:reset": "docker compose exec wp /var/www/scripts/wp-reset.sh",
 		"wp:clean": "docker compose exec wp /var/www/scripts/wp-clean.sh",
 		"wp:setup:force": "docker compose exec wp wp option delete auto_setup_completed --allow-root && docker compose exec wp /var/www/scripts/wp-setup.sh",
+		"wp:demo:create": "docker compose exec wp /var/www/scripts/wp-demo-content.sh",
+		"wp:demo:delete": "docker compose exec wp /var/www/scripts/wp-demo-clean.sh",
 		"dev:create-block": "node ./dev/scripts/create-block.js",
 		"dev:create-patternlab-examples": "node ./dev/scripts/pl-make-twig-examples.js",
 		"clean:build": "rm -rf build/*",
