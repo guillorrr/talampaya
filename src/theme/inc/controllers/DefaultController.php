@@ -44,6 +44,14 @@ class DefaultController
 		return array_merge($data, $context);
 	}
 
+	public static function get_404_context($context = []): array
+	{
+		$data = self::load_json_data("data", []);
+		$data = self::load_json_data("404", $data);
+
+		return array_merge($data, $context);
+	}
+
 	/**
 	 * Carga datos de un JSON específico
 	 *
