@@ -9,8 +9,15 @@ Este proyecto incluye un sistema de configuración automática que se ejecuta du
 Los scripts se encuentran en `docker/wp/scripts/`:
 
 1. **wp-setup.sh**: Realiza la configuración inicial
-   - Crea las páginas: Home, Contact, About y Blog
-   - Configura Home como página de inicio y Blog como página de entradas
+   - Configura ajustes generales:
+     - Deshabilita la indexación por buscadores
+     - Establece la estructura de permalink a "post name" (/%postname%/)
+     - Cambia la base de categorías a "seccion"
+     - Cambia la base de etiquetas a "tema"
+     - Configura el idioma a español de España (es_ES)
+     - Establece la zona horaria a Europe/Madrid
+   - Crea las páginas: Inicio, Contacto, Nosotros y Blog (en español)
+   - Configura Inicio como página de inicio y Blog como página de entradas
    - Crea usuarios con diferentes roles (administrator, editor, author, etc.)
 
 2. **wp-reset.sh**: Deshace la configuración realizada por wp-setup.sh

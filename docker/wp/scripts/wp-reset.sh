@@ -39,6 +39,15 @@ echo "Restableciendo configuración por defecto..."
 wp option update show_on_front posts --allow-root
 wp option delete page_on_front --allow-root
 wp option delete page_for_posts --allow-root
+wp option update blog_public 1 --allow-root
+wp rewrite structure '/%year%/%monthnum%/%day%/%postname%/' --allow-root
+wp rewrite category-base category --allow-root
+wp rewrite tag-base tag --allow-root
+wp language core install en_US --allow-root
+wp site switch-language en_US --allow-root
+wp option update timezone_string 'UTC' --allow-root
+wp rewrite flush --allow-root
+echo "Configuración general restaurada a valores predeterminados"
 
 # 3. Eliminar usuarios creados por el script de configuración
 echo "Eliminando usuarios..."
