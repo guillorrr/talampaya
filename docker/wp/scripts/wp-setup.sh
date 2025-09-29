@@ -96,11 +96,20 @@ if ! wp user get subscriber --field=ID --allow-root &>/dev/null; then
     echo "Usuario subscriber creado"
 fi
 
-# 6. Actualizar la configuración de tiempo y zona horaria
+# 6. Activar theme con nombre APP_NAME
+APP_NAME=${APP_NAME:-talampaya}
+if wp theme is-installed $APP_NAME --allow-root; then
+    wp theme activate $APP_NAME --allow-root
+    echo "Theme $APP_NAME activado"
+else
+    echo "El theme $APP_NAME no está instalado. Continuando con el theme predeterminado."
+fi
+
+# 7. Actualizar la configuración de tiempo y zona horaria
 wp option update timezone_string 'Europe/Madrid' --allow-root
 echo "Zona horaria configurada a Europe/Madrid"
 
-# 7. Aplicar cambios de rewrite rules
+# 8. Aplicar cambios de rewrite rules
 wp rewrite flush --allow-root
 echo "Reglas de reescritura actualizadas"
 

@@ -46,6 +46,7 @@ wp option delete tag_base tag --allow-root
 wp language core install en_US --allow-root
 wp site switch-language en_US --allow-root
 wp option update timezone_string 'UTC' --allow-root
+wp theme activate twentytwentyfour --allow-root
 wp rewrite flush --allow-root
 echo "Configuración general restaurada a valores predeterminados"
 

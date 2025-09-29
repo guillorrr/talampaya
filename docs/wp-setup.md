@@ -19,6 +19,7 @@ Los scripts se encuentran en `docker/wp/scripts/`:
    - Crea las páginas: Inicio, Contacto, Nosotros y Blog (en español)
    - Configura Inicio como página de inicio y Blog como página de entradas
    - Crea usuarios con diferentes roles (administrator, editor, author, etc.)
+   - Activa automáticamente el tema con el mismo nombre que la variable APP_NAME (si existe)
 
 2. **wp-reset.sh**: Deshace la configuración realizada por wp-setup.sh
    - Elimina las páginas creadas
