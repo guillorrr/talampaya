@@ -501,6 +501,10 @@ const backendStyles = [
 function processStyles(files, outputFile, subDir = '', isDev = true) {
 	console.log(`Compiling ${outputFile} styles...`);
 
+	const domain = process.env.DOMAIN || 'localhost';
+	const protocol = process.env.PROTOCOL || 'http';
+	const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
+
 	let pipeline = src(files);
 
 	if (isDev) {
@@ -511,7 +515,7 @@ function processStyles(files, outputFile, subDir = '', isDev = true) {
 	pipeline = pipeline
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
 		.pipe(concat(outputFile))
-		.pipe(replace('../../', './'));
+		.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
 
 	// Configuraciones específicas
 	if (outputFile === 'style.css') {
