@@ -11,41 +11,26 @@ if wp option get demo_content_created --allow-root &>/dev/null; then
     exit 0
 fi
 
-# 1. Crear categorías de demostración
+## 1. Crear categorías de demostración
 echo "Creando categorías de demostración..."
-wp term generate category --count=10 --format=ids --max_depth=2 --prefix="Demo Cat" --allow-root
+wp term generate category --count=15 --format=ids --max_depth=2 --allow-root | xargs -d ' ' -I % wp term update category % --slug="demo-category-%" --allow-root
+DEMO_CATEGORIES_BY_SLUG=$(wp term list category --field=term_id --format=ids --search="demo-category-" --allow-root)
 
-# Asignar slug personalizado con prefijo "demo-" a las categorías recién creadas
-DEMO_CATEGORIES=$(wp term list category --field=term_id --format=ids --search="Demo Cat" --allow-root)
-for cat_id in $DEMO_CATEGORIES; do
-    # Obtener el nombre de la categoría
-    CAT_NAME=$(wp term get category $cat_id --field=name --allow-root)
-    # Crear un slug con prefijo demo-
-    SLUG="demo-$(echo $CAT_NAME | iconv -t ascii//TRANSLIT | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g')"
-    # Actualizar el slug
-    wp term update category $cat_id --slug="$SLUG" --allow-root
-    echo "Categoría actualizada: $CAT_NAME con slug: $SLUG"
-done
-
-# 2. Crear etiquetas de demostración
+## 2. Crear etiquetas de demostración
 echo "Creando etiquetas de demostración..."
-wp term generate post_tag --count=10 --format=ids --prefix="Demo Tag" --allow-root
+wp term generate post_tag --format=ids --count=10 --allow-root | xargs -d ' ' -I % wp term update post_tag % --slug="demo-tag-%" --allow-root
+DEMO_TAGS_BY_SLUG=$(wp term list post_tag --field=slug --search="demo-tag-" --allow-root)
 
-# Asignar slug personalizado con prefijo "demo-" a las etiquetas recién creadas
-DEMO_TAGS=$(wp term list post_tag --field=term_id --format=ids --search="Demo Tag" --allow-root)
-for tag_id in $DEMO_TAGS; do
-    # Obtener el nombre de la etiqueta
-    TAG_NAME=$(wp term get post_tag $tag_id --field=name --allow-root)
-    # Crear un slug con prefijo demo-
-    SLUG="demo-$(echo $TAG_NAME | iconv -t ascii//TRANSLIT | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g')"
-    # Actualizar el slug
-    wp term update post_tag $tag_id --slug="$SLUG" --allow-root
-    echo "Etiqueta actualizada: $TAG_NAME con slug: $SLUG"
-done
-
-# 3. Generar posts de demostración con contenido aleatorio
+## 3. Generar posts de demostración con contenido aleatorio
 echo "Creando posts de demostración..."
-wp post generate --count=30 --post_type=post --post_status=publish --post_author=1 --post_date=2023-01-01 --allow-root
+
+curl -sL 'https://baconipsum.com/api/?type=all-meat&paras=20&start-with-lorem=1' | \
+sed 's/^\[\(.*\)\]$/\1/' | awk -F'"' '{for(i=2;i<=NF;i+=2) print $i}' | while read -r paragraph; do
+    title=$(echo "$paragraph" | awk -F'[,.]' '{print $1}')
+    content=$(echo "$paragraph" | sed "s/^$title[,.]\s*//")
+    slug="demo-$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | tr ' ' '-')"
+    wp post create --post_title="$title" --post_content="$content" --post_name="$slug" --post_status=publish --post_author=1 --allow-root
+done
 
 # 4. Modificar los posts generados para incluir el prefijo demo en el slug y asignar términos
 RECENT_POSTS=$(wp post list --post_type=post --post_status=publish --posts_per_page=30 --orderby=date --order=DESC --field=ID --format=ids --allow-root)
@@ -55,22 +40,20 @@ for post_id in $RECENT_POSTS; do
     # Obtener el título del post
     POST_TITLE=$(wp post get $post_id --field=post_title --allow-root)
 
-    # Crear un nuevo slug con prefijo demo-
-    SLUG="demo-post-$POST_COUNT"
     POST_COUNT=$((POST_COUNT + 1))
 
     # Asignar categoría aleatoria
-    RANDOM_CAT=$(echo $DEMO_CATEGORIES | tr ' ' '\n' | sort -R | head -n 1)
+    RANDOM_CATEGORIES=$(echo $DEMO_CATEGORIES_BY_SLUG | tr ' ' '\n' | sort -R | head -n 1)
 
     # Seleccionar 1-3 etiquetas aleatorias
     NUM_TAGS=$((RANDOM % 3 + 1))
-    RANDOM_TAGS=$(echo $DEMO_TAGS | tr ' ' '\n' | sort -R | head -n $NUM_TAGS | tr '\n' ',')
+    RANDOM_TAGS=$(echo $DEMO_TAGS_BY_SLUG | tr ' ' '\n' | sort -R | head -n $NUM_TAGS | tr '\n' ',')
     RANDOM_TAGS=${RANDOM_TAGS%,}  # Eliminar la última coma
 
     # Actualizar el post
-    wp post update $post_id --post_name="$SLUG" --post_category="$RANDOM_CAT" --tags_input="$RANDOM_TAGS" --allow-root
+    wp post update $post_id --post_category=$RANDOM_CATEGORIES --tags_input="$RANDOM_TAGS" --allow-root
 
-    echo "Post actualizado: $POST_TITLE (ID: $post_id) con slug: $SLUG"
+    echo "Post actualizado: $POST_TITLE (ID: $post_id)"
 done
 
 # Marcar que el contenido demo ha sido creado
