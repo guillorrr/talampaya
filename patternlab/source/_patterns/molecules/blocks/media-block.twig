@@ -1,9 +1,9 @@
 <div class="block block-thumb">
 	<a href="{{ url }}" class="b-inner">
 		<div class="b-thumb">
-			{% if img.square %}
+			{% if img|first.src %}
 				{% include "@atoms/images/image.twig" with {
-					img: { src: img.square.src, alt: headline.short }
+					img: { src: img|first.src, alt: headline.short }
 				} %}
 			{% else %}
 				{% include "@atoms/images/square.twig" %}
