@@ -1,11 +1,19 @@
 <div class="block block-thumb">
-    <a href="{{ url }}" class="b-inner">
+	<a href="{{ url }}" class="b-inner">
 		<div class="b-thumb">
-			{% include "@atoms/images/square.twig" %}
+			{% if img.square %}
+				{% include "@atoms/images/image.twig" with {
+					img: { src: img.square.src, alt: headline.short }
+				} %}
+			{% else %}
+				{% include "@atoms/images/square.twig" %}
+			{% endif %}
 		</div>
 		<div class="b-text">
 			<h2 class="b-title">{{ headline.short }}</h2>
-			<p>{{ excerpt.medium }}</p>
+			<p>
+				{{ excerpt.medium }}
+			</p>
 		</div>
 	</a>
 </div>
