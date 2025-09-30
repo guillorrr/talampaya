@@ -27,6 +27,8 @@ services:
       WORDPRESS_DB_NAME: ${DB_NAME}
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
       WORDPRESS_TABLE_PREFIX: ${DB_TABLE_PREFIX}
+      WORDPRESS_ADMIN_PASS: ${WORDPRESS_ADMIN_PASS}
+      APP_NAME: ${APP_NAME}
       WORDPRESS_CONFIG_EXTRA: |
         define( 'WP_HOME', '${PROTOCOL}://${DOMAIN}' );
         define( 'WP_SITEURL', '${PROTOCOL}://${DOMAIN}' );
@@ -41,12 +43,22 @@ services:
       - './build:/var/www/html'
       - './docker/wp/php.ini:/usr/local/etc/php/conf.d/overrides.ini'
       - './docker/wp/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini'
+      - './docker/wp/scripts:/var/www/scripts'
       - './logs:/tmp/xdebug'
       - './logs:/tmp/wordpress'
       - './composer.json:/var/www/html/composer.json'
     depends_on:
       - db
       - redis
+    command: >
+            bash -c "
+            chmod -R 755 /var/www/scripts &&
+            php-fpm &
+            if [ \"${WORDPRESS_AUTO_SETUP:-true}\" = \"true\" ]; then
+              bash /var/www/scripts/wp-init.sh &
+            fi &&
+            wait
+            "
 
   chmod:
     image: wordpress:${WORDPRESS_VERSION:-php8.0-fpm}
