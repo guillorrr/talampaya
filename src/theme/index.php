@@ -15,11 +15,11 @@ use Timber\Timber;
 $templates = ["pages/index.twig"];
 
 if (is_home()) {
-	array_unshift($templates, "pages/front-page.twig", "pages/home.twig");
+	array_unshift($templates, "pages/home.twig");
 }
 
 $context = Timber::context();
 
 $controller = new DefaultController();
 
-Timber::render($templates, $controller->get_home_context($context));
+Timber::render($templates, $controller->get_blog_context($context));
