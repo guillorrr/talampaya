@@ -24,16 +24,25 @@ DEMO_TAGS_BY_SLUG=$(wp term list post_tag --field=slug --search="demo-tag-" --al
 ## 3. Generar posts de demostración con contenido aleatorio
 echo "Creando posts de demostración..."
 
-curl -sL 'https://baconipsum.com/api/?type=all-meat&paras=20&start-with-lorem=1' | \
-sed 's/^\[\(.*\)\]$/\1/' | awk -F'"' '{for(i=2;i<=NF;i+=2) print $i}' | while read -r paragraph; do
-    title=$(echo "$paragraph" | awk -F'[,.]' '{print $1}')
-    content=$(echo "$paragraph" | sed "s/^$title[,.]\s*//")
-    slug="demo-$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | tr ' ' '-')"
-    wp post create --post_title="$title" --post_content="$content" --post_name="$slug" --post_status=publish --post_author=1 --allow-root
-done
+# Obtener los párrafos
+PARAGRAPHS=$(curl -sL 'https://baconipsum.com/api/?type=all-meat&paras=20&start-with-lorem=1')
 
-# 4. Modificar los posts generados para incluir el prefijo demo en el slug y asignar términos
-RECENT_POSTS=$(wp post list --post_type=post --post_status=publish --posts_per_page=30 --orderby=date --order=DESC --field=ID --format=ids --allow-root)
+if [[ -z "$PARAGRAPHS" || "$PARAGRAPHS" == "[]" ]]; then
+    echo "No se obtuvieron párrafos, generando posts de respaldo..."
+    # Genera 20 posts y modifica el slug con xargs
+    #wp post generate --count=20 --post_type=post --post_status=publish  --format=ids --allow-root | xargs -d ' ' -I % wp post update % --post_name="demo-post-%" --allow-root
+else
+    echo "Párrafos obtenidos, creando posts personalizados..."
+    echo "$PARAGRAPHS" | sed 's/^\[\(.*\)\]$/\1/' | awk -F'"' '{for(i=2;i<=NF;i+=2) print $i}' | while read -r paragraph; do
+        title=$(echo "$paragraph" | awk -F'[,.]' '{print $1}')
+        content=$(echo "$paragraph" | sed "s/^$title[,.]\s*//")
+        slug="demo-$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-' | tr ' ' '-')"
+        wp post create --post_title="$title" --post_content="$content" --post_name="$slug" --post_status=publish --post_author=1 --allow-root
+    done
+fi
+
+# 4. Modificar los posts generados para asignar términos
+RECENT_POSTS=$(wp post list --post_type=post --post_status=publish --posts_per_page=30 --post_name"demo-post-" --field=ID --format=ids --allow-root)
 POST_COUNT=1
 
 for post_id in $RECENT_POSTS; do

@@ -30,7 +30,7 @@ if [ ! -z "$DEMO_TAGS_BY_SLUG" ]; then
     wp term delete post_tag $DEMO_TAGS_BY_SLUG --allow-root
     echo "Etiquetas de demostración con prefijo 'demo-' eliminadas"
 fi
-#
+
 ## 4. Eliminar la opción que marca que el contenido demo fue creado
 wp option delete demo_content_created --allow-root
 
