@@ -69,8 +69,20 @@ gulp.task('serve', function () {
 		},
 	});
 
-	gulp.watch(filesStyles, gulp.series('sass'));
-	gulp.watch(filesScripts, gulp.series('js'));
+	gulp.watch(filesStyles).on('change', function (path) {
+		console.log(`File ${path} was changed`);
+		setTimeout(function () {
+			gulp.series('sass')();
+			browserSync.reload();
+		}, 500);
+	});
+	gulp.watch(filesScripts).on('change', function (path) {
+		console.log(`File ${path} was changed`);
+		setTimeout(function () {
+			gulp.series('js')();
+			browserSync.reload();
+		}, 500);
+	});
 	gulp.watch(
 		['./source/_patterns/**/*.twig', './source/_patterns/**/*.json', './source/_data/*.json'],
 		{

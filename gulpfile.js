@@ -610,10 +610,18 @@ Watch Files
 -------------------------------------------------------------------------------------------------- */
 
 function watchFiles() {
-	watch(frontendStyles.concat(backendStyles), {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path, stats) {
+	watch(
+		frontendStyles
+			.concat(backendStyles)
+			.concat([
+				'./patternlab/source/css/scss/**/*.scss',
+				'./patternlab/source/_patterns/**/*.scss',
+			]),
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devCopyStylesFront();
 		devCopyStylesBack();
@@ -622,7 +630,7 @@ function watchFiles() {
 	watch(scriptsFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devWebpackScripts();
 		Reload();
@@ -630,7 +638,7 @@ function watchFiles() {
 	watch(fontsFiles.concat(imagesFiles), {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devCopyImages();
 		devCopyFonts();
@@ -639,7 +647,7 @@ function watchFiles() {
 	watch(themeFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		copyModifiedThemeFile(path);
 		devCopyStylesFront();
@@ -649,7 +657,7 @@ function watchFiles() {
 	watch(pluginsFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devCopyPlugins();
 		Reload();
@@ -657,7 +665,7 @@ function watchFiles() {
 	watch(acfJsonFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devCopyAcfJson();
 	});
@@ -671,7 +679,7 @@ function watchFiles() {
 			interval: 1000,
 			usePolling: true,
 		}
-	).on('change', function (path, stats) {
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devCopyPatterns();
 		devCopyPatternsTemplates();
