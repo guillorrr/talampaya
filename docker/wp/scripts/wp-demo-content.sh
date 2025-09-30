@@ -11,6 +11,17 @@ if wp option get demo_content_created --allow-root &>/dev/null; then
     exit 0
 fi
 
+# Obtener imágenes aleatorias desde Picsum Photos
+echo "Obteniendo imágenes de Picsum Photos..."
+IMAGES_JSON=$(curl -s "https://picsum.photos/v2/list?limit=30")
+if [[ -z "$IMAGES_JSON" || "$IMAGES_JSON" == "[]" ]]; then
+    echo "No se pudieron obtener imágenes de Picsum Photos."
+    HAS_IMAGES=false
+else
+    echo "Se obtuvieron imágenes correctamente."
+    HAS_IMAGES=true
+fi
+
 ## 1. Crear categorías de demostración
 echo "Creando categorías de demostración..."
 wp term generate category --count=15 --format=ids --max_depth=2 --allow-root | xargs -d ' ' -I % wp term update category % --slug="demo-category-%" --allow-root
@@ -41,15 +52,14 @@ else
     done
 fi
 
-# 4. Modificar los posts generados para asignar términos
+# 4. Modificar los posts generados para asignar términos e imágenes destacadas
 RECENT_POSTS=$(wp post list --post_type=post --post_status=publish --posts_per_page=30 --post_name"demo-post-" --field=ID --format=ids --allow-root)
 POST_COUNT=1
+FEATURED_IMAGES_COUNT=0
 
 for post_id in $RECENT_POSTS; do
     # Obtener el título del post
     POST_TITLE=$(wp post get $post_id --field=post_title --allow-root)
-
-    POST_COUNT=$((POST_COUNT + 1))
 
     # Asignar categoría aleatoria
     RANDOM_CATEGORIES=$(echo $DEMO_CATEGORIES_BY_SLUG | tr ' ' '\n' | sort -R | head -n 1)
@@ -59,10 +69,38 @@ for post_id in $RECENT_POSTS; do
     RANDOM_TAGS=$(echo $DEMO_TAGS_BY_SLUG | tr ' ' '\n' | sort -R | head -n $NUM_TAGS | tr '\n' ',')
     RANDOM_TAGS=${RANDOM_TAGS%,}  # Eliminar la última coma
 
-    # Actualizar el post
+    # Asignar imagen destacada si tenemos imágenes disponibles
+    if [ "$HAS_IMAGES" = true ]; then
+        # Extraer URL de imagen de Picsum Photos (índice basado en 0)
+        IMAGE_INDEX=$((POST_COUNT % 30))
+        IMAGE_URL=$(echo "$IMAGES_JSON" | grep -o '"download_url":"[^"]*"' | sed 's/"download_url":"//g' | sed 's/"//g' | sed -n "$((IMAGE_INDEX+1))p")
+
+        echo $IMAGE_URL;
+
+        if [ ! -z "$IMAGE_URL" ]; then
+            # Descargar y establecer como imagen destacada
+            echo "Descargando imagen para: $POST_TITLE"
+            # Importar imagen a la biblioteca de medios y establecerla como imagen destacada
+            REDIRECTED_URL=$(curl -Ls -o /dev/null -w %{url_effective} "$IMAGE_URL")
+            BASENAME=$(basename "$REDIRECTED_URL")
+            ATTACHMENT_ID=$(wp media import "$REDIRECTED_URL" --title="Featured Image for $POST_TITLE" --file_name="demo-image-$BASENAME" --featured_image --post_id=$post_id --porcelain --allow-root)
+
+            if [ ! -z "$ATTACHMENT_ID" ]; then
+                echo "Imagen destacada asignada (ID: $ATTACHMENT_ID) al post: $POST_TITLE (ID: $post_id)"
+                FEATURED_IMAGES_COUNT=$((FEATURED_IMAGES_COUNT + 1))
+            else
+                echo "Error al importar imagen destacada para post ID: $post_id"
+            fi
+        else
+            echo "Error al descargar imagen para post ID: $post_id"
+        fi
+    fi
+
+    # Actualizar el post con categorías y etiquetas
     wp post update $post_id --post_category=$RANDOM_CATEGORIES --tags_input="$RANDOM_TAGS" --allow-root
 
     echo "Post actualizado: $POST_TITLE (ID: $post_id)"
+    POST_COUNT=$((POST_COUNT + 1))
 done
 
 # Marcar que el contenido demo ha sido creado
@@ -70,5 +108,8 @@ wp option add demo_content_created yes --allow-root
 
 echo "Contenido de demostración creado con éxito."
 echo "Se han generado 30 posts, 10 categorías y 10 etiquetas."
+if [ "$FEATURED_IMAGES_COUNT" -gt 0 ]; then
+    echo "Se han asignado $FEATURED_IMAGES_COUNT imágenes destacadas a los posts."
+fi
 echo "Todos los elementos tienen prefijo 'demo-' en el slug para facilitar su identificación."
 echo "Para eliminar este contenido, ejecuta el script wp-demo-clean.sh"

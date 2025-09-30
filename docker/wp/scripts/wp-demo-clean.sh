@@ -9,6 +9,17 @@ echo "Eliminando posts de demostración..."
 DEMO_POSTS=$(wp post list --post_status=any --post_type=post --field=ID --format=ids --posts_per_page=-1 --post_name='demo*' --allow-root)
 if [ ! -z "$DEMO_POSTS" ]; then
     echo "Posts de demostración encontrados: $DEMO_POSTS"
+
+    echo "Eliminando imagenes destacadas de los posts eliminados..."
+    # Eliminar las imágenes destacadas asociadas a los posts eliminados
+    for post_id in $DEMO_POSTS; do
+        featured_image_id=$(wp post meta get $post_id _thumbnail_id --allow-root)
+        if [ ! -z "$featured_image_id" ]; then
+            wp post delete $featured_image_id --force --allow-root
+            echo "Imagen destacada (ID: $featured_image_id) eliminada"
+        fi
+    done
+
     wp post delete $DEMO_POSTS --force --allow-root
     echo "Posts de demostración eliminados"
 else
