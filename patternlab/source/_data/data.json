@@ -96,6 +96,30 @@
 	"emergency": false,
 	"touts": [{}, {}, {}],
 	"latest_posts": [{}, {}, {}, {}, {}],
+	"posts": {
+		"pagination": {
+			"current": 1,
+			"total": 2.0,
+			"pages": {
+				"0": {
+					"title": "1",
+					"name": "1",
+					"text": "1",
+					"current": true
+				},
+				"1": {
+					"title": "2",
+					"name": "2",
+					"link": "link.pages-blog",
+					"current": false
+				}
+			},
+			"next": {
+				"link": "link.pages-blog"
+			},
+			"prev": ""
+		}
+	},
 	"links": {
 		"home": "link.pages-homepage"
 	}
