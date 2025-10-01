@@ -21,58 +21,27 @@ class DefaultController
 
 		$featured_posts = [];
 		if ($most_used_category) {
-			$featured_posts = get_posts([
+			$featured_posts = Timber::get_posts([
 				"category" => $most_used_category->term_id,
-				"numberposts" => 4,
-			]);
+				"posts_per_page" => 4,
+			])->to_array();
 		}
+
+		$posts_not_in = [];
 
 		if (!empty($featured_posts)) {
 			$hero_post = array_shift($featured_posts);
-			$data["hero"]["headline"]["medium"] = get_the_title($hero_post);
-			$data["hero"]["url"] = get_the_permalink($hero_post);
+			$data["hero"] = $hero_post;
+			$data["touts"] = $featured_posts;
 
-			$featured_image = get_the_post_thumbnail_url($hero_post, "full");
-			if ($featured_image) {
-				$data["hero"]["img"]["landscape_16x9"] = [
-					"src" => $featured_image,
-					"alt" => get_post_meta(
-						get_post_thumbnail_id($hero_post),
-						"_wp_attachment_image_alt",
-						true
-					),
-					"width" => 1600,
-					"height" => 900,
-				];
-			}
-
-			foreach ($featured_posts as $post) {
-				$posts_data["headline"]["short"] = get_the_title($post);
-				$posts_data["url"] = get_the_permalink($post);
-
-				$featured_image = get_the_post_thumbnail_url($post, "medium");
-				if ($featured_image) {
-					$posts_data["img"]["landscape_4x3"] = [
-						"src" => $featured_image,
-						"alt" => get_post_meta(
-							get_post_thumbnail_id($post),
-							"_wp_attachment_image_alt",
-							true
-						),
-						"width" => 800,
-						"height" => 600,
-					];
-				}
-
-				$data["touts"][] = $posts_data;
-			}
+			$posts_not_in = array_merge([$hero_post->ID], wp_list_pluck($featured_posts, "ID"));
 		}
 
 		$recent_posts = Timber::get_posts([
 			"orderby" => "date",
 			"order" => "DESC",
 			"posts_per_page" => 5,
-			"post__not_in" => array_merge([$hero_post->ID], wp_list_pluck($featured_posts, "ID")),
+			"post__not_in" => array_merge($posts_not_in),
 		]);
 
 		$data["posts"]["posts"] = $recent_posts;
