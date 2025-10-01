@@ -1,0 +1,9 @@
+{% extends "@templates/layouts/page-2col.twig" %}
+{% block main %}
+	<h1 class="section-title">{{ title|default("Contact") }}</h1>
+	{% include "@molecules/forms/comment-form.twig" %}
+{% endblock main %}
+
+{% block sidebar %}
+	{% include "@organisms/sections/recent-tweets.twig" %}
+{% endblock sidebar %}
