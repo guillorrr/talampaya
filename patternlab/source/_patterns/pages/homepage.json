@@ -3,120 +3,98 @@
 	"bodyClass": "home",
 	"emergency": false,
 	"hero": {
-		"img": {
-			"landscape_16x9": {
-				"src": "../../images/sample/landscape-16x9-mountains.jpg",
-				"alt": "Mountains",
-				"width": "1151",
-				"height": "638"
-			}
+		"thumbnail": {
+			"src": "../../images/sample/landscape-16x9-mountains.jpg",
+			"alt": "Mountains",
+			"width": "1151",
+			"height": "638"
 		},
-		"headline": {
-			"medium": "Top 10 mountain ranges for hiking"
-		}
+		"title": "Top 10 mountain ranges for hiking",
+		"link": "link.pages-article"
 	},
 	"touts": [
 		{
-			"img": {
-				"landscape_4x3": {
-					"src": "../../images/sample/tout-4x3-climber.jpg",
-					"alt": "Climber",
-					"width": "640",
-					"height": "480"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/tout-4x3-climber.jpg",
+				"alt": "Climber",
+				"width": "640",
+				"height": "480"
 			},
-			"headline": {
-				"short": "Extreme climbing tips"
-			}
+			"title": "Extreme climbing tips",
+			"link": "link.pages-article"
 		},
 		{
-			"img": {
-				"landscape_4x3": {
-					"src": "../../images/sample/tout-4x3-stream.jpg",
-					"alt": "Stream hiking",
-					"width": "640",
-					"height": "480"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/tout-4x3-stream.jpg",
+				"alt": "Stream hiking",
+				"width": "640",
+				"height": "480"
 			},
-			"headline": {
-				"short": "Stream hiking"
-			}
+			"title": "Stream hiking",
+			"link": "link.pages-article"
 		},
 		{
-			"img": {
-				"landscape_4x3": {
-					"src": "../../images/sample/tout-4x3-climbers.jpg",
-					"alt": "Explore hiking trails",
-					"width": "640",
-					"height": "480"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/tout-4x3-climbers.jpg",
+				"alt": "Explore hiking trails",
+				"width": "640",
+				"height": "480"
 			},
-			"headline": {
-				"short": "Explore hiking trails"
-			}
+			"title": "Explore hiking trails",
+			"link": "link.pages-article"
 		}
 	],
 	"posts": [
 		{
-			"img": {
-				"square": {
-					"src": "../../images/sample/thumb-square-river.jpg",
-					"alt": "Post Thumbnail",
-					"width": "600",
-					"height": "600"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/thumb-square-river.jpg",
+				"alt": "Post Thumbnail",
+				"width": "600",
+				"height": "600"
 			},
 			"title": "Navigate the Allegheny River",
 			"link": "link.pages-article",
 			"post_content": "The Allegheny River is a principal tributary of the Ohio River; it is located in the Eastern United States. The Allegheny River joins with the Monongahela River to form the Ohio River at the Point of Point State Park in Downtown Pittsburgh, Pennsylvania."
 		},
 		{
-			"img": {
-				"square": {
-					"src": "../../images/sample/thumb-square-ivy.jpg",
-					"alt": "Ivy",
-					"width": "600",
-					"height": "600"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/thumb-square-ivy.jpg",
+				"alt": "Ivy",
+				"width": "600",
+				"height": "600"
 			},
 			"title": "How to detect and avoid poison ivy",
 			"link": "link.pages-article",
 			"post_content": "Toxicodendron radicans, commonly known as poison ivy is a poisonous North American plant that is well known for its production of urushiol"
 		},
 		{
-			"img": {
-				"square": {
-					"src": "../../images/sample/thumb-square-yosemite.jpg",
-					"alt": "Yosemite",
-					"width": "600",
-					"height": "600"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/thumb-square-yosemite.jpg",
+				"alt": "Yosemite",
+				"width": "600",
+				"height": "600"
 			},
 			"title": "Top 10 hiking mountains",
 			"link": "link.pages-article",
 			"post_content": "Yosemite National Park is a United States National Park spanning eastern portions of Tuolumne, Mariposa and Madera counties in the central eastern portion of the U.S. state of California."
 		},
 		{
-			"img": {
-				"square": {
-					"src": "../../images/sample/thumb-square-fire.jpg",
-					"alt": "Fire",
-					"width": "600",
-					"height": "600"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/thumb-square-fire.jpg",
+				"alt": "Fire",
+				"width": "600",
+				"height": "600"
 			},
 			"title": "How to build a campfire",
 			"link": "link.pages-article",
 			"post_content": "A campfire is a fire lit at a campsite, to serve the following functions: light, warmth, a beacon, an insect and/or apex predator deterrent, to cook, and for a psychological sense of security. "
 		},
 		{
-			"img": {
-				"square": {
-					"src": "../../images/sample/thumb-square-gear.jpg",
-					"alt": "Camping Gear",
-					"width": "600",
-					"height": "600"
-				}
+			"thumbnail": {
+				"src": "../../images/sample/thumb-square-gear.jpg",
+				"alt": "Camping Gear",
+				"width": "600",
+				"height": "600"
 			},
 			"title": "Pick the right camping gear",
 			"link": "link.pages-article",
