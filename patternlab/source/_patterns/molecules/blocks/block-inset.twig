@@ -1,10 +1,14 @@
 <div class="block block-inset">
-    <a href="{{ url }}" class="inner">
+	<a href="{{ post.link }}" class="inner">
 		<div class="b-thumb">
-			{% include "@atoms/images/landscape-4x3.twig" %}
+			{% include "@atoms/images/landscape-4x3.twig" with {
+				img: post.thumbnail
+					? [{ src: post.thumbnail.src, alt: post.title, width: "100%" }]
+					: []
+			} %}
 		</div>
 		<div class="b-text">
-			<h2 class="headline">{{ headline.short }}</h2>
+			<h2 class="headline">{{ post.title }}</h2>
 		</div>
 	</a>
 </div>
