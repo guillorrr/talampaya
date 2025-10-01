@@ -96,6 +96,23 @@
 	"emergency": false,
 	"touts": [{}, {}, {}],
 	"latest_posts": [{}, {}, {}, {}, {}],
+	"related_posts": {
+		"title": "Related Posts",
+		"posts": [
+			{
+				"title": "Lorem ipsum dolor sit amet, consectetur",
+				"url": "link.pages-article"
+			},
+			{
+				"title": "Lorem ipsum dolor sit amet, consectetur",
+				"url": "link.pages-article"
+			},
+			{
+				"title": "Lorem ipsum dolor sit amet, consectetur",
+				"url": "link.pages-article"
+			}
+		]
+	},
 	"posts": {
 		"pagination": {
 			"current": 1,
