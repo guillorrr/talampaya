@@ -1,8 +1,8 @@
 {% include "@atoms/images/image.twig" with {
 	img: {
-		src: img.landscape_4x3.src,
-		alt: img.landscape_4x3.alt,
-		width: img.landscape_4x3.width,
-		height: img.landscape_4x3.height
+		src: img|first.src,
+		alt: img|first.alt,
+		width: img|first.width,
+		height: img|first.height
 	}
 } %}
