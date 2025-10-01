@@ -89,7 +89,7 @@ class DefaultController
 			"last_name" => $author->last_name,
 		];
 
-		$featured_image = get_the_post_thumbnail_url(get_the_ID(), "medium");
+		$featured_image = get_the_post_thumbnail_url(get_the_ID(), "large");
 		$data["featured_image"] = [
 			"src" => $featured_image,
 			"alt" => get_post_meta(

@@ -2,17 +2,14 @@
 {% block main %}
 	<article class="article">
 		<header class="article-header">
-			<h1>{{ title }}</h1>
+			<h1>{{ post.title }}</h1>
 			{% include "@molecules/text/byline.twig" %}
 		</header>
 		{% if featured_image %}
 			{% include "@atoms/images/image.twig" with {
-				img: {
-					src: featured_image.src,
-					alt: featured_image.alt|default(title),
-					width: featured_image.width|default("1200"),
-					height: featured_image.height|default("800")
-				}
+				img: post.thumbnail
+					? { src: post.thumbnail.src, alt: post.title, width: "100%" }
+					: {}
 			} %}
 		{% endif %}
 		{% if content %}

@@ -3,8 +3,8 @@
 		<div class="b-thumb">
 			{% include "@atoms/images/landscape-16x9.twig" with {
 				img: post.thumbnail
-					? [{ src: post.thumbnail.src, alt: post.title, width: "100%" }]
-					: []
+					? { src: post.thumbnail.src, alt: post.title, width: "100%" }
+					: {}
 			} %}
 		</div>
 		<div class="b-text">
