@@ -68,33 +68,15 @@ class DefaultController
 			}
 		}
 
-		$recent_posts = get_posts([
+		$recent_posts = Timber::get_posts([
 			"orderby" => "date",
 			"order" => "DESC",
-			"numberposts" => 5,
+			"posts_per_page" => 5,
 			"post__not_in" => array_merge([$hero_post->ID], wp_list_pluck($featured_posts, "ID")),
 		]);
-		foreach ($recent_posts as $post) {
-			$recent_posts_data["headline"]["short"] = get_the_title($post);
-			$recent_posts_data["excerpt"]["medium"] = get_the_excerpt($post);
-			$recent_posts_data["url"] = get_the_permalink($post);
 
-			$recent_featured_image = get_the_post_thumbnail_url($post, "medium");
-			if ($recent_featured_image) {
-				$recent_posts_data["img"]["square"] = [
-					"src" => $recent_featured_image,
-					"alt" => get_post_meta(
-						get_post_thumbnail_id($post),
-						"_wp_attachment_image_alt",
-						true
-					),
-					"width" => 800,
-					"height" => 600,
-				];
-			}
-
-			$data["latest_posts"][] = $recent_posts_data;
-		}
+		$data["posts"]["posts"] = $recent_posts;
+		$data["posts"]["pagination"] = $recent_posts->pagination();
 
 		return array_merge($data, $context);
 	}
@@ -103,35 +85,6 @@ class DefaultController
 	{
 		$data = self::load_json_data("data", []);
 		$data = self::load_json_data("blog", $data);
-
-		$data["latest_posts"] = [];
-
-		$recent_posts = get_posts([
-			"numberposts" => 10,
-			"orderby" => "date",
-			"order" => "DESC",
-		]);
-		foreach ($recent_posts as $post) {
-			$recent_posts_data["headline"]["short"] = get_the_title($post);
-			$recent_posts_data["excerpt"]["medium"] = get_the_excerpt($post);
-			$recent_posts_data["url"] = get_the_permalink($post);
-
-			$recent_featured_image = get_the_post_thumbnail_url($post, "medium");
-			if ($recent_featured_image) {
-				$recent_posts_data["img"]["landscape_4x3"] = [
-					"src" => $recent_featured_image,
-					"alt" => get_post_meta(
-						get_post_thumbnail_id($post),
-						"_wp_attachment_image_alt",
-						true
-					),
-					"width" => 800,
-					"height" => 600,
-				];
-			}
-
-			$data["latest_posts"][] = $recent_posts_data;
-		}
 
 		return array_merge($data, $context);
 	}
