@@ -18,5 +18,7 @@
 			</li>
 		{% endfor %}
 	</ul>
-	<a href="#" class="text-btn">View more posts</a>
+	{% if show_more_latest_posts %}
+		<a href="#" class="text-btn">View more posts</a>
+	{% endif %}
 </section>

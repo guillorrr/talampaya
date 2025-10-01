@@ -46,6 +46,7 @@ class DefaultController
 
 		$data["posts"]["posts"] = $recent_posts;
 		$data["posts"]["pagination"] = $recent_posts->pagination();
+		$data["show_more_latest_posts"] = true;
 
 		return array_merge($data, $context);
 	}
@@ -54,6 +55,8 @@ class DefaultController
 	{
 		$data = self::load_json_data("data", []);
 		$data = self::load_json_data("blog", $data);
+
+		$data["show_more_latest_posts"] = false;
 
 		return array_merge($data, $context);
 	}
