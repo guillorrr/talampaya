@@ -1,11 +1,7 @@
 <div class="block block-thumb">
 	<a href="{{ post.url }}" class="b-inner">
 		<div class="b-thumb">
-			{% if post.img.src %}
-				{% include "@atoms/images/image.twig" with { img: post.img } %}
-			{% else %}
-				{% include "@atoms/images/square.twig" %}
-			{% endif %}
+			{% include "@atoms/images/image.twig" with { img: post.img } %}
 		</div>
 		<div class="b-text">
 			<h2 class="b-title">{{ post.title }}</h2>

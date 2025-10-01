@@ -1,7 +1,7 @@
 <div class="block block-hero">
 	<a href="{{ post.link }}" class="b-inner">
 		<div class="b-thumb">
-			{% include "@atoms/images/landscape-16x9.twig" with {
+			{% include "@atoms/images/image.twig" with {
 				img: post.thumbnail
 					? { src: post.thumbnail.src, alt: post.title, width: "100%" }
 					: {}
