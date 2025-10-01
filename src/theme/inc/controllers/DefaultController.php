@@ -167,6 +167,37 @@ class DefaultController
 			"last_name" => $author->last_name,
 		];
 
+		$featured_image = get_the_post_thumbnail_url(get_the_ID(), "medium");
+		$data["featured_image"] = [
+			"src" => $featured_image,
+			"alt" => get_post_meta(
+				get_post_thumbnail_id(get_the_ID()),
+				"_wp_attachment_image_alt",
+				true
+			),
+			"width" => 1600,
+			"height" => 900,
+		];
+
+		$data["related_posts"] = [];
+		$categories = wp_get_post_categories(get_the_ID());
+		$tags = wp_get_post_tags(get_the_ID(), ["fields" => "ids"]);
+
+		$related_posts = get_posts([
+			"category__in" => $categories,
+			"tag__in" => $tags,
+			"post__not_in" => [get_the_ID()],
+			"numberposts" => 3,
+			"orderby" => "rand",
+		]);
+
+		foreach ($related_posts as $post) {
+			$related_posts_data["title"] = get_the_title($post);
+			$related_posts_data["url"] = get_the_permalink($post);
+
+			$data["related_posts"]["posts"][] = $related_posts_data;
+		}
+
 		return array_merge($data, $context);
 	}
 
