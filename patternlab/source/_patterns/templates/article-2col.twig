@@ -5,6 +5,16 @@
 			<h1>{{ title }}</h1>
 			{% include "@molecules/text/byline.twig" %}
 		</header>
+		{% if featured_image %}
+			{% include "@atoms/images/image.twig" with {
+				img: {
+					src: featured_image.src,
+					alt: featured_image.alt|default(title),
+					width: featured_image.width|default("1200"),
+					height: featured_image.height|default("800")
+				}
+			} %}
+		{% endif %}
 		{% if content %}
 			{{ content }}
 		{% endif %}
@@ -19,6 +29,8 @@
 {% endblock main %}
 
 {% block sidebar %}
-	{% include "@organisms/sections/related-posts.twig" %}
+	{% if (related_posts.posts|length) > 0 %}
+		{% include "@organisms/sections/related-posts.twig" %}
+	{% endif %}
 	{% include "@organisms/sections/recent-tweets.twig" %}
 {% endblock sidebar %}
