@@ -126,5 +126,23 @@
 		"placeholder": "Search",
 		"action": "link.pages-blog-search-results",
 		"method": "GET"
-	}
+	},
+	"menu": [
+		{
+			"title": "Home",
+			"link": "link.pages-homepage"
+		},
+		{
+			"title": "About",
+			"link": "link.pages-about"
+		},
+		{
+			"title": "Blog",
+			"link": "link.pages-blog"
+		},
+		{
+			"title": "Contact",
+			"link": "link.pages-contact"
+		}
+	]
 }
