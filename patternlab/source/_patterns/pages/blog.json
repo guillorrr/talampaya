@@ -1,7 +1,7 @@
 {
 	"title": "Blog",
 	"bodyClass": "blog",
-	"latest_posts": [
+	"posts": [
 		{
 			"img": {
 				"square": {
@@ -9,13 +9,9 @@
 					"alt": "Post Thumbnail"
 				}
 			},
-			"headline": {
-				"short": "Navigate the Allegheny River"
-			},
-			"excerpt": {
-				"medium": "The Allegheny River is a principal tributary of the Ohio River; it is located in the Eastern United States. The Allegheny River joins with the Monongahela River to form the Ohio River at the Point of Point State Park in Downtown Pittsburgh, Pennsylvania."
-			},
-			"url": "link.pages-article"
+			"title": "Navigate the Allegheny River",
+			"post_content": "The Allegheny River is a principal tributary of the Ohio River; it is located in the Eastern United States. The Allegheny River joins with the Monongahela River to form the Ohio River at the Point of Point State Park in Downtown Pittsburgh, Pennsylvania.",
+			"link": "link.pages-article"
 		},
 		{
 			"img": {
@@ -24,13 +20,9 @@
 					"alt": "Ivy"
 				}
 			},
-			"headline": {
-				"short": "How to detect and avoid poison ivy"
-			},
-			"excerpt": {
-				"medium": "Toxicodendron radicans, commonly known as poison ivy is a poisonous North American plant that is well known for its production of urushiol"
-			},
-			"url": "link.pages-article"
+			"title": "How to detect and avoid poison ivy",
+			"post_content": "Toxicodendron radicans, commonly known as poison ivy is a poisonous North American plant that is well known for its production of urushiol",
+			"link": "link.pages-article"
 		},
 		{
 			"img": {
@@ -39,13 +31,9 @@
 					"alt": "Yosemite"
 				}
 			},
-			"headline": {
-				"short": "Top 10 hiking mountains"
-			},
-			"excerpt": {
-				"medium": "Yosemite National Park is a United States National Park spanning eastern portions of Tuolumne, Mariposa and Madera counties in the central eastern portion of the U.S. state of California."
-			},
-			"url": "link.pages-article"
+			"title": "Top 10 hiking mountains",
+			"post_content": "Yosemite National Park is a United States National Park spanning eastern portions of Tuolumne, Mariposa and Madera counties in the central eastern portion of the U.S. state of California.",
+			"link": "link.pages-article"
 		},
 		{
 			"img": {
@@ -54,13 +42,9 @@
 					"alt": "Fire"
 				}
 			},
-			"headline": {
-				"short": "How to build a campfire"
-			},
-			"excerpt": {
-				"medium": "A campfire is a fire lit at a campsite, to serve the following functions: light, warmth, a beacon, an insect and/or apex predator deterrent, to cook, and for a psychological sense of security. "
-			},
-			"url": "link.pages-article"
+			"title": "How to build a campfire",
+			"post_content": "A campfire is a fire lit at a campsite, to serve the following functions: light, warmth, a beacon, an insect and/or apex predator deterrent, to cook, and for a psychological sense of security. ",
+			"link": "link.pages-article"
 		},
 		{
 			"img": {
@@ -69,13 +53,9 @@
 					"alt": "Camping Gear"
 				}
 			},
-			"headline": {
-				"short": "Pick the right camping gear"
-			},
-			"excerpt": {
-				"medium": "The equipment used in camping varies with the particular type of camping. For instance, in survival camping the equipment consists of small items which have the purpose of helping the camper in providing food, heat and safety."
-			},
-			"url": "link.pages-article"
+			"title": "Pick the right camping gear",
+			"post_content": "The equipment used in camping varies with the particular type of camping. For instance, in survival camping the equipment consists of small items which have the purpose of helping the camper in providing food, heat and safety.",
+			"link": "link.pages-article"
 		}
 	],
 	"inset_blocks": [

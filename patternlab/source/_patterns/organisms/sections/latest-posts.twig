@@ -1,9 +1,29 @@
 <section class="section latest-posts">
-    <h2 class="section-title">Latest Posts</h2>
-    <ul class="post-list">
-    {% for post in latest_posts %}
-      <li>{% include "@molecules/blocks/media-block.twig" with post %}</li>
-    {% endfor %}
-  </ul>
-    <a href="#" class="text-btn">View more posts</a>
+	<h2 class="section-title">{{ title|default("Latest Posts") }}</h2>
+	<ul class="post-list">
+		{% for post in posts %}
+			<li>
+				{% include "@molecules/blocks/media-block.twig" with {
+					post: {
+						title: post.title,
+						url: post.link,
+						excerpt: (post.post_content|striptags|length) > 150
+							? (post.post_content|striptags|slice(0, 150)) ~ "..."
+							: post.post_content|striptags,
+						img: post.thumbnail
+							? [
+								{
+									src: post.thumbnail.src,
+									alt: post.title,
+									witdh: 800,
+									height: 600
+								}
+							]
+							: []
+					}
+				} %}
+			</li>
+		{% endfor %}
+	</ul>
+	<a href="#" class="text-btn">View more posts</a>
 </section>
