@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Core\Plugin\PluginManager;
 use App\Core\Setup\WordPressOptimizer;
 use App\Register\RegisterManager;
 use App\Utils\FileUtils;
@@ -12,6 +13,11 @@ use Timber\Timber;
  */
 class Bootstrap
 {
+	/**
+	 * Gestor de plugins
+	 */
+	private static ?PluginManager $pluginManager = null;
+
 	/**
 	 * Inicializa el tema y todas sus dependencias
 	 */
@@ -26,14 +32,17 @@ class Bootstrap
 		// Inicializar configuración del tema
 		self::initializeThemeSetup();
 
-		// Cargar plugins personalizados
-		self::loadPlugins();
+		// Inicializar gestor de plugins
+		self::initializePluginManager();
+
+		// Cargar configuración de plugins (TGM)
+		self::loadPluginConfig();
+
+		// Inicializar plugins integrados
+		self::initializeIntegratedPlugins();
 
 		// Registrar Custom Post Types, Taxonomías, etc.
 		self::registerCustomTypes();
-
-		// Cargar características adicionales
-		self::loadFeatures();
 
 		// Cargar archivos adicionales
 		self::loadAdditionalFiles();
@@ -81,13 +90,31 @@ class Bootstrap
 	}
 
 	/**
-	 * Carga plugins personalizados
+	 * Inicializa el gestor de plugins
 	 */
-	private static function loadPlugins(): void
+	private static function initializePluginManager(): void
+	{
+		self::$pluginManager = new PluginManager();
+	}
+
+	/**
+	 * Carga la configuración de plugins (TGM Plugin Activation)
+	 */
+	private static function loadPluginConfig(): void
 	{
 		$plugins_file = get_template_directory() . "/src/Plugins/plugins.php";
 		if (file_exists($plugins_file)) {
 			require_once $plugins_file;
+		}
+	}
+
+	/**
+	 * Inicializa los plugins integrados
+	 */
+	private static function initializeIntegratedPlugins(): void
+	{
+		if (self::$pluginManager) {
+			self::$pluginManager->initializePlugins();
 		}
 	}
 
@@ -98,19 +125,6 @@ class Bootstrap
 	{
 		if (class_exists("App\\Register\\RegisterManager")) {
 			RegisterManager::registerAll();
-		}
-	}
-
-	/**
-	 * Carga características adicionales como ACF
-	 */
-	private static function loadFeatures(): void
-	{
-		if (class_exists("ACF")) {
-			$acf_file = get_template_directory() . "/src/Features/Acf/acf.php";
-			if (file_exists($acf_file)) {
-				require_once $acf_file;
-			}
 		}
 	}
 
@@ -129,6 +143,16 @@ class Bootstrap
 				}
 			}
 		}
+	}
+
+	/**
+	 * Obtiene el gestor de plugins
+	 *
+	 * @return PluginManager|null El gestor de plugins
+	 */
+	public static function getPluginManager(): ?PluginManager
+	{
+		return self::$pluginManager;
 	}
 }
 

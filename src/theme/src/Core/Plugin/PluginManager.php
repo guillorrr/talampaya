@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Core\Plugin;
+
+use App\Utils\FileUtils;
+
+/**
+ * Gestor de plugins integrados del tema
+ */
+class PluginManager
+{
+	/**
+	 * Plugins registrados
+	 *
+	 * @var PluginInterface[]
+	 */
+	private array $plugins = [];
+
+	/**
+	 * Lista de plugins requeridos para TGM Plugin Activation
+	 *
+	 * @var array
+	 */
+	private array $requiredPlugins = [];
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->loadPlugins();
+	}
+
+	/**
+	 * Carga y registra todos los plugins disponibles
+	 */
+	private function loadPlugins(): void
+	{
+		// Cargar plugins principales del core
+		$this->loadCorePlugins();
+
+		// Cargar plugins personalizados
+		$this->loadCustomPlugins();
+	}
+
+	/**
+	 * Carga los plugins principales del core
+	 */
+	private function loadCorePlugins(): void
+	{
+		// Aquí puedes registrar plugins específicos que siempre deben estar disponibles
+		// Ejemplo: $this->registerPlugin(new \App\Core\Plugin\Integrated\AcfPlugin());
+	}
+
+	/**
+	 * Carga plugins personalizados desde directorios
+	 */
+	private function loadCustomPlugins(): void
+	{
+		$pluginsDir = defined("THEME_DIR")
+			? THEME_DIR . "/src/Core/Plugin/Integrated"
+			: get_template_directory() . "/src/Core/Plugin/Integrated";
+
+		if (is_dir($pluginsDir)) {
+			$pluginFiles = FileUtils::talampaya_directory_iterator($pluginsDir);
+
+			foreach ($pluginFiles as $file) {
+				$className = pathinfo($file, PATHINFO_FILENAME);
+				$fullyQualifiedClassName = "\\App\\Core\\Plugin\\Integrated\\{$className}";
+
+				if (
+					class_exists($fullyQualifiedClassName) &&
+					is_subclass_of($fullyQualifiedClassName, PluginInterface::class)
+				) {
+					$this->registerPlugin(new $fullyQualifiedClassName());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Registra un plugin
+	 *
+	 * @param PluginInterface $plugin Plugin a registrar
+	 */
+	public function registerPlugin(PluginInterface $plugin): void
+	{
+		$this->plugins[$plugin->getName()] = $plugin;
+
+		// Agregar plugins requeridos a la lista para TGM
+		$requiredPlugins = $plugin->getRequiredPlugins();
+		if (!empty($requiredPlugins)) {
+			$this->requiredPlugins = array_merge($this->requiredPlugins, $requiredPlugins);
+		}
+	}
+
+	/**
+	 * Inicializa todos los plugins activos
+	 */
+	public function initializePlugins(): void
+	{
+		foreach ($this->plugins as $plugin) {
+			if ($plugin->shouldLoad()) {
+				$plugin->initialize();
+			}
+		}
+	}
+
+	/**
+	 * Obtiene un plugin por su nombre
+	 *
+	 * @param string $name Nombre del plugin
+	 * @return PluginInterface|null El plugin o null si no existe
+	 */
+	public function getPlugin(string $name): ?PluginInterface
+	{
+		return $this->plugins[$name] ?? null;
+	}
+
+	/**
+	 * Verifica si un plugin está registrado y activo
+	 *
+	 * @param string $name Nombre del plugin
+	 * @return bool True si el plugin está registrado y activo
+	 */
+	public function isPluginActive(string $name): bool
+	{
+		return isset($this->plugins[$name]) && $this->plugins[$name]->shouldLoad();
+	}
+
+	/**
+	 * Obtiene la lista de plugins requeridos para TGM Plugin Activation
+	 *
+	 * @return array Lista de plugins requeridos
+	 */
+	public function getRequiredPlugins(): array
+	{
+		return $this->requiredPlugins;
+	}
+}
