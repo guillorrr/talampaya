@@ -1,5 +1,6 @@
 <?php
 
+namespace Talampaya\Core;
 class TalampayaSetup
 {
 	public function __construct()

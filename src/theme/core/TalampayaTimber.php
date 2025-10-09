@@ -1,5 +1,7 @@
 <?php
 
+namespace Talampaya\Core;
+
 use Timber\Site;
 use Timber\Timber;
 use Twig\Extension\StringLoaderExtension;
@@ -31,7 +33,6 @@ class TalampayaTimber extends Site
 		$paths["layouts"] = [__DIR__ . "/../views/layouts"];
 		$paths["blocks"] = [__DIR__ . "/../views/blocks"];
 		$paths["components"] = [__DIR__ . "/../views/components"];
-		$paths["sections"] = [__DIR__ . "/../views/sections"];
 
 		return $paths;
 	}
@@ -40,7 +41,7 @@ class TalampayaTimber extends Site
 	{
 		$theme = wp_get_theme();
 		$theme_version = $theme->get("Version");
-		$paths = require_once __DIR__ . "./../inc/utils/paths.php";
+		$paths = require_once __DIR__ . "./../utils/paths.php";
 
 		$context["foo"] = "bar";
 		//		$context["FACEBOOK_PIXEL_ID"] = $this->facebook_pixel_ids;

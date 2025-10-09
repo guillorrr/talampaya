@@ -1,5 +1,6 @@
 <?php
 
+namespace Talampaya\Core;
 class TalampayaFactory
 {
 	protected $post_types;
