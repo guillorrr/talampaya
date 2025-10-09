@@ -6,6 +6,7 @@ use Timber\Site;
 use Timber\Timber;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Extra\Html\HtmlExtension;
+use Twig\TwigFilter;
 
 class TalampayaTimber extends Site
 {
@@ -24,15 +25,17 @@ class TalampayaTimber extends Site
 
 	public function add_locations($paths)
 	{
-		$paths["atoms"] = [__DIR__ . "/../views/atoms"];
-		$paths["molecules"] = [__DIR__ . "/../views/molecules"];
-		$paths["organisms"] = [__DIR__ . "/../views/organisms"];
-		$paths["templates"] = [__DIR__ . "/../views/templates"];
-		$paths["macros"] = [__DIR__ . "/../views/macros"];
-		$paths["pages"] = [__DIR__ . "/../views/pages"];
-		$paths["layouts"] = [__DIR__ . "/../views/layouts"];
-		$paths["blocks"] = [__DIR__ . "/../views/blocks"];
-		$paths["components"] = [__DIR__ . "/../views/components"];
+		$theme_dir = get_template_directory();
+
+		$paths["atoms"] = ["{$theme_dir}/views/atoms"];
+		$paths["molecules"] = ["{$theme_dir}/views/molecules"];
+		$paths["organisms"] = ["{$theme_dir}/views/organisms"];
+		$paths["templates"] = ["{$theme_dir}/views/templates"];
+		$paths["macros"] = ["{$theme_dir}/views/macros"];
+		$paths["pages"] = ["{$theme_dir}/views/pages"];
+		$paths["layouts"] = ["{$theme_dir}/views/layouts"];
+		$paths["blocks"] = ["{$theme_dir}/views/blocks"];
+		$paths["components"] = ["{$theme_dir}/views/components"];
 
 		return $paths;
 	}
@@ -73,7 +76,7 @@ class TalampayaTimber extends Site
 		$twig->addExtension(new StringLoaderExtension());
 		$twig->addExtension(new HtmlExtension());
 
-		$twig->addFilter(new Twig\TwigFilter("myfoo", [$this, "myfoo"]));
+		$twig->addFilter(new TwigFilter("myfoo", [$this, "myfoo"]));
 
 		return $twig;
 	}
