@@ -12,20 +12,32 @@ require_once __DIR__ . "/../../vendor/autoload.php";
 require_once __DIR__ . "/plugins/plugins.php";
 
 Timber\Timber::init();
-Timber::$dirname = ["templates", "views"];
 
-if (class_exists("TalampayaBase")) {
+$theme_dir = get_template_directory();
+Timber::$dirname = ["{$theme_dir}/templates", "{$theme_dir}/views"];
+
+if (class_exists("Talampaya\\Core\\TalampayaBase")) {
 	new TalampayaBase();
 }
-if (class_exists("TalampayaSetup")) {
+if (class_exists("Talampaya\\Core\\TalampayaSetup")) {
 	new TalampayaSetup();
 }
 
-if (class_exists("TalampayaTimber")) {
-	new TalampayaTimber();
-}
-
 RegisterManager::registerAll();
+
+if (class_exists("Talampaya\\Core\\TalampayaTimber")) {
+	new TalampayaTimber();
+
+	error_log("Timber Initialized with Paths: " . print_r(Timber::$dirname, true));
+
+	add_action(
+		"init",
+		function () {
+			error_log("Timber Namespaces Check: " . print_r(Timber::$dirname, true));
+		},
+		999
+	);
+}
 
 if (class_exists("ACF")) {
 	require_once __DIR__ . "/features/Acf/acf.php";
@@ -33,6 +45,7 @@ if (class_exists("ACF")) {
 
 $directories = [
 	__DIR__ . "/hooks/Filters",
+	__DIR__ . "/core/Config",
 	//    __DIR__ . "/app/models",
 	//    __DIR__ . "/app/services",
 	//    __DIR__ . "/app/defaults",
