@@ -10,22 +10,22 @@ use Twig\TwigFilter;
 
 class TalampayaStarter extends Site
 {
-	public $google_analytics_id = "UA-XXXXXXXX";
-	public $facebook_pixel_ids = "XXXXXXXXXXXXXXX";
-
 	public function __construct()
 	{
-		add_filter("timber/context", [$this, "add_to_context"]);
-		add_filter("timber/twig", [$this, "add_to_twig"]);
-		add_filter("timber/twig/environment/options", [$this, "update_twig_environment_options"]);
-		add_filter("timber/locations", [$this, "add_locations"]);
+		add_filter("timber/context", [$this, "addToContext"]);
+		add_filter("timber/twig", [$this, "addToTwig"]);
+		add_filter("timber/twig/environment/options", [$this, "updateTwigEnvironmentOptions"]);
+		add_filter("timber/locations", [$this, "addLocations"]);
 
 		parent::__construct();
 	}
 
-	public function add_locations($paths)
+	/**
+	 * Agrega ubicaciones adicionales para plantillas Timber/Twig
+	 */
+	public function addLocations($paths)
 	{
-		$theme_dir = get_template_directory();
+		$theme_dir = defined("THEME_DIR") ? THEME_DIR : get_template_directory();
 
 		$paths["atoms"] = ["{$theme_dir}/views/atoms"];
 		$paths["molecules"] = ["{$theme_dir}/views/molecules"];
@@ -40,24 +40,71 @@ class TalampayaStarter extends Site
 		return $paths;
 	}
 
-	public function add_to_context(array $context): array
+	/**
+	 * Agrega variables al contexto de Timber
+	 */
+	public function addToContext(array $context): array
 	{
-		$theme = wp_get_theme();
-		$theme_version = $theme->get("Version");
-		$paths = require_once __DIR__ . "/Utils/paths.php";
-
-		$context["foo"] = "bar";
-		//		$context["FACEBOOK_PIXEL_ID"] = $this->facebook_pixel_ids;
-		//      $context["GOOGLE_ANALYTICS_ID"] = $this->google_analytics_id;
-		$context["menu"] = Timber::get_menu();
-		$context["paths"] = $paths;
-		$context["version"] = $theme_version;
+		// Usar constantes en lugar de obtener valores dinámicamente
+		$context["version"] = defined("THEME_VERSION")
+			? THEME_VERSION
+			: wp_get_theme()->get("Version");
 		$context["site"] = $this;
+		$context["menu"] = Timber::get_menu();
 		$context["links"]["home"] = home_url("/");
+
+		if (defined("FACEBOOK_PIXEL_ID")) {
+			$context["FACEBOOK_PIXEL_ID"] = FACEBOOK_PIXEL_ID;
+		}
+		if (defined("GOOGLE_ANALYTICS_ID")) {
+			$context["GOOGLE_ANALYTICS_ID"] = GOOGLE_ANALYTICS_ID;
+		}
+
+		$context["paths"] = $this->getPathsForContext();
 
 		return $context;
 	}
 
+	/**
+	 * Crea un objeto de rutas para el contexto usando las constantes definidas
+	 */
+	protected function getPathsForContext(): object
+	{
+		$paths = [
+			"theme_root" => get_theme_root(),
+			"template" => defined("THEME_DIR") ? THEME_DIR : get_template_directory(),
+			"stylesheet" => get_stylesheet_directory(),
+			"template_uri" => defined("THEME_URI") ? THEME_URI : get_template_directory_uri(),
+			"stylesheet_uri" => get_stylesheet_directory_uri(),
+			"assets" => defined("THEME_ASSETS_URI")
+				? THEME_ASSETS_URI
+				: get_template_directory_uri() . "/assets",
+			"img" => defined("THEME_IMG_URI")
+				? THEME_IMG_URI
+				: get_template_directory_uri() . "/assets/img",
+			"css" => defined("THEME_CSS_URI")
+				? THEME_CSS_URI
+				: get_template_directory_uri() . "/css",
+			"js" => defined("THEME_JS_URI") ? THEME_JS_URI : get_template_directory_uri() . "/js",
+		];
+
+		$rel_paths = [
+			"rel_template" => wp_make_link_relative($paths["template_uri"]),
+			"rel_stylesheet" => wp_make_link_relative($paths["stylesheet_uri"]),
+		];
+
+		// Rutas de funciones adicionales para mantener compatibilidad
+		$functions_paths = [
+			"core" => $paths["template"] . "/core",
+			"functions" => $paths["template"] . "/inc",
+		];
+
+		return (object) array_merge($paths, $rel_paths, $functions_paths);
+	}
+
+	/**
+	 * Función de ejemplo para filtros Twig
+	 */
 	public function myfoo(string $text): string
 	{
 		$text .= " bar!";
@@ -65,9 +112,9 @@ class TalampayaStarter extends Site
 	}
 
 	/**
-	 * This is where you can add your own functions to twig.
+	 * Agrega funcionalidades personalizadas a Twig
 	 */
-	public function add_to_twig(\Twig\Environment $twig): \Twig\Environment
+	public function addToTwig(\Twig\Environment $twig): \Twig\Environment
 	{
 		/**
 		 * Required when you want to use Twig’s template_from_string.
@@ -76,6 +123,7 @@ class TalampayaStarter extends Site
 		$twig->addExtension(new StringLoaderExtension());
 		$twig->addExtension(new HtmlExtension());
 
+		// Agregar filtros personalizados
 		$twig->addFilter(new TwigFilter("myfoo", [$this, "myfoo"]));
 
 		return $twig;
@@ -87,10 +135,9 @@ class TalampayaStarter extends Site
 	 * @link https://twig.symfony.com/doc/2.x/api.html#environment-options
 	 *
 	 */
-	function update_twig_environment_options(array $options): array
+	public function updateTwigEnvironmentOptions(array $options): array
 	{
 		// $options['autoescape'] = true;
-
 		return $options;
 	}
 }

@@ -127,10 +127,7 @@ class Bootstrap
 	 */
 	private static function loadAdditionalFiles(): void
 	{
-		$directories = [
-			get_template_directory() . "/hooks/Filters",
-			get_template_directory() . "/src/Core/Config",
-		];
+		$directories = [get_template_directory() . "/hooks/Filters"];
 
 		foreach ($directories as $dir) {
 			$files = FileUtils::talampaya_directory_iterator($dir);
