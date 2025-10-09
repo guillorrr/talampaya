@@ -22,7 +22,7 @@ add_action("tgmpa_register", "talampaya_register_required_plugins");
  * Esta función obtiene la lista de plugins requeridos desde el
  * PluginManager y los registra para su activación
  */
-function talampaya_register_required_plugins()
+function talampaya_register_required_plugins(): void
 {
 	// Inicializar el gestor de plugins
 	$pluginManager = new \App\Core\Plugin\PluginManager();
