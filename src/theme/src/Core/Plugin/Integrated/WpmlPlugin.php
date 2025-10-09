@@ -46,37 +46,6 @@ class WpmlPlugin extends AbstractPlugin
 	 */
 	public function addWpmlTwigExtensions(\Twig\Environment $twig): \Twig\Environment
 	{
-		// Agregar función para traducir cadenas
-		$twig->addFunction(
-			new \Twig\TwigFunction("__", function ($text, $domain = "default") {
-				return __($text, $domain);
-			})
-		);
-
-		$twig->addFunction(
-			new \Twig\TwigFunction("_e", function ($text, $domain = "default") {
-				return _e($text, $domain);
-			})
-		);
-
-		$twig->addFunction(
-			new \Twig\TwigFunction("_n", function ($single, $plural, $number, $domain = "default") {
-				return _n($single, $plural, $number, $domain);
-			})
-		);
-
-		$twig->addFunction(
-			new \Twig\TwigFunction("_x", function ($text, $context, $domain = "default") {
-				return _x($text, $context, $domain);
-			})
-		);
-
-		$twig->addFunction(
-			new \Twig\TwigFunction("_ex", function ($text, $context, $domain = "default") {
-				return _ex($text, $context, $domain);
-			})
-		);
-
 		// Función para obtener el idioma actual
 		$twig->addFunction(
 			new \Twig\TwigFunction("icl_get_languages", function ($args = "") {
