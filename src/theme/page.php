@@ -10,6 +10,7 @@
  */
 
 use Timber\Timber;
+use Talampaya\App\Controllers\DefaultController;
 
 $context = Timber::context();
 
