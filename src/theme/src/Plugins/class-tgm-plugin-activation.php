@@ -1146,12 +1146,7 @@ if (!class_exists("TGM_Plugin_Activation")) {
 
 				if (!empty($subdir_name) && $subdir_name !== $desired_slug) {
 					$from_path = untrailingslashit($source);
-					$to_path =
-						-tgm -
-						plugin -
-						activation .
-						phptrailingslashit($remote_source) .
-						$desired_slug;
+					$to_path = trailingslashit($remote_source) . $desired_slug;
 
 					if (true === $GLOBALS["wp_filesystem"]->move($from_path, $to_path)) {
 						return trailingslashit($to_path);
