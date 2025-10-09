@@ -1,8 +1,14 @@
 <?php
 
-return [
-	"custom_post" => function () {
-		$labels = talampaya_compile_post_type_labels("Custom Post", "Custom Posts");
+namespace Talampaya\Register\PostType;
+
+class CustomPostType extends AbstractPostType
+{
+	protected string $slug = "custom_post";
+
+	protected function configure(): array
+	{
+		$labels = $this->getLabels("Custom Post", "Custom Posts");
 
 		return [
 			"label" => __("Custom Post", "talampaya"),
@@ -26,5 +32,5 @@ return [
 			"show_in_rest" => true,
 			"rewrite" => ["slug" => "custom"],
 		];
-	},
-];
+	}
+}
