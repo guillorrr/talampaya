@@ -186,6 +186,16 @@
 			"dotenv-name": ".env"
 		}
 	},
+	"autoload": {
+		"psr-4": {
+			"Talampaya\\App\\": "wp-content/themes/talampaya/app/",
+			"Talampaya\\Core\\": "wp-content/themes/talampaya/core/",
+			"Talampaya\\Features\\": "wp-content/themes/talampaya/features/",
+			"Talampaya\\Integrations\\": "wp-content/themes/talampaya/integrations/",
+			"Talampaya\\Register\\": "wp-content/themes/talampaya/register/",
+			"Talampaya\\Utils\\": "wp-content/themes/talampaya/utils/"
+		}
+	},
 	"config": {
 		"vendor-dir": "wp-content/vendor",
 		"allow-plugins": {
