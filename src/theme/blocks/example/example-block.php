@@ -1,7 +1,7 @@
 <?php
-// Block Key: 'example'
 
 use Illuminate\Support\Str;
+use Talampaya\App\Helpers\AcfHelper;
 
 function add_acf_block_example()
 {
@@ -23,11 +23,11 @@ function add_acf_block_example()
 			100,
 			null,
 			0,
-			["layout" => "block", "sub_fields" => [talampaya_create_acf_field("text")]],
+			["layout" => "block", "sub_fields" => [AcfHelper::talampaya_create_acf_field("text")]],
 		],
 	];
 
-	$groups = [[$block_title, talampaya_create_acf_group_fields($fields), 1]];
+	$groups = [[$block_title, AcfHelper::talampaya_create_acf_group_fields($fields), 1]];
 
 	foreach ($groups as $group) {
 		$field_group = [
@@ -48,7 +48,7 @@ function add_acf_block_example()
 		];
 
 		acf_add_local_field_group(
-			talampaya_replace_keys_from_acf_register_fields($field_group, $key_undescore)
+			AcfHelper::talampaya_replace_keys_from_acf_register_fields($field_group, $key_undescore)
 		);
 	}
 }

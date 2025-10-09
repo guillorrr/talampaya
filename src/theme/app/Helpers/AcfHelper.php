@@ -3,6 +3,7 @@
 namespace Talampaya\App\Helpers;
 
 use Illuminate\Support\Str;
+use Talampaya\App\Helpers\AttachmentsHelper;
 
 class AcfHelper
 {
@@ -135,7 +136,7 @@ class AcfHelper
 	{
 		$group_fields = [];
 		foreach ($fields as $field) {
-			$group_fields[] = talampaya_create_acf_field(
+			$group_fields[] = self::talampaya_create_acf_field(
 				$field[0],
 				isset($field[1]) ? $field[1] : "text",
 				isset($field[2]) ? $field[2] : null,
@@ -202,7 +203,7 @@ class AcfHelper
 	): bool {
 		if (!empty($image_url)) {
 			$filename = basename($image_url);
-			$image_id = get_image_id_by_filename($filename);
+			$image_id = AttachmentsHelper::get_image_id_by_filename($filename);
 
 			if ($image_id) {
 				return update_field($custom_field, $image_id, $post_id);

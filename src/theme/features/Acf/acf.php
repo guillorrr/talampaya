@@ -38,7 +38,7 @@ foreach ($directories = new DirectoryIterator(get_template_directory() . "/block
 /**
  * Register ACF Custom fields.
  */
-foreach ($files = new DirectoryIterator(get_template_directory() . "/features/acf") as $file) {
+foreach ($files = new DirectoryIterator(get_template_directory() . "/features/Acf") as $file) {
 	if ($file->isFile() && $file->getExtension() === "php") {
 		$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
 		if (!str_starts_with($filenameWithoutExtension, "_")) {

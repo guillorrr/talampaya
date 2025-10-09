@@ -1,6 +1,7 @@
 <?php
 
 namespace Talampaya\App\Controllers;
+use Timber\Timber;
 
 class DefaultController
 {

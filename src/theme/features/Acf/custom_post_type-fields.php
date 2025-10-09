@@ -1,8 +1,9 @@
 <?php
 // Post Type Key: custom_post_type
 use Illuminate\Support\Str;
+use Talampaya\App\Helpers\AcfHelper;
 
-function add_acf_custom_post_type_fields()
+function add_acf_custom_post_type_fields(): void
 {
 	$post_type = "custom_post_type";
 	$block_title = __("Custom Fields", "talampaya");
@@ -18,7 +19,7 @@ function add_acf_custom_post_type_fields()
 		["end_date", "date_picker", 50, null, 0, $additional_args],
 	];
 
-	$groups = [[$block_title, talampaya_create_acf_group_fields($fields), 1]];
+	$groups = [[$block_title, AcfHelper::talampaya_create_acf_group_fields($fields), 1]];
 
 	foreach ($groups as $group) {
 		$field_group = [
@@ -39,7 +40,11 @@ function add_acf_custom_post_type_fields()
 		];
 
 		acf_add_local_field_group(
-			talampaya_replace_keys_from_acf_register_fields($field_group, $post_type, "post_type")
+			AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+				$field_group,
+				$post_type,
+				"post_type"
+			)
 		);
 	}
 }
