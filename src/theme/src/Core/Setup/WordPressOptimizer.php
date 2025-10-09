@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core;
+namespace App\Core\Setup;
 
 /**
  * Clase encargada de optimizar WordPress y deshabilitar funciones nativas innecesarias

@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Core\Setup\WordPressOptimizer;
 use App\Register\RegisterManager;
 use App\Utils\FileUtils;
 use Timber\Timber;
@@ -21,9 +22,6 @@ class Bootstrap
 
 		// Cargar constantes
 		self::loadConstants();
-
-		// Inicializar optimizaciones de WordPress
-		self::initializeWordPressOptimizer();
 
 		// Inicializar configuración del tema
 		self::initializeThemeSetup();
@@ -58,20 +56,14 @@ class Bootstrap
 	}
 
 	/**
-	 * Inicializa el optimizador de WordPress
-	 */
-	private static function initializeWordPressOptimizer(): void
-	{
-		if (class_exists("App\\Core\\WordPressOptimizer")) {
-			new WordPressOptimizer();
-		}
-	}
-
-	/**
 	 * Inicializa la configuración del tema
 	 */
 	private static function initializeThemeSetup(): void
 	{
+		if (class_exists("App\\Core\\Setup\\WordPressOptimizer")) {
+			new WordPressOptimizer();
+		}
+
 		// Inicializar configuraciones básicas
 		if (class_exists("App\\Core\\Setup\\ThemeSupport")) {
 			new Setup\ThemeSupport();
