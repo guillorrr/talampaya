@@ -2,7 +2,7 @@
 
 namespace App\Register\PostType;
 
-use Talampaya\src\register\PostType\AbstractPostType;
+use App\Register\PostType\AbstractPostType;
 
 class CustomPostType extends AbstractPostType
 {

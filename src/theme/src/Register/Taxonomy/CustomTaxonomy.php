@@ -2,7 +2,7 @@
 
 namespace App\Register\Taxonomy;
 
-use Talampaya\src\register\Taxonomy\AbstractTaxonomy;
+use App\Register\Taxonomy\AbstractTaxonomy;
 
 class CustomTaxonomy extends AbstractTaxonomy
 {

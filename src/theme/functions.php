@@ -3,7 +3,6 @@
 namespace App;
 
 use Timber\Timber;
-use App\TalampayaTimber;
 use App\Core\TalampayaBase;
 use App\Core\TalampayaSetup;
 use App\Utils\FileUtils;
@@ -24,7 +23,7 @@ if (class_exists("App\\Core\\TalampayaSetup")) {
 	new TalampayaSetup();
 }
 
-require_once __DIR__ . "/src/plugins/plugins.php";
+require_once __DIR__ . "/src/Plugins/plugins.php";
 
 if (class_exists("App\\TalampayaTimber")) {
 	new TalampayaTimber();
@@ -43,12 +42,12 @@ if (class_exists("App\\TalampayaTimber")) {
 RegisterManager::registerAll();
 
 if (class_exists("ACF")) {
-	require_once __DIR__ . "/src/features/Acf/acf.php";
+	require_once __DIR__ . "/src/Features/Acf/acf.php";
 }
 
 $directories = [
 	__DIR__ . "/hooks/Filters",
-	__DIR__ . "/core/Config",
+	__DIR__ . "/src/Core/Config",
 	//    __DIR__ . "/app/models",
 	//    __DIR__ . "/app/services",
 	//    __DIR__ . "/app/defaults",

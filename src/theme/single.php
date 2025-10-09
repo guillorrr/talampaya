@@ -5,7 +5,7 @@
  */
 
 use Timber\Timber;
-use Talampaya\src\app\Controllers\DefaultController;
+use App\Inc\Controllers\DefaultController;
 
 $context = Timber::context();
 $post = $context["post"];

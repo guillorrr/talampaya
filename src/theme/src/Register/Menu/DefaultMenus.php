@@ -2,7 +2,7 @@
 
 namespace App\Register\Menu;
 
-use Talampaya\src\register\Menu\AbstractMenu;
+use App\Register\Menu\AbstractMenu;
 
 class DefaultMenus extends AbstractMenu
 {

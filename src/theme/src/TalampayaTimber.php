@@ -44,7 +44,7 @@ class TalampayaTimber extends Site
 	{
 		$theme = wp_get_theme();
 		$theme_version = $theme->get("Version");
-		$paths = require_once __DIR__ . "./../utils/paths.php";
+		$paths = require_once __DIR__ . "/Utils/paths.php";
 
 		$context["foo"] = "bar";
 		//		$context["FACEBOOK_PIXEL_ID"] = $this->facebook_pixel_ids;

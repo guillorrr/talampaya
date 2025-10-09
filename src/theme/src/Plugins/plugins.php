@@ -32,7 +32,7 @@
  * Plugin:
  * require_once dirname( __FILE__ ) . '/path/to/class-tgm-plugin-activation.php';
  */
-require_once get_template_directory() . "/src/plugins/class-tgm-plugin-activation.php";
+require_once get_template_directory() . "/src/Plugins/class-tgm-plugin-activation.php";
 
 add_action("tgmpa_register", "talampaya_register_required_plugins");
 

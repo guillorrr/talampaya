@@ -1,7 +1,7 @@
 <?php
 // Post Type Key: custom_post_type
 use Illuminate\Support\Str;
-use Talampaya\src\app\Helpers\AcfHelper;
+use App\Inc\Helpers\AcfHelper;
 
 function add_acf_custom_post_type_fields(): void
 {

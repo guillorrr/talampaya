@@ -3,7 +3,7 @@
 namespace App\Inc\Helpers;
 
 use Illuminate\Support\Str;
-use Talampaya\src\app\Helpers\AttachmentsHelper;
+use App\Inc\Helpers\AttachmentsHelper;
 
 class AcfHelper
 {

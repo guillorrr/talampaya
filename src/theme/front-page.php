@@ -1,7 +1,7 @@
 <?php
 
 use Timber\Timber;
-use Talampaya\src\app\Controllers\DefaultController;
+use App\Inc\Controllers\DefaultController;
 
 $templates = [get_template_directory() . "/views/pages/front-page.twig"];
 

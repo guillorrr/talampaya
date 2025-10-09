@@ -2,7 +2,7 @@
 
 namespace App\Register\Sidebar;
 
-use Talampaya\src\register\Sidebar\AbstractSidebar;
+use App\Register\Sidebar\AbstractSidebar;
 
 class CustomSidebar extends AbstractSidebar
 {

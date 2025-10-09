@@ -2,7 +2,6 @@
 
 namespace App\Register;
 
-use App\Utils\FileUtils;
 use DirectoryIterator;
 use Exception;
 
