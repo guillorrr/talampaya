@@ -3,7 +3,7 @@
 use Timber\Timber;
 use Talampaya\App\Controllers\DefaultController;
 
-$templates = ["pages/front-page.twig"];
+$templates = [get_template_directory() . "/views/pages/front-page.twig"];
 
 $context = Timber::context();
 
