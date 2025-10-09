@@ -48,8 +48,8 @@ class PluginManager
 	 */
 	private function loadCorePlugins(): void
 	{
-		// Aquí puedes registrar plugins específicos que siempre deben estar disponibles
-		// Ejemplo: $this->registerPlugin(new \App\Core\Plugin\Integration\AcfPlugin());
+		// Aquí registrar plugins específicos que siempre deben estar disponibles
+		$this->registerPlugin(new \App\Core\Plugin\Integration\AcfPlugin());
 	}
 
 	/**
