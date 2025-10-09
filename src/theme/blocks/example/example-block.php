@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
-use Talampaya\App\Helpers\AcfHelper;
+use Talampaya\src\app\Helpers\AcfHelper;
 
 function add_acf_block_example()
 {

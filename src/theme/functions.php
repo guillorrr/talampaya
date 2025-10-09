@@ -1,31 +1,32 @@
 <?php
 
-use Talampaya\Core\TalampayaBase;
-use Talampaya\Core\TalampayaSetup;
-use Talampaya\Core\TalampayaTimber;
-use Talampaya\Utils\FileUtils;
-use Talampaya\Register\RegisterManager;
+namespace App;
+
+use Timber\Timber;
+use App\TalampayaTimber;
+use App\Core\TalampayaBase;
+use App\Core\TalampayaSetup;
+use App\Utils\FileUtils;
+use App\Register\RegisterManager;
 
 // Load Composer dependencies.
 require_once __DIR__ . "/../../vendor/autoload.php";
 
-require_once __DIR__ . "/plugins/plugins.php";
-
-Timber\Timber::init();
+Timber::init();
 
 $theme_dir = get_template_directory();
 Timber::$dirname = ["{$theme_dir}/templates", "{$theme_dir}/views"];
 
-if (class_exists("Talampaya\\Core\\TalampayaBase")) {
+if (class_exists("App\\Core\\TalampayaBase")) {
 	new TalampayaBase();
 }
-if (class_exists("Talampaya\\Core\\TalampayaSetup")) {
+if (class_exists("App\\Core\\TalampayaSetup")) {
 	new TalampayaSetup();
 }
 
-RegisterManager::registerAll();
+require_once __DIR__ . "/src/plugins/plugins.php";
 
-if (class_exists("Talampaya\\Core\\TalampayaTimber")) {
+if (class_exists("App\\TalampayaTimber")) {
 	new TalampayaTimber();
 
 	error_log("Timber Initialized with Paths: " . print_r(Timber::$dirname, true));
@@ -39,8 +40,10 @@ if (class_exists("Talampaya\\Core\\TalampayaTimber")) {
 	);
 }
 
+RegisterManager::registerAll();
+
 if (class_exists("ACF")) {
-	require_once __DIR__ . "/features/Acf/acf.php";
+	require_once __DIR__ . "/src/features/Acf/acf.php";
 }
 
 $directories = [
