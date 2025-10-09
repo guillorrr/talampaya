@@ -2,23 +2,32 @@
 
 namespace App\Core;
 
-class TalampayaBase
+/**
+ * Clase encargada de optimizar WordPress y deshabilitar funciones nativas innecesarias
+ * para mejorar el rendimiento y la seguridad del sitio.
+ */
+class WordPressOptimizer
 {
+	/**
+	 * Constructor que inicializa todas las optimizaciones
+	 */
 	function __construct()
 	{
+		// Inicializar optimizaciones
 		add_action("init", [$this, "disableWpEmojicons"]);
 		add_action("admin_head", [$this, "hideUpdateNoticeToAllButAdmin"], 1);
-		add_action("widgets_init", [$this, "disable_default_widgets"], 11);
-		add_action("wp_enqueue_scripts", [$this, "dequeue_unnecessary_scripts"], 100);
+		add_action("widgets_init", [$this, "disableDefaultWidgets"], 11);
+		add_action("wp_enqueue_scripts", [$this, "dequeueUnnecessaryScripts"], 100);
 
+		// Ejecutar optimizaciones directamente
 		$this->disableXmlrpc();
-		$this->removeFromWpHead();
+		$this->cleanWpHead();
 	}
 
 	/**
-	 * Hide WordPress Update Nag to All But Admins
+	 * Oculta notificaciones de actualización a todos excepto administradores
 	 */
-	function hideUpdateNoticeToAllButAdmin()
+	function hideUpdateNoticeToAllButAdmin(): void
 	{
 		if (!current_user_can("update_core")) {
 			remove_action("admin_notices", "update_nag", 3);
@@ -26,9 +35,9 @@ class TalampayaBase
 	}
 
 	/**
-	 * Disable Emoji
+	 * Deshabilita emojis de WordPress para mejorar rendimiento
 	 */
-	function disableWpEmojicons()
+	function disableWpEmojicons(): void
 	{
 		remove_action("admin_print_styles", "print_emoji_styles");
 		remove_action("wp_head", "print_emoji_detection_script", 7);
@@ -40,7 +49,10 @@ class TalampayaBase
 		add_filter("tiny_mce_plugins", [$this, "disableEmojiconsTynymce"]);
 	}
 
-	function disableEmojiconsTynymce($plugins)
+	/**
+	 * Elimina soporte de emojis en el editor TinyMCE
+	 */
+	function disableEmojiconsTynymce($plugins): array
 	{
 		if (is_array($plugins)) {
 			return array_diff($plugins, ["wpemoji"]);
@@ -50,9 +62,9 @@ class TalampayaBase
 	}
 
 	/**
-	 * Disable xmlrpc.php
+	 * Deshabilita xmlrpc.php para mejorar seguridad
 	 */
-	function disableXmlrpc()
+	function disableXmlrpc(): void
 	{
 		add_filter("xmlrpc_enabled", "__return_false");
 		remove_action("wp_head", "rsd_link");
@@ -60,10 +72,10 @@ class TalampayaBase
 	}
 
 	/**
-	 * Remove useless things from wp_head
+	 * Limpia elementos innecesarios del head de WordPress
 	 * @link http://cubiq.org/clean-up-and-optimize-wordpress-for-your-next-theme
 	 */
-	function removeFromWpHead()
+	function cleanWpHead(): void
 	{
 		remove_action("wp_head", "wp_generator"); // WP Version
 		remove_action("wp_head", "start_post_rel_link");
@@ -75,9 +87,9 @@ class TalampayaBase
 	}
 
 	/**
-	 * Disables default WordPress widgets to improve performance.
+	 * Deshabilita widgets por defecto de WordPress para mejorar rendimiento
 	 */
-	function disable_default_widgets()
+	function disableDefaultWidgets(): void
 	{
 		unregister_widget("WP_Widget_Pages");
 		unregister_widget("WP_Widget_Calendar");
@@ -96,9 +108,9 @@ class TalampayaBase
 	}
 
 	/**
-	 * Dequeues unnecessary scripts and styles to improve performance.
+	 * Elimina scripts y estilos innecesarios para mejorar rendimiento
 	 */
-	function dequeue_unnecessary_scripts()
+	function dequeueUnnecessaryScripts(): void
 	{
 		if (!is_admin()) {
 			wp_dequeue_style("wp-block-library");
