@@ -9,7 +9,7 @@ function register_acf_blocks(): void
 		if ($item->isDir() && !$item->isDot()) {
 			$explode_directories = explode("/", $item->getPathname());
 			$last_directory = end($explode_directories);
-			$block_json = $item->getPathname() . "/" . $last_directory . "-block.json";
+			$block_json = $item->getPathname() . "acf.php/" . $last_directory . "-block.json";
 			if (file_exists($block_json)) {
 				register_block_type($block_json);
 			}
@@ -38,7 +38,7 @@ foreach ($directories = new DirectoryIterator(get_template_directory() . "/block
 /**
  * Register ACF Custom fields.
  */
-foreach ($files = new DirectoryIterator(get_template_directory() . "/inc/acf") as $file) {
+foreach ($files = new DirectoryIterator(get_template_directory() . "/features/acf") as $file) {
 	if ($file->isFile() && $file->getExtension() === "php") {
 		$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
 		if (!str_starts_with($filenameWithoutExtension, "_")) {

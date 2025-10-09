@@ -1,18 +1,18 @@
 <?php
 
 if (defined("WP_CLI") && WP_CLI) {
-	class Talampaya_CLI_Command
+	class AcfCli
 	{
 		/**
 		 * Save ACF fields to JSON files.
 		 *
 		 * ## EXAMPLES
 		 *
-		 *     wp talampaya acf-save-fields
+		 *     wp talampaya-acf save-fields
 		 *
 		 * @when after_wp_load
 		 */
-		public function acf_save_fields()
+		public function save_fields()
 		{
 			$results = save_acf_fields_to_json();
 			if (!empty($results["errors"])) {
@@ -30,11 +30,11 @@ if (defined("WP_CLI") && WP_CLI) {
 		 *
 		 * ## EXAMPLES
 		 *
-		 *     wp talampaya acf-create-tables
+		 *     wp talampaya-acf create-tables
 		 *
 		 * @when after_wp_load
 		 */
-		public function acf_create_tables()
+		public function create_tables()
 		{
 			$results = create_acf_table_json_for_each_group();
 
@@ -57,7 +57,7 @@ if (defined("WP_CLI") && WP_CLI) {
 		}
 	}
 
-	WP_CLI::add_command("talampaya", "Talampaya_CLI_Command", [
-		"shortdesc" => "Custom commands for Talampaya theme development",
+	WP_CLI::add_command("talampaya-acf", "AcfCli", [
+		"shortdesc" => "Custom commands for Talampaya theme development with ACF",
 	]);
 }

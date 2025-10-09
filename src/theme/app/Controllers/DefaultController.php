@@ -1,5 +1,7 @@
 <?php
 
+namespace Talampaya\App\Controllers;
+
 class DefaultController
 {
 	public static function get_front_page_context($context = []): array
