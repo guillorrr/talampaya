@@ -339,7 +339,7 @@ function wrapWithTemplate(content) {
 		return content;
 	} else {
 		// Si no tiene extends, aplicamos el wrapper
-		const template = `{% extends "layouts/base.twig" %}
+		const template = `{% extends "@layouts/base.twig" %}
 
 {% block content %}
 ###CONTENT###
