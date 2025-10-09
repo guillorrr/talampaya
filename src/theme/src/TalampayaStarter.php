@@ -8,7 +8,7 @@ use Twig\Extension\StringLoaderExtension;
 use Twig\Extra\Html\HtmlExtension;
 use Twig\TwigFilter;
 
-class TalampayaTimber extends Site
+class TalampayaStarter extends Site
 {
 	public $google_analytics_id = "UA-XXXXXXXX";
 	public $facebook_pixel_ids = "XXXXXXXXXXXXXXX";

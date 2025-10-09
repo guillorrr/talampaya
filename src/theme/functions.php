@@ -24,8 +24,8 @@ if (class_exists("App\\Core\\TalampayaSetup")) {
 
 require_once __DIR__ . "/src/Plugins/plugins.php";
 
-if (class_exists("App\\TalampayaTimber")) {
-	new TalampayaTimber();
+if (class_exists("App\\TalampayaStarter")) {
+	new TalampayaStarter();
 
 	error_log("Timber Initialized with Paths: " . print_r(Timber::$dirname, true));
 
