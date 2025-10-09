@@ -11,11 +11,12 @@
  */
 
 use Timber\Timber;
+use App\Inc\Controllers\DefaultController;
 
-$templates = ["pages/index.twig"];
+$templates = ["@pages/index.twig"];
 
 if (is_home()) {
-	array_unshift($templates, "pages/home.twig");
+	array_unshift($templates, "@pages/home.twig");
 }
 
 $context = Timber::context();

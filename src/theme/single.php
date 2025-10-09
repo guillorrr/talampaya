@@ -9,12 +9,12 @@ use App\Inc\Controllers\DefaultController;
 
 $context = Timber::context();
 $post = $context["post"];
-$templates = ["pages/single-" . $post->post_type . ".twig", "pages/single.twig"];
+$templates = ["@pages/single-" . $post->post_type . ".twig", "@pages/single.twig"];
 
 if (post_password_required($post->ID)) {
-	$templates = "pages/single-password.twig";
+	$templates = "@pages/single-password.twig";
 }
 
 $controller = new DefaultController();
 
-Timber::render("@pages/single.twig", $controller->get_single_context($context));
+Timber::render($templates, $controller->get_single_context($context));

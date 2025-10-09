@@ -3,7 +3,7 @@
 use Timber\Timber;
 use App\Inc\Controllers\DefaultController;
 
-$templates = [get_template_directory() . "/views/pages/front-page.twig"];
+$templates = ["@pages/front-page.twig"];
 
 $context = Timber::context();
 
