@@ -2,14 +2,11 @@
 
 namespace App;
 
+use Timber\Site;
+use Timber\Timber;
 use App\Core\ContextExtender\ContextManager;
 use App\Core\TwigExtender\EnvironmentOptions;
 use App\Core\TwigExtender\TwigManager;
-use Timber\Site;
-use Timber\Timber;
-use Twig\Extension\StringLoaderExtension;
-use Twig\Extra\Html\HtmlExtension;
-use Twig\TwigFilter;
 
 class TalampayaStarter extends Site
 {
