@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Plugin;
+namespace App\Core\Plugins;
 
 use App\Utils\FileUtils;
 
@@ -59,7 +59,7 @@ class PluginManager
 	{
 		$pluginsDir = defined("THEME_DIR")
 			? THEME_DIR . "/src/Core/Plugin/Integration"
-			: get_template_directory() . "/src/Core/Plugin/Integration";
+			: get_template_directory() . "/src/Core/Plugins/Integration";
 
 		if (is_dir($pluginsDir)) {
 			$pluginFiles = FileUtils::talampaya_directory_iterator($pluginsDir);

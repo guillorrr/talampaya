@@ -25,7 +25,7 @@ add_action("tgmpa_register", "talampaya_register_required_plugins");
 function talampaya_register_required_plugins(): void
 {
 	// Inicializar el gestor de plugins
-	$pluginManager = new \App\Core\Plugin\PluginManager();
+	$pluginManager = new \App\Core\Plugins\PluginManager();
 
 	// Obtener plugins básicos requeridos para el tema
 	$basePlugins = [

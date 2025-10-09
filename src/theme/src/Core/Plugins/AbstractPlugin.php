@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Plugin;
+namespace App\Core\Plugins;
 
 /**
  * Clase base para plugins integrados del tema

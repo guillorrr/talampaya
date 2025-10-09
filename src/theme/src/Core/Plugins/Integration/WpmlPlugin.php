@@ -2,7 +2,7 @@
 
 namespace App\Core\Plugin\Integration;
 
-use App\Core\Plugin\AbstractPlugin;
+use App\Core\Plugins\AbstractPlugin;
 
 /**
  * Plugin integrado para WPML
