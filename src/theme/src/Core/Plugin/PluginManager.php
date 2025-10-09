@@ -40,7 +40,7 @@ class PluginManager
 		$this->loadCorePlugins();
 
 		// Cargar plugins personalizados
-		$this->loadCustomPlugins();
+		$this->loadIntegrationPlugins();
 	}
 
 	/**
@@ -49,24 +49,30 @@ class PluginManager
 	private function loadCorePlugins(): void
 	{
 		// Aquí puedes registrar plugins específicos que siempre deben estar disponibles
-		// Ejemplo: $this->registerPlugin(new \App\Core\Plugin\Integrated\AcfPlugin());
+		// Ejemplo: $this->registerPlugin(new \App\Core\Plugin\Integration\AcfPlugin());
 	}
 
 	/**
-	 * Carga plugins personalizados desde directorios
+	 * Carga plugins de integración desde el directorio correspondiente
 	 */
-	private function loadCustomPlugins(): void
+	private function loadIntegrationPlugins(): void
 	{
 		$pluginsDir = defined("THEME_DIR")
-			? THEME_DIR . "/src/Core/Plugin/Integrated"
-			: get_template_directory() . "/src/Core/Plugin/Integrated";
+			? THEME_DIR . "/src/Core/Plugin/Integration"
+			: get_template_directory() . "/src/Core/Plugin/Integration";
 
 		if (is_dir($pluginsDir)) {
 			$pluginFiles = FileUtils::talampaya_directory_iterator($pluginsDir);
 
 			foreach ($pluginFiles as $file) {
+				// Ignorar archivos README y otros archivos que no son clases PHP
+				$extension = pathinfo($file, PATHINFO_EXTENSION);
+				if ($extension !== "php") {
+					continue;
+				}
+
 				$className = pathinfo($file, PATHINFO_FILENAME);
-				$fullyQualifiedClassName = "\\App\\Core\\Plugin\\Integrated\\{$className}";
+				$fullyQualifiedClassName = "\\App\\Core\\Plugin\\Integration\\{$className}";
 
 				if (
 					class_exists($fullyQualifiedClassName) &&

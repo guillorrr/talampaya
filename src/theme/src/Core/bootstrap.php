@@ -5,6 +5,7 @@ namespace App\Core;
 use App\Core\Plugin\PluginManager;
 use App\Core\Setup\WordPressOptimizer;
 use App\Register\RegisterManager;
+use App\ThirdParty\ThirdPartyManager;
 use App\Utils\FileUtils;
 use Timber\Timber;
 
@@ -32,11 +33,11 @@ class Bootstrap
 		// Inicializar configuración del tema
 		self::initializeThemeSetup();
 
-		// Inicializar gestor de plugins
+		// Inicializar gestor de plugins integrados
 		self::initializePluginManager();
 
-		// Cargar configuración de plugins (TGM)
-		self::loadPluginConfig();
+		// Inicializar integraciones de terceros (incluye TGM)
+		self::initializeThirdParty();
 
 		// Inicializar plugins integrados
 		self::initializeIntegratedPlugins();
@@ -98,13 +99,12 @@ class Bootstrap
 	}
 
 	/**
-	 * Carga la configuración de plugins (TGM Plugin Activation)
+	 * Inicializa integraciones de terceros
 	 */
-	private static function loadPluginConfig(): void
+	private static function initializeThirdParty(): void
 	{
-		$plugins_file = get_template_directory() . "/src/Plugins/plugins.php";
-		if (file_exists($plugins_file)) {
-			require_once $plugins_file;
+		if (class_exists("App\\ThirdParty\\ThirdPartyManager")) {
+			ThirdPartyManager::initialize();
 		}
 	}
 
