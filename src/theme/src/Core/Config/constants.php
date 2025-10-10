@@ -29,6 +29,7 @@ define("ACF_FIELDS_PATH", THEME_DIR . "/src/Features/Acf/Fields");
 define("HOOKS_PATH", THEME_DIR . "/src/Hooks");
 define("TWIG_EXTENDERS_PATH", THEME_DIR . "/src/Core/TwigExtender/Custom");
 define("CONTEXT_EXTENDERS_PATH", THEME_DIR . "/src/Core/ContextExtender/Custom");
+define("API_ENDPOINTS_PATH", THEME_DIR . "/src/Core/Endpoints/Custom");
 
 // Configuración del sitio
 define("GOOGLE_ANALYTICS_ID", "UA-XXXXXXXX");

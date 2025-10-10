@@ -5,6 +5,7 @@ namespace App;
 use Timber\Site;
 use Timber\Timber;
 use App\Core\ContextExtender\ContextManager;
+use App\Core\Endpoints\EndpointsManager;
 use App\Core\TwigExtender\EnvironmentOptions;
 use App\Core\TwigExtender\TwigManager;
 
@@ -25,16 +26,25 @@ class TalampayaStarter extends Site
 	 */
 	private EnvironmentOptions $environmentOptions;
 
+	/**
+	 * Gestor de endpoints de la API
+	 */
+	private EndpointsManager $endpointsManager;
+
 	public function __construct()
 	{
 		$this->contextManager = new ContextManager();
 		$this->twigManager = new TwigManager();
 		$this->environmentOptions = new EnvironmentOptions();
+		$this->endpointsManager = new EndpointsManager();
 
 		add_filter("timber/context", [$this, "addToContext"]);
 		add_filter("timber/twig", [$this, "addToTwig"]);
 		add_filter("timber/twig/environment/options", [$this, "updateTwigEnvironmentOptions"]);
 		add_filter("timber/locations", [$this, "addLocations"]);
+
+		// Registrar todos los endpoints de la API
+		$this->endpointsManager->registerAllEndpoints();
 
 		parent::__construct();
 	}
