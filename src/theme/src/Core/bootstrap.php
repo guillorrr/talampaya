@@ -63,6 +63,7 @@ class Bootstrap
 	private static function loadConstants(): void
 	{
 		require_once __DIR__ . "/Config/constants.php";
+		require_once __DIR__ . "/Config/constants_custom.php";
 	}
 
 	/**
@@ -133,7 +134,7 @@ class Bootstrap
 	 */
 	private static function loadAdditionalFiles(): void
 	{
-		$directories = [get_template_directory() . "/hooks/Filters"];
+		$directories = [FILTERS_PATH];
 
 		foreach ($directories as $dir) {
 			$files = FileUtils::talampaya_directory_iterator($dir);

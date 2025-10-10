@@ -28,20 +28,14 @@ class PathsContext implements ContextExtenderInterface
 	{
 		$paths = [
 			"theme_root" => get_theme_root(),
-			"template" => defined("THEME_DIR") ? THEME_DIR : get_template_directory(),
+			"template" => THEME_DIR,
 			"stylesheet" => get_stylesheet_directory(),
-			"template_uri" => defined("THEME_URI") ? THEME_URI : get_template_directory_uri(),
+			"template_uri" => THEME_URI,
 			"stylesheet_uri" => get_stylesheet_directory_uri(),
-			"assets" => defined("THEME_ASSETS_URI")
-				? THEME_ASSETS_URI
-				: get_template_directory_uri() . "/assets",
-			"img" => defined("THEME_IMG_URI")
-				? THEME_IMG_URI
-				: get_template_directory_uri() . "/assets/img",
-			"css" => defined("THEME_CSS_URI")
-				? THEME_CSS_URI
-				: get_template_directory_uri() . "/css",
-			"js" => defined("THEME_JS_URI") ? THEME_JS_URI : get_template_directory_uri() . "/js",
+			"assets" => THEME_ASSETS_URI,
+			"img" => THEME_IMG_URI,
+			"css" => THEME_CSS_URI,
+			"js" => THEME_JS_URI,
 		];
 
 		$rel_paths = [

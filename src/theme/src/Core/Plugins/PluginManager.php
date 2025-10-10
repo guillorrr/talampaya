@@ -58,12 +58,8 @@ class PluginManager
 	 */
 	private function loadIntegrationPlugins(): void
 	{
-		$pluginsDir = defined("THEME_DIR")
-			? THEME_DIR . "/src/Core/Plugins/Integration"
-			: get_template_directory() . "/src/Core/Plugins/Integration";
-
-		if (is_dir($pluginsDir)) {
-			$pluginFiles = FileUtils::talampaya_directory_iterator($pluginsDir);
+		if (is_dir(PLUGINS_INTEGRATION_PATH)) {
+			$pluginFiles = FileUtils::talampaya_directory_iterator(PLUGINS_INTEGRATION_PATH);
 
 			foreach ($pluginFiles as $file) {
 				// Ignorar archivos README y otros archivos que no son clases PHP
