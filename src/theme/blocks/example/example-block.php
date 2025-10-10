@@ -3,7 +3,7 @@
 use Illuminate\Support\Str;
 use App\Inc\Helpers\AcfHelper;
 
-function add_acf_block_example()
+function add_acf_block_example(): void
 {
 	$key = "example";
 	$key_undescore = Str::snake($key);
