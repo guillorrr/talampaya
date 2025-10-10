@@ -3,17 +3,26 @@
 /**
  * Register ACF blocks.
  */
+
+use App\Utils\FileUtils;
+
+/**
+ * Register ACF blocks.
+ */
 function register_acf_blocks(): void
 {
-	foreach ($blocks = new DirectoryIterator(ACF_BLOCKS_PATH) as $item) {
-		if ($item->isDir() && !$item->isDot()) {
-			$explode_directories = explode("/", $item->getPathname());
-			$last_directory = end($explode_directories);
-			$block_json = $item->getPathname() . "/" . $last_directory . "-block.json";
-			if (file_exists($block_json)) {
-				register_block_type($block_json);
-			}
-		}
+	$blocks = FileUtils::talampaya_directory_iterator_universal(ACF_BLOCKS_PATH, [
+		"extension" => "json",
+		"process_subdirs" => true,
+		"filter_callback" => function ($file, $path, $directory_name = null) {
+			return $directory_name &&
+				str_ends_with($file->getFilename(), "-block.json") &&
+				$file->getFilename() === "$directory_name-block.json";
+		},
+	]);
+
+	foreach ($blocks as $block_json) {
+		register_block_type($block_json);
 	}
 }
 add_action("init", "register_acf_blocks");
