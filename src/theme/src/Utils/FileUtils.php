@@ -20,7 +20,8 @@ class FileUtils
 	 *   - process_subdirs: (bool) Whether to process subdirectories. Default: false.
 	 *   - group_by_folder: (bool) Whether to group results by folder. Default: false.
 	 *   - include_files: (bool) Whether to include/require files and merge their returned data. Default: false.
-	 *
+	 *    - filter_callback: (callable|null) Optional callback function for additional filtering.
+	 *        Function signature: function(SplFileInfo $file, string $path, string $directory_name = null): bool
 	 * @return array Results based on the specified options.
 	 */
 	public static function talampaya_directory_iterator_universal(
@@ -35,6 +36,7 @@ class FileUtils
 			"process_subdirs" => false,
 			"group_by_folder" => false,
 			"include_files" => false,
+			"filter_callback" => null,
 		];
 
 		// Merge provided options with defaults
@@ -69,7 +71,17 @@ class FileUtils
 
 						if (
 							!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
-							!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"])
+							!str_starts_with(
+								$filenameWithoutExtension,
+								$options["prefix_exclude"]
+							) &&
+							(!$options["filter_callback"] ||
+								call_user_func(
+									$options["filter_callback"],
+									$file,
+									$item->getPathname(),
+									$last_directory
+								))
 						) {
 							if ($options["include_files"]) {
 								require_once $file->getPathname();
@@ -92,7 +104,9 @@ class FileUtils
 				$filenameWithoutExtension = pathinfo($item->getFilename(), PATHINFO_FILENAME);
 				if (
 					!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
-					!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"])
+					!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"]) &&
+					(!$options["filter_callback"] ||
+						call_user_func($options["filter_callback"], $item, $path))
 				) {
 					if ($options["include_files"]) {
 						require_once $item->getPathname();
