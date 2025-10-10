@@ -7,7 +7,7 @@
 	"keywords": ["example", "block"],
 	"acf": {
 		"mode": "edit",
-		"renderCallback": "App\\Features\\Acf\\Acf::renderBlock",
+		"renderCallback": "App\\Features\\Acf\\Block\\BlockRenderer::render",
 		"usePostMeta": "true"
 	},
 	"supports": {

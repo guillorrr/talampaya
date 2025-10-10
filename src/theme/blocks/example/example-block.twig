@@ -1,26 +1,36 @@
-<div style="background-color: {{ fields.block_example_bg_color }}" id="{{ attributes.anchor|default(attributes.id) }}">
-	<h1>
-		{{ fields.block_example_title }}
-	</h1>
-	<h2>
-		{{ fields.block_example_subtitle }}
-	</h2>
+<div
+	style="background-color: {{ fields.block_example_bg_color }}"
+	class="block block-example {{ dynamic_classes }}"
+	id="{{ attributes.anchor|default(attributes.id) }}">
+	<h1>{{ fields.block_example_title }}</h1>
+	<h2>{{ fields.block_example_subtitle }}</h2>
 	<p>
 		{{ fields.block_example_intro }}
 	</p>
 
 	{% if fields.block_example_image %}
-		<img src="{{ fields.block_example_image.url }}" alt="{{ fields.block_example_image.alt }}" />
+		<img
+			src="{{ fields.block_example_image.url }}"
+			alt="{{ fields.block_example_image.alt }}" />
+	{% endif %}
+
+	{% if metadata %}
+		<div class="block-example__metadata">
+			<p>
+				Block Slug: {{ metadata.blockSlug }}
+			</p>
+			{% if post_published_date %}
+				<p>
+					Published: {{ post_published_date }}
+				</p>
+			{% endif %}
+		</div>
 	{% endif %}
 
 	{% if fields.block_example_list %}
 		<ul>
 			{% for field in fields.block_example_list %}
-				<li>
-					<h4>
-						{{ field.list_text }}
-					</h4>
-				</li>
+				<li><h4>{{ field.list_text }}</h4></li>
 			{% endfor %}
 		</ul>
 	{% endif %}

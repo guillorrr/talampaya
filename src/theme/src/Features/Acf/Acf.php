@@ -2,6 +2,7 @@
 
 namespace App\Features\Acf;
 
+use App\Features\Acf\Block\BlockRenderer;
 use App\Utils\FileUtils;
 use Timber;
 use WP_Block;
@@ -24,6 +25,43 @@ class Acf
 
 		// Registrar los bloques ACF
 		add_action("init", [$this, "registerBlocks"]);
+
+		// Inicializar el sistema de modificadores de contexto para BlockRenderer
+		$this->initBlockRenderer();
+	}
+
+	/**
+	 * Inicializar el sistema BlockRenderer y agregar modificadores de contexto
+	 */
+	private function initBlockRenderer(): void
+	{
+		// Ejemplo: registrar un modificador de contexto que agrega metadatos comunes
+		BlockRenderer::registerContextModifier("metadata", function (
+			$context,
+			$attributes,
+			$content,
+			$is_preview,
+			$post_id,
+			$wp_block,
+			$slug
+		) {
+			$context["metadata"] = [
+				"blockSlug" => $slug,
+				"postId" => $post_id,
+			];
+			return $context;
+		});
+
+		// Compatibilidad con el método antiguo - redirigir filtros al nuevo sistema
+		add_filter(
+			"acf/block/render/context",
+			function ($context, $attributes, $content, $is_preview, $post_id, $wp_block, $slug) {
+				// Este filtro garantiza compatibilidad con código existente que usaba el filtro anterior
+				return $context;
+			},
+			10,
+			7
+		);
 	}
 
 	/**
@@ -51,14 +89,15 @@ class Acf
 	}
 
 	/**
-	 * Render callback para bloques ACF
-	 * Este método es inmutable y sirve como base para renderizar bloques ACF con Timber
+	 * Render callback para bloques ACF (Método heredado para compatibilidad)
+	 * Este método ahora delega la renderización a BlockRenderer
 	 *
 	 * @param array $attributes Atributos del bloque
 	 * @param string $content Contenido del bloque
 	 * @param bool $is_preview Si se está visualizando en el editor
 	 * @param int $post_id ID del post actual
 	 * @param WP_Block|null $wp_block Instancia del bloque
+	 * @deprecated Usar BlockRenderer::render en su lugar
 	 */
 	public static function renderBlock(
 		array $attributes,
@@ -67,33 +106,7 @@ class Acf
 		int $post_id = 0,
 		?WP_Block $wp_block = null
 	): void {
-		// Crear el slug del bloque a partir del nombre en block.json
-		$slug = str_replace("acf/", "", $attributes["name"]);
-
-		$context = Timber::context();
-
-		// Almacenar atributos del bloque
-		$context["attributes"] = $attributes;
-
-		// Almacenar valores de campos (del grupo de campos ACF para el bloque)
-		$context["fields"] = get_fields();
-
-		// Almacenar si el bloque se está renderizando en el editor o en el frontend
-		$context["is_preview"] = $is_preview;
-
-		// Permitir que otros plugins/temas modifiquen el contexto
-		$context = apply_filters(
-			"acf/block/render/context",
-			$context,
-			$attributes,
-			$content,
-			$is_preview,
-			$post_id,
-			$wp_block,
-			$slug
-		);
-
-		// Renderizar el bloque
-		Timber::render("blocks/" . $slug . "/" . $slug . "-block.twig", $context);
+		// Delegar la renderización a BlockRenderer para mantener compatibilidad
+		BlockRenderer::render($attributes, $content, $is_preview, $post_id, $wp_block);
 	}
 }
