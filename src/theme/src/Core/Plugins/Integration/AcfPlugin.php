@@ -39,6 +39,8 @@ class AcfPlugin extends AbstractPlugin
 		// Agregar filtros y acciones para ACF
 		add_filter("timber/context", [$this, "addAcfOptionsToContext"]);
 		add_filter("timber/twig", [$this, "addAcfTwigExtensions"]);
+		add_filter("acf/settings/save_json", [$this, "jsonSavePath"]);
+		//add_filter("acf/settings/show_admin", [$this, "hideAdminMenuItem"]);
 	}
 
 	/**
@@ -105,5 +107,16 @@ class AcfPlugin extends AbstractPlugin
 				"force_activation" => true,
 			],
 		];
+	}
+
+	function jsonSavePath($path): string
+	{
+		$path = get_template_directory() . "/acf-json";
+		return $path;
+	}
+
+	function hideAdminMenuItem($more)
+	{
+		return false;
 	}
 }

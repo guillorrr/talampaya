@@ -41,6 +41,13 @@ class AcfCustomTablesPlugin extends AbstractPlugin
 
 		// O ajustar la configuración de rendimiento
 		add_filter("acfcdt/settings/performance", [$this, "adjustPerformanceSettings"]);
+
+		// Habilitar soporte para campos repetidores
+		add_filter("acfcdt/settings/enable_repeater_field_support", "__return_true");
+
+		// Deshabilitar almacenamiento de valores y claves en meta core de WP
+		add_filter("acfcdt/settings/store_acf_values_in_core_meta", "__return_false");
+		add_filter("acfcdt/settings/store_acf_keys_in_core_meta", "__return_false");
 	}
 
 	/**
