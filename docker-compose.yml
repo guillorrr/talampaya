@@ -39,6 +39,8 @@ services:
         define( 'ALLOW_UNFILTERED_UPLOADS', true);
         define( 'WP_REDIS_HOST', '${APP_NAME}-cache' );
         define( 'WP_MEMORY_LIMIT', '512M' );
+        define( 'MAXMIND_ACCOUNT_ID', '${MAXMIND_ACCOUNT_ID}' );
+        define( 'MAXMIND_LICENSE_KEY', '${MAXMIND_LICENSE_KEY}' );
     volumes:
       - './build:/var/www/html'
       - './docker/wp/php.ini:/usr/local/etc/php/conf.d/overrides.ini'
