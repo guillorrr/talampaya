@@ -37,8 +37,15 @@ class GeolocationEndpoint extends AbstractEndpoint
 	 */
 	public function getGeolocationData(WP_REST_Request $request): WP_REST_Response|WP_Error
 	{
-		// Obtener IP del usuario
-		$ip = $this->getUserIp();
+		$ip = $request->get_param("ip");
+
+		if (empty($ip)) {
+			if (defined("IS_DEVELOPMENT") && IS_DEVELOPMENT) {
+				$ip = "xxx.xxx.xxx.xxx";
+			} else {
+				$ip = $this->getUserIp();
+			}
+		}
 
 		// Si no se pudo obtener la IP, devolver error
 		if (empty($ip)) {
@@ -97,6 +104,7 @@ class GeolocationEndpoint extends AbstractEndpoint
 			return $ip;
 		}
 
-		return null;
+		// En casos donde no se puede determinar, usar localhost como fallback
+		return "127.0.0.1";
 	}
 }

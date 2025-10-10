@@ -3,7 +3,7 @@
 namespace App\Features\Acf\Blocks\Modifiers;
 
 use App\Features\Acf\Blocks\BlockRenderer;
-use WP_Http;
+use App\Integrations\Geolocation\GeolocationServiceFactory;
 
 BlockRenderer::registerContextModifier("geolocation", function (
 	$context,
@@ -12,42 +12,56 @@ BlockRenderer::registerContextModifier("geolocation", function (
 	$is_preview,
 	$post_id
 ) {
-	// Inicializar datos de geolocalización como null (para manejar casos donde no se pueda obtener)
 	$context["geolocation_data"] = null;
 
-	// Intentar obtener datos de geolocalización de la API
 	try {
-		// Crear instancia de WP_Http para la solicitud
-		$http = new WP_Http();
+		$is_development = defined("WP_DEBUG") && WP_DEBUG;
 
-		// URL del endpoint de geolocalización
-		$api_url = rest_url("talampaya/v1/geolocation");
+		if (IS_DEVELOPMENT) {
+			$geolocationService = GeolocationServiceFactory::createService();
 
-		// Realizar solicitud a la API
-		$response = $http->get($api_url);
+			$ip = defined("IS_DEVELOPMENT")
+				? "xxx.xxx.xxx.xxx"
+				: $_SERVER["REMOTE_ADDR"] ?? "127.0.0.1";
 
-		// Verificar si hay un error en la respuesta
-		if (is_wp_error($response)) {
-			error_log(
-				"Error al obtener datos de geolocalización: " . $response->get_error_message()
-			);
-			return $context;
-		}
+			$geoData = $geolocationService->getGeolocationData($ip);
 
-		// Verificar código de respuesta
-		if (200 === $response["response"]["code"]) {
-			// Decodificar respuesta JSON
-			$data = json_decode($response["body"], true);
+			$geoData = apply_filters("talampaya/geolocation/data", $geoData, $ip);
 
-			// Si la respuesta es correcta y contiene datos
-			if (
-				!empty($data) &&
-				isset($data["success"]) &&
-				$data["success"] &&
-				isset($data["data"])
-			) {
-				$context["geolocation_data"] = $data["data"];
-				$context["geolocation_ip"] = $data["ip"] ?? "Unknown";
+			$context["geolocation_data"] = $geoData;
+			$context["geolocation_ip"] = $ip;
+		} else {
+			$host = $_SERVER["HTTP_HOST"] ?? "localhost";
+			$scheme = is_ssl() ? "https" : "http";
+
+			$api_url = "{$scheme}://{$host}/wp-json/talampaya/v1/geolocation";
+
+			$response = wp_remote_get($api_url, [
+				"timeout" => 5,
+				"redirection" => 1,
+				"httpversion" => "1.1",
+				"sslverify" => !$is_development, // Desactivar verificación SSL en desarrollo
+			]);
+
+			if (is_wp_error($response)) {
+				error_log(
+					"Error al obtener datos de geolocalización: " . $response->get_error_message()
+				);
+				return $context;
+			}
+
+			if (200 === wp_remote_retrieve_response_code($response)) {
+				$data = json_decode(wp_remote_retrieve_body($response), true);
+
+				if (
+					!empty($data) &&
+					isset($data["success"]) &&
+					$data["success"] &&
+					isset($data["data"])
+				) {
+					$context["geolocation_data"] = $data["data"];
+					$context["geolocation_ip"] = $data["ip"] ?? "Unknown";
+				}
 			}
 		}
 	} catch (\Exception $e) {
