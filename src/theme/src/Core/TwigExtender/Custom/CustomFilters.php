@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Core\TwigExtender;
+namespace App\Core\TwigExtender\Custom;
 
+use App\Core\TwigExtender\TwigExtenderInterface;
 use Twig\Environment;
 use Twig\TwigFilter;
 

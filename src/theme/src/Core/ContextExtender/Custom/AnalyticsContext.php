@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Core\ContextExtender;
+namespace App\Core\ContextExtender\Custom;
+
+use App\Core\ContextExtender\ContextExtenderInterface;
 
 /**
  * Clase que agrega los IDs de analytics al contexto global de Timber

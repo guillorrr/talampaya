@@ -31,7 +31,6 @@ class ContextManager
 	private function registerCoreExtenders(): void
 	{
 		$this->addExtender(new PathsContext());
-		$this->addExtender(new AnalyticsContext());
 	}
 
 	/**
@@ -39,12 +38,8 @@ class ContextManager
 	 */
 	private function registerCustomExtenders(): void
 	{
-		$extendersDir = defined("THEME_DIR")
-			? THEME_DIR . "/src/Core/ContextExtender/Custom"
-			: get_template_directory() . "/src/Core/ContextExtender/Custom";
-
-		if (is_dir($extendersDir)) {
-			$files = FileUtils::talampaya_directory_iterator($extendersDir);
+		if (is_dir(CONTEXT_EXTENDERS_PATH)) {
+			$files = FileUtils::talampaya_directory_iterator(CONTEXT_EXTENDERS_PATH);
 
 			foreach ($files as $file) {
 				require_once $file;

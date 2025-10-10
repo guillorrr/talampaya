@@ -27,6 +27,8 @@ define("PLUGINS_INTEGRATION_PATH", THEME_URI . "/src/Core/Plugins/Integration");
 define("ACF_PATH", THEME_DIR . "/src/Features/Acf");
 define("ACF_BLOCKS_PATH", THEME_DIR . "/blocks");
 define("FILTERS_PATH", THEME_DIR . "/hooks/Filters");
+define("TWIG_EXTENDERS_PATH", THEME_DIR . "/src/Core/TwigExtender/Custom");
+define("CONTEXT_EXTENDERS_PATH", THEME_DIR . "/src/Core/ContextExtender/Custom");
 
 // Configuración del sitio
 define("GOOGLE_ANALYTICS_ID", "UA-XXXXXXXX");

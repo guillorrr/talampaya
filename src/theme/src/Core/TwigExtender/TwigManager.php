@@ -2,6 +2,7 @@
 
 namespace App\Core\TwigExtender;
 
+use App\Core\TwigExtender\Custom\CustomFilters;
 use App\Utils\FileUtils;
 use Twig\Environment;
 
@@ -32,7 +33,6 @@ class TwigManager
 	private function registerCoreExtenders(): void
 	{
 		$this->addExtender(new CoreExtensions());
-		$this->addExtender(new CustomFilters());
 	}
 
 	/**
@@ -40,12 +40,8 @@ class TwigManager
 	 */
 	private function registerCustomExtenders(): void
 	{
-		$extendersDir = defined("THEME_DIR")
-			? THEME_DIR . "/src/Core/TwigExtender/Custom"
-			: get_template_directory() . "/src/Core/TwigExtender/Custom";
-
-		if (is_dir($extendersDir)) {
-			$files = FileUtils::talampaya_directory_iterator($extendersDir);
+		if (is_dir(TWIG_EXTENDERS_PATH)) {
+			$files = FileUtils::talampaya_directory_iterator(TWIG_EXTENDERS_PATH);
 
 			foreach ($files as $file) {
 				require_once $file;
