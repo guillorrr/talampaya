@@ -59,35 +59,32 @@ class FileUtils
 					continue;
 				}
 
-				// Process files in subdirectory
-				if ($options["group_by_folder"]) {
-					$data[$last_directory] = $data[$last_directory] ?? [];
+				$subdir_files = [];
+				foreach (new DirectoryIterator($item->getPathname()) as $file) {
+					if ($file->isFile() && $file->getExtension() === $options["extension"]) {
+						$filenameWithoutExtension = pathinfo(
+							$file->getFilename(),
+							PATHINFO_FILENAME
+						);
 
-					foreach (new DirectoryIterator($item->getPathname()) as $file) {
-						if ($file->isFile() && $file->getExtension() === $options["extension"]) {
-							$filenameWithoutExtension = pathinfo(
-								$file->getFilename(),
-								PATHINFO_FILENAME
-							);
-
-							if (
-								!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
-								!str_starts_with(
-									$filenameWithoutExtension,
-									$options["prefix_exclude"]
-								)
-							) {
-								if ($options["include_files"]) {
-									$data[$last_directory] = array_merge(
-										$data[$last_directory],
-										require_once $file->getPathname()
-									);
-								} else {
-									$data[$last_directory][] = $file->getPathname();
-								}
+						if (
+							!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
+							!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"])
+						) {
+							if ($options["include_files"]) {
+								require_once $file->getPathname();
 							}
+
+							$subdir_files[] = $file->getPathname();
 						}
 					}
+				}
+
+				if ($options["group_by_folder"]) {
+					$data[$last_directory] = $subdir_files;
+				} else {
+					// Añadir los archivos del subdirectorio al array principal
+					$data = array_merge($data, $subdir_files);
 				}
 			}
 			// Process files in main directory
@@ -98,7 +95,7 @@ class FileUtils
 					!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"])
 				) {
 					if ($options["include_files"]) {
-						$data = array_merge($data, require_once $item->getPathname());
+						require_once $item->getPathname();
 					} else {
 						$data[] = $item->getPathname();
 					}
