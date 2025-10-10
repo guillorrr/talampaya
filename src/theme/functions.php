@@ -8,7 +8,7 @@ use Timber\Timber;
 require_once __DIR__ . "/../../vendor/autoload.php";
 
 // Inicializar el framework
-require_once __DIR__ . "/src/Core/bootstrap.php";
+require_once __DIR__ . "/src/bootstrap.php";
 
 // Inicializar Timber
 Timber::init();

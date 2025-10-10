@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Core;
+namespace App;
 
 use App\Core\Plugins\PluginManager;
+use App\Core\Setup;
 use App\Core\Setup\WordPressOptimizer;
 use App\Register\RegisterManager;
 use App\ThirdParty\ThirdPartyManager;
