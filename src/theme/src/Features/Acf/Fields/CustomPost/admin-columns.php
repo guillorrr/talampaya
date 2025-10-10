@@ -2,7 +2,7 @@
 /*
  * Add columns to custom_post_type post list
  */
-function add_acf_columns_for_custom_post_type($columns)
+function add_acf_columns_for_custom_post_type($columns): array
 {
 	return array_merge($columns, [
 		"start_date" => __("Starts"),
@@ -14,7 +14,7 @@ add_filter("manage_custom_post_type_posts_columns", "add_acf_columns_for_custom_
 /*
  * Add columns to custom_post_type post list
  */
-function custom_post_type_custom_column($column, $post_id)
+function custom_post_type_custom_column($column, $post_id): void
 {
 	switch ($column) {
 		case "start_date":

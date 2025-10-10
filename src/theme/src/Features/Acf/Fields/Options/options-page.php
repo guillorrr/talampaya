@@ -22,7 +22,7 @@ if (function_exists("acf_add_options_page")) {
 	]);
 }
 
-function add_acf_options_page_header()
+function add_acf_options_page_header(): void
 {
 	$options_page_header_text = [
 		"key" => "field_options_page_header_text",
@@ -50,7 +50,7 @@ function add_acf_options_page_header()
 }
 add_action("acf/init", "add_acf_options_page_header", 10);
 
-function add_acf_options_page_footer()
+function add_acf_options_page_footer(): void
 {
 	$options_page_footer_copyright = [
 		"key" => "field_options_page_footer_copyright",

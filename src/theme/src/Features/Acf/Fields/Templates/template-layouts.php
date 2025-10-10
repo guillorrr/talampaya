@@ -1,6 +1,6 @@
 <?php
 // Key: template_layouts
-function add_acf_template_layouts()
+function add_acf_template_layouts(): void
 {
 	$template_layouts_checkbox = [
 		"key" => "field_template_layouts_checkbox",
