@@ -111,11 +111,10 @@ class AcfPlugin extends AbstractPlugin
 
 	function jsonSavePath($path): string
 	{
-		$path = get_template_directory() . "/acf-json";
-		return $path;
+		return get_template_directory() . "/acf-json";
 	}
 
-	function hideAdminMenuItem($more)
+	function hideAdminMenuItem($more): false
 	{
 		return false;
 	}
