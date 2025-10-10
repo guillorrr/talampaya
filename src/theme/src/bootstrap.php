@@ -63,8 +63,8 @@ class Bootstrap
 	 */
 	private static function loadConstants(): void
 	{
-		require_once __DIR__ . "/Config/constants.php";
-		require_once __DIR__ . "/Config/constants_custom.php";
+		require_once __DIR__ . "/Core/Config/constants.php";
+		require_once __DIR__ . "/Core/Config/constants_custom.php";
 	}
 
 	/**
@@ -135,10 +135,17 @@ class Bootstrap
 	 */
 	private static function loadAdditionalFiles(): void
 	{
-		$directories = [FILTERS_PATH];
+		$directories = [FILTERS_PATH, ACF_FEATURES_PATH];
 
 		foreach ($directories as $dir) {
-			$files = FileUtils::talampaya_directory_iterator($dir);
+			$files = FileUtils::talampaya_directory_iterator_universal($dir, [
+				"extension" => "php",
+				"include_files" => false,
+				"exclude_files" => [],
+				"prefix_exclude" => "_",
+				"group_by_folder" => false,
+				"process_subdirs" => true,
+			]);
 			if (!empty($files)) {
 				foreach ($files as $file) {
 					require_once $file;
