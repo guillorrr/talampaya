@@ -1,6 +1,6 @@
 <?php
 
-function talampaya_blocks_category($categories, $post)
+function blocks_add_custom_category($categories, $post): array
 {
 	return array_merge($categories, [
 		[
@@ -10,4 +10,4 @@ function talampaya_blocks_category($categories, $post)
 		],
 	]);
 }
-add_filter("block_categories_all", "talampaya_blocks_category", 10, 2);
+add_filter("block_categories_all", "blocks_add_custom_category", 10, 2);
