@@ -5,11 +5,11 @@
  */
 function register_acf_blocks(): void
 {
-	foreach ($blocks = new DirectoryIterator(get_template_directory() . "/blocks") as $item) {
+	foreach ($blocks = new DirectoryIterator(ACF_BLOCKS_PATH) as $item) {
 		if ($item->isDir() && !$item->isDot()) {
 			$explode_directories = explode("/", $item->getPathname());
 			$last_directory = end($explode_directories);
-			$block_json = $item->getPathname() . "acf.php/" . $last_directory . "-block.json";
+			$block_json = $item->getPathname() . "/" . $last_directory . "-block.json";
 			if (file_exists($block_json)) {
 				register_block_type($block_json);
 			}
@@ -21,7 +21,7 @@ add_action("init", "register_acf_blocks");
 /**
  * Register ACF blocks fields.
  */
-foreach ($directories = new DirectoryIterator(get_template_directory() . "/blocks") as $directory) {
+foreach ($directories = new DirectoryIterator(ACF_BLOCKS_PATH) as $directory) {
 	if ($directory->isDir() && !$directory->isDot()) {
 		$explode_directories = explode("/", $directory->getPathname());
 		$last_directory = end($explode_directories);
@@ -38,7 +38,7 @@ foreach ($directories = new DirectoryIterator(get_template_directory() . "/block
 /**
  * Register ACF Custom fields.
  */
-foreach ($files = new DirectoryIterator(get_template_directory() . "/src/Features/Acf") as $file) {
+foreach ($files = new DirectoryIterator(ACF_PATH) as $file) {
 	if ($file->isFile() && $file->getExtension() === "php") {
 		$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
 		if (!str_starts_with($filenameWithoutExtension, "_")) {
