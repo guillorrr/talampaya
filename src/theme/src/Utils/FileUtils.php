@@ -7,6 +7,109 @@ use DirectoryIterator;
 class FileUtils
 {
 	/**
+	 * Directory Iterator Universal
+	 *
+	 * A flexible method to iterate through directories and files with various options for filtering
+	 * and processing.
+	 *
+	 * @param string $path The directory path to iterate over.
+	 * @param array $options Configuration options:
+	 *   - extension: (string) File extension to filter by. Default: 'php'.
+	 *   - prefix_exclude: (string) Filename prefix to exclude. Default: '_'.
+	 *   - exclude_files: (array) Array of filenames to exclude. Default: [].
+	 *   - process_subdirs: (bool) Whether to process subdirectories. Default: false.
+	 *   - group_by_folder: (bool) Whether to group results by folder. Default: false.
+	 *   - include_files: (bool) Whether to include/require files and merge their returned data. Default: false.
+	 *
+	 * @return array Results based on the specified options.
+	 */
+	public static function talampaya_directory_iterator_universal(
+		string $path,
+		array $options = []
+	): array {
+		// Default options
+		$defaults = [
+			"extension" => "php",
+			"prefix_exclude" => "_",
+			"exclude_files" => [],
+			"process_subdirs" => false,
+			"group_by_folder" => false,
+			"include_files" => false,
+		];
+
+		// Merge provided options with defaults
+		$options = array_merge($defaults, $options);
+
+		$data = [];
+		$iterator = new DirectoryIterator($path);
+
+		foreach ($iterator as $item) {
+			// Skip dot directories
+			if ($item->isDot()) {
+				continue;
+			}
+
+			// Process directories if configured
+			if ($item->isDir() && $options["process_subdirs"]) {
+				$explode_directories = explode("/", $item->getPathname());
+				$last_directory = end($explode_directories);
+
+				// Skip directories with excluded prefix
+				if (str_starts_with($last_directory, $options["prefix_exclude"])) {
+					continue;
+				}
+
+				// Process files in subdirectory
+				if ($options["group_by_folder"]) {
+					$data[$last_directory] = $data[$last_directory] ?? [];
+
+					foreach (new DirectoryIterator($item->getPathname()) as $file) {
+						if ($file->isFile() && $file->getExtension() === $options["extension"]) {
+							$filenameWithoutExtension = pathinfo(
+								$file->getFilename(),
+								PATHINFO_FILENAME
+							);
+
+							if (
+								!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
+								!str_starts_with(
+									$filenameWithoutExtension,
+									$options["prefix_exclude"]
+								)
+							) {
+								if ($options["include_files"]) {
+									$data[$last_directory] = array_merge(
+										$data[$last_directory],
+										require_once $file->getPathname()
+									);
+								} else {
+									$data[$last_directory][] = $file->getPathname();
+								}
+							}
+						}
+					}
+				}
+			}
+			// Process files in main directory
+			elseif ($item->isFile() && $item->getExtension() === $options["extension"]) {
+				$filenameWithoutExtension = pathinfo($item->getFilename(), PATHINFO_FILENAME);
+				if (
+					!in_array($filenameWithoutExtension, $options["exclude_files"]) &&
+					!str_starts_with($filenameWithoutExtension, $options["prefix_exclude"])
+				) {
+					if ($options["include_files"]) {
+						$data = array_merge($data, require_once $item->getPathname());
+					} else {
+						$data[] = $item->getPathname();
+					}
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Directory Iterator Group by Folder
 	 *
 	 * Iterates over subdirectories in a specified path, and for each subdirectory,
@@ -20,24 +123,12 @@ class FileUtils
 		string $path = "/inc/register",
 		string $extension = "php"
 	): array {
-		$data = [];
-		foreach ($directories = new DirectoryIterator($path) as $directory) {
-			if ($directory->isDir() && !$directory->isDot()) {
-				$explode_directories = explode("/", $directory->getPathname());
-				$last_directory = end($explode_directories);
-
-				$data[$last_directory] = [];
-				foreach ($files = new DirectoryIterator($directory->getPathname()) as $file) {
-					if ($file->isFile() && $file->getExtension() === $extension) {
-						$data[$last_directory] = array_merge(
-							$data[$last_directory],
-							require_once $file->getPathname()
-						);
-					}
-				}
-			}
-		}
-		return $data;
+		return self::talampaya_directory_iterator_universal($path, [
+			"extension" => $extension,
+			"process_subdirs" => true,
+			"group_by_folder" => true,
+			"include_files" => true,
+		]);
 	}
 
 	/**
@@ -58,18 +149,10 @@ class FileUtils
 		string $prefix_exclude = "_",
 		array $exclude_files = []
 	): array {
-		$data = [];
-		foreach ($files = new DirectoryIterator($path) as $file) {
-			if ($file->isFile() && $file->getExtension() === $extension) {
-				$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-				if (
-					!in_array($filenameWithoutExtension, $exclude_files) &&
-					!str_starts_with($filenameWithoutExtension, $prefix_exclude)
-				) {
-					$data[] = $file->getPathname();
-				}
-			}
-		}
-		return $data;
+		return self::talampaya_directory_iterator_universal($path, [
+			"extension" => $extension,
+			"prefix_exclude" => $prefix_exclude,
+			"exclude_files" => $exclude_files,
+		]);
 	}
 }
