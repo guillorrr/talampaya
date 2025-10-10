@@ -26,6 +26,7 @@ define("THEME_JS_URI", THEME_URI . "/js");
 define("PLUGINS_INTEGRATION_PATH", THEME_URI . "/src/Core/Plugins/Integration");
 define("ACF_BLOCKS_PATH", THEME_DIR . "/blocks");
 define("ACF_FIELDS_PATH", THEME_DIR . "/src/Features/Acf/Fields");
+define("ACF_MODIFIERS_PATH", THEME_DIR . "/src/Features/Acf/Blocks/Modifiers");
 define("HOOKS_PATH", THEME_DIR . "/src/Hooks");
 define("TWIG_EXTENDERS_PATH", THEME_DIR . "/src/Core/TwigExtender/Custom");
 define("CONTEXT_EXTENDERS_PATH", THEME_DIR . "/src/Core/ContextExtender/Custom");
