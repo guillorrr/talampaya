@@ -24,9 +24,9 @@ define("THEME_IMG_URI", THEME_URI . "/assets/img");
 define("THEME_CSS_URI", THEME_URI . "/css");
 define("THEME_JS_URI", THEME_URI . "/js");
 define("PLUGINS_INTEGRATION_PATH", THEME_URI . "/src/Core/Plugins/Integration");
-define("ACF_FIELDS_PATH", THEME_DIR . "/src/Features/Acf/Fields");
 define("ACF_BLOCKS_PATH", THEME_DIR . "/blocks");
-define("FILTERS_PATH", THEME_DIR . "/hooks/Filters");
+define("ACF_FIELDS_PATH", THEME_DIR . "/src/Features/Acf/Fields");
+define("HOOKS_PATH", THEME_DIR . "/src/Hooks");
 define("TWIG_EXTENDERS_PATH", THEME_DIR . "/src/Core/TwigExtender/Custom");
 define("CONTEXT_EXTENDERS_PATH", THEME_DIR . "/src/Core/ContextExtender/Custom");
 
