@@ -19,35 +19,6 @@ function register_acf_blocks(): void
 add_action("init", "register_acf_blocks");
 
 /**
- * Register ACF blocks fields.
- */
-foreach ($directories = new DirectoryIterator(ACF_BLOCKS_PATH) as $directory) {
-	if ($directory->isDir() && !$directory->isDot()) {
-		$explode_directories = explode("/", $directory->getPathname());
-		$last_directory = end($explode_directories);
-		if (!str_starts_with($last_directory, "_")) {
-			foreach ($files = new DirectoryIterator($directory->getPathname()) as $file) {
-				if ($file->isFile() && $file->getExtension() === "php") {
-					require_once $file->getPathname();
-				}
-			}
-		}
-	}
-}
-
-/**
- * Register ACF Custom fields.
- */
-foreach ($files = new DirectoryIterator(ACF_PATH) as $file) {
-	if ($file->isFile() && $file->getExtension() === "php") {
-		$filenameWithoutExtension = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-		if (!str_starts_with($filenameWithoutExtension, "_")) {
-			require_once $file->getPathname();
-		}
-	}
-}
-
-/**
  * Render callback to prepare and display a registered block using Timber.
  */
 function my_acf_block_render_callback(
