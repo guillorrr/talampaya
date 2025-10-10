@@ -114,7 +114,7 @@ class AcfPlugin extends AbstractPlugin
 		return get_template_directory() . "/acf-json";
 	}
 
-	function hideAdminMenuItem($more): false
+	function hideAdminMenuItem($more): bool
 	{
 		return false;
 	}
