@@ -2,7 +2,7 @@
 
 namespace App\Features\Acf;
 
-use App\Features\Acf\Block\BlockRenderer;
+use App\Features\Acf\Blocks\BlockRenderer;
 use App\Utils\FileUtils;
 use Timber;
 use WP_Block;

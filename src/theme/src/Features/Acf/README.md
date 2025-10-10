@@ -7,9 +7,9 @@ basados en WordPress y Timber.
 ## Estructura
 
 - **Acf**: Clase principal que gestiona el registro de bloques ACF y configuración básica.
-- **Block/BlockRenderer**: Sistema extensible para renderizar bloques ACF con Timber.
-- **Json/JsonExporter**: Utilidades para exportar campos ACF a archivos JSON.
-- **Tables/TableJsonGenerator**: Soporte para el plugin ACF Custom Database Tables.
+- **Blocks/BlockRenderer**: Sistema extensible para renderizar bloques ACF con Timber.
+- **Exporters/JsonExporter**: Utilidades para exportar campos ACF a archivos JSON.
+- **Exporters/TableJsonExporter**: Soporte para el plugin ACF Custom Database Tables.
 
 ## Características principales
 

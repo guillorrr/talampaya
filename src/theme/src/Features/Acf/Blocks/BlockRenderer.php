@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Acf\Block;
+namespace App\Features\Acf\Blocks;
 
 use Timber;
 use WP_Block;

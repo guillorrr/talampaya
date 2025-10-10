@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Features\Acf\Tables;
+namespace App\Features\Acf\Exporters;
 
 /**
  * Generador de archivos JSON para tablas personalizadas de ACF
  */
-class TableJsonGenerator
+class TableJsonExporter
 {
 	/**
 	 * Crea archivos JSON de tablas para cada grupo de campos ACF

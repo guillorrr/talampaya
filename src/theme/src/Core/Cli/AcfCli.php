@@ -2,8 +2,8 @@
 
 namespace App\Core\Cli;
 
-use App\Features\Acf\Json\JsonExporter;
-use App\Features\Acf\Tables\TableJsonGenerator;
+use App\Features\Acf\Exporters\JsonExporter;
+use App\Features\Acf\Exporters\TableJsonExporter;
 use WP_CLI;
 use WP_CLI\ExitException;
 
@@ -79,7 +79,7 @@ if (defined("WP_CLI") && WP_CLI) {
 				return;
 			}
 
-			$results = TableJsonGenerator::createTablesJson();
+			$results = TableJsonExporter::createTablesJson();
 
 			if (!empty($results["errors"])) {
 				foreach ($results["errors"] as $error) {

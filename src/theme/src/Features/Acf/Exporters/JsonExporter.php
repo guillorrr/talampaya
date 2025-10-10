@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\Acf\Json;
+namespace App\Features\Acf\Exporters;
 
 /**
  * Clase para exportar campos ACF a archivos JSON
