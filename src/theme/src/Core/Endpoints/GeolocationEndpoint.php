@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Api\Endpoints;
+namespace App\Core\Endpoints;
 
-use App\Integrations\Geolocation\GeolocationServiceInterface;
+use App\Integrations\Geolocation\GeolocationServiceFactory;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
@@ -10,40 +10,19 @@ use WP_Error;
 /**
  * Endpoint para obtener información de geolocalización basada en IP
  */
-class GeolocationEndpoint
+class GeolocationEndpoint extends AbstractEndpoint
 {
-	/**
-	 * Namespace de la API
-	 */
-	protected const API_NAMESPACE = "talampaya/v1";
-
 	/**
 	 * Ruta del endpoint
 	 */
 	protected const ROUTE = "/geolocation";
 
 	/**
-	 * Servicio de geolocalización
+	 * {@inheritdoc}
 	 */
-	protected GeolocationServiceInterface $geolocationService;
-
-	/**
-	 * Constructor
-	 *
-	 * @param GeolocationServiceInterface $geolocationService Servicio de geolocalización
-	 */
-	public function __construct(GeolocationServiceInterface $geolocationService)
+	public function register(): void
 	{
-		$this->geolocationService = $geolocationService;
-		$this->registerRoutes();
-	}
-
-	/**
-	 * Registra las rutas de la API
-	 */
-	public function registerRoutes(): void
-	{
-		register_rest_route(self::API_NAMESPACE, self::ROUTE, [
+		register_rest_route($this->getNamespace(), $this->getRoute(), [
 			"methods" => "GET",
 			"callback" => [$this, "getGeolocationData"],
 			"permission_callback" => "__return_true",
@@ -70,9 +49,12 @@ class GeolocationEndpoint
 			);
 		}
 
-		// Obtener datos de geolocalización
 		try {
-			$geoData = $this->geolocationService->getGeolocationData($ip);
+			// Obtener servicio de geolocalización a través de la factory
+			$geolocationService = GeolocationServiceFactory::createService();
+
+			// Obtener datos de geolocalización
+			$geoData = $geolocationService->getGeolocationData($ip);
 
 			// Aplicar filtro para que otros plugins puedan modificar los datos
 			$geoData = apply_filters("talampaya/geolocation/data", $geoData, $ip);
@@ -91,7 +73,7 @@ class GeolocationEndpoint
 	}
 
 	/**
-	 * Obtiene la dirección IP del usuario
+	 * Obtiene la dirección IP del usuario actual
 	 *
 	 * @return string|null Dirección IP o null si no se pudo determinar
 	 */
