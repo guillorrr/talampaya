@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-use App\Core\Plugin\PluginManager;
+use App\Core\Plugins\PluginManager;
 use App\Core\Setup\WordPressOptimizer;
 use App\Register\RegisterManager;
 use App\ThirdParty\ThirdPartyManager;

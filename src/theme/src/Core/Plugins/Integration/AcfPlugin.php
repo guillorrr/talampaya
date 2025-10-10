@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Plugin\Integration;
+namespace App\Core\Plugins\Integration;
 
 use App\Core\Plugins\AbstractPlugin;
 

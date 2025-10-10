@@ -3,6 +3,7 @@
 namespace App\Core\Plugins;
 
 use App\Utils\FileUtils;
+use App\Core\Plugins\Integration\AcfPlugin;
 
 /**
  * Gestor de plugins integrados del tema
@@ -49,7 +50,7 @@ class PluginManager
 	private function loadCorePlugins(): void
 	{
 		// Aquí registrar plugins específicos que siempre deben estar disponibles
-		$this->registerPlugin(new \App\Core\Plugin\Integration\AcfPlugin());
+		$this->registerPlugin(new AcfPlugin());
 	}
 
 	/**
@@ -58,7 +59,7 @@ class PluginManager
 	private function loadIntegrationPlugins(): void
 	{
 		$pluginsDir = defined("THEME_DIR")
-			? THEME_DIR . "/src/Core/Plugin/Integration"
+			? THEME_DIR . "/src/Core/Plugins/Integration"
 			: get_template_directory() . "/src/Core/Plugins/Integration";
 
 		if (is_dir($pluginsDir)) {
@@ -72,9 +73,13 @@ class PluginManager
 				}
 
 				$className = pathinfo($file, PATHINFO_FILENAME);
-				$fullyQualifiedClassName = "\\App\\Core\\Plugin\\Integration\\{$className}";
+				$fullyQualifiedClassName = "\\App\\Core\\Plugins\\Integration\\{$className}";
+
+				// Evitar cargar plugins que ya se han registrado manualmente en loadCorePlugins()
+				$skipPlugins = ["AcfPlugin"];
 
 				if (
+					!in_array($className, $skipPlugins) &&
 					class_exists($fullyQualifiedClassName) &&
 					is_subclass_of($fullyQualifiedClassName, PluginInterface::class)
 				) {

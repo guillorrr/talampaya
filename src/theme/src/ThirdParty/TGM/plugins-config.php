@@ -45,16 +45,8 @@ function talampaya_register_required_plugins(): void
 
 	// Agregar plugins adicionales específicos del proyecto
 	$projectPlugins = [
-		// Ejemplo de plugin local
-		[
-			"name" => "ACF Custom Database Tables",
-			"slug" => "acf-custom-database-tables",
-			"source" => $pluginsZipDir . "/acf-custom-database-tables.zip",
-			"required" => true,
-			"version" => "1.1.4",
-			"force_activation" => true,
-		],
-		// Agrega aquí más plugins específicos del proyecto
+		// Los plugins específicos del proyecto ahora se gestionan a través de clases de integración
+		// Agrega aquí otros plugins que no requieran integración específica
 	];
 
 	// Combinar todos los plugins
