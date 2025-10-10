@@ -6,7 +6,9 @@
  * usando el sistema de modificadores de contexto de BlockRenderer
  */
 
-namespace App\Features\Acf\Blocks;
+namespace App\Features\Acf\Blocks\Modifiers;
+
+use App\Features\Acf\Blocks\BlockRenderer;
 
 // Modificador que agrega información de la fecha de publicación del post
 BlockRenderer::registerContextModifier("post_date", function (
