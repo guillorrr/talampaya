@@ -135,22 +135,17 @@ class Bootstrap
 	 */
 	private static function loadAdditionalFiles(): void
 	{
-		$directories = [FILTERS_PATH, ACF_FEATURES_PATH];
+		$directories = [ACF_FEATURES_PATH, ACF_BLOCKS_PATH, FILTERS_PATH];
 
 		foreach ($directories as $dir) {
-			$files = FileUtils::talampaya_directory_iterator_universal($dir, [
+			FileUtils::talampaya_directory_iterator_universal($dir, [
 				"extension" => "php",
-				"include_files" => false,
+				"include_files" => true,
 				"exclude_files" => [],
 				"prefix_exclude" => "_",
 				"group_by_folder" => false,
 				"process_subdirs" => true,
 			]);
-			if (!empty($files)) {
-				foreach ($files as $file) {
-					require_once $file;
-				}
-			}
 		}
 	}
 
