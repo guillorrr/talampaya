@@ -145,9 +145,22 @@ abstract class AbstractImportService
 
 		$post_type = $data["post_type"] ?? $this->getPostType();
 
+		if (!isset($data["custom_id"]) && !empty($custom_id)) {
+			$data["custom_id"] = $custom_id;
+		}
+
+		error_log(static::class . "::createOrUpdate: Procesando item custom_id=" . $custom_id);
+
 		$item = $modelInstance->findByCustomId($custom_id, $post_type);
 
 		if ($item) {
+			error_log(
+				static::class .
+					"::createOrUpdate: Actualizando item existente custom_id=" .
+					$custom_id .
+					", post_id=" .
+					$item->ID
+			);
 			$success = $item->updateFromData($data);
 			if (!$success) {
 				error_log(
@@ -158,6 +171,9 @@ abstract class AbstractImportService
 				return null;
 			}
 		} else {
+			error_log(
+				static::class . "::createOrUpdate: Creando nuevo item custom_id=" . $custom_id
+			);
 			$post_args = [
 				"post_title" => sanitize_text_field($data["title"]),
 				"post_content" => wp_kses_post($data["content"] ?? ""),
@@ -191,46 +207,42 @@ abstract class AbstractImportService
 				);
 				return null;
 			}
+
+			$custom_id_field = "field_post_type_{$post_type}_custom_id";
+			update_field($custom_id_field, $custom_id, $post_id);
+			error_log(
+				static::class .
+					"::createOrUpdate: Custom ID guardado para nuevo post, post_id=" .
+					$post_id
+			);
+
 			$item = Timber::get_post($post_id);
-			$success = $item->updateFromData($data);
-			if (!$success) {
+
+			$custom_fields_updated = $item->updateCustomFields($data);
+			if (!$custom_fields_updated) {
 				error_log(
 					static::class .
-						"::createOrUpdate: Error al actualizar datos de nueva item custom_id=" .
+						"::createOrUpdate: Advertencia - Algunos campos personalizados no se pudieron actualizar para custom_id=" .
 						$custom_id
 				);
-				return null;
+			}
+
+			if (method_exists($item, "updateSeoData")) {
+				$seo_updated = $item->updateSeoData($data);
+				if (!$seo_updated) {
+					error_log(
+						static::class .
+							"::createOrUpdate: Advertencia - Datos SEO no se pudieron actualizar para custom_id=" .
+							$custom_id
+					);
+				}
 			}
 		}
 
-		$this->setFields($item->ID, $data);
-
-		error_log(static::class . "::createOrUpdate: item procesada, post_id=" . $item->ID);
+		error_log(
+			static::class . "::createOrUpdate: Item procesado con éxito, post_id=" . $item->ID
+		);
 		return $item;
-	}
-
-	/**
-	 * Establece los campos personalizados de un post
-	 *
-	 * @param int $post_id ID del post
-	 * @param array $data Datos a establecer
-	 * @return void
-	 */
-	public function setFields($post_id, $data): void
-	{
-		$post_type = $data["post_type"] ?? $this->getPostType();
-
-		$fields = [
-			"custom_id" => "field_post_type_{$post_type}_custom_id",
-			"post_slug" => "field_post_type_{$post_type}_url_slug",
-			"seo_description" => "field_post_type_{$post_type}_seo_description",
-		];
-
-		foreach ($fields as $key => $field_key) {
-			if (!empty($data[$key]) && $data[$key] !== "NULL") {
-				update_field($field_key, $data[$key], $post_id);
-			}
-		}
 	}
 
 	/**
