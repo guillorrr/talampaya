@@ -627,10 +627,17 @@ function watchFiles() {
 		devCopyStylesBack();
 		Reload();
 	});
-	watch(scriptsFiles, {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path) {
+	watch(
+		scriptsFiles.concat([
+			'./patternlab/source/js/**/*.js',
+			'./patternlab/source/_patterns/**/*.js',
+			'./src/theme/assets/scripts/**/*.js',
+		]),
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devWebpackScripts();
 		Reload();

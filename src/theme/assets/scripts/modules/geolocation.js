@@ -1,35 +1,27 @@
 /**
  * Módulo para manejar la funcionalidad de prueba de geolocalización
  *
- * Este módulo proporciona funcionalidad para probar la API de geolocalización
- * utilizando JavaScript nativo en lugar de jQuery.
  */
 
 const geolocationTest = {
-	/**
-	 * Inicializa la funcionalidad de prueba de geolocalización
-	 */
-	init() {
-		const testButton = document.getElementById('test-geolocation');
-		if (!testButton) return;
+	buttonElement: null,
 
-		testButton.addEventListener('click', this.handleTestClick.bind(this));
+	init() {
+		this.buttonElement = document.getElementById('test-geolocation');
+		if (!this.buttonElement) return;
+
+		this.buttonElement.addEventListener('click', this.handleTestClick.bind(this));
 	},
 
-	/**
-	 * Maneja el clic en el botón de prueba
-	 */
 	handleTestClick() {
 		const resultElement = document.getElementById('geolocation-test-result');
-		if (!resultElement) return;
+		if (!resultElement || !this.buttonElement) return;
 
 		resultElement.innerHTML = '<p>Consultando API de geolocalización...</p>';
 
-		// Obtener la URL de la API y el nonce de los atributos de datos
-		const apiUrl = testButton.dataset.apiUrl;
-		const nonce = testButton.dataset.nonce;
+		const apiUrl = this.buttonElement.dataset.apiUrl;
+		const nonce = this.buttonElement.dataset.nonce;
 
-		// Realizar la petición a la API
 		fetch(apiUrl, {
 			method: 'GET',
 			headers: {
