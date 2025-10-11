@@ -3,6 +3,7 @@
 namespace App\Core\Endpoints;
 
 use App\Integrations\Geolocation\GeolocationServiceFactory;
+use App\Utils\RequestUtils;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
@@ -41,7 +42,7 @@ class GeolocationEndpoint extends AbstractEndpoint
 
 		if (empty($ip)) {
 			if (defined("IS_DEVELOPMENT") && IS_DEVELOPMENT) {
-				$ip = "xxx.xxx.xxx.xxx";
+				$ip = RequestUtils::getIPForTesting();
 			} else {
 				$ip = $this->getUserIp();
 			}

@@ -27,4 +27,15 @@ class RequestUtils
 
 		return ["response" => $response, "http_code" => $httpCode];
 	}
+
+	public static function getIPForTesting()
+	{
+		if (defined("IS_DEVELOPMENT") && IS_DEVELOPMENT) {
+			$response = wp_remote_get("https://api.ipify.org/");
+			if (!is_wp_error($response)) {
+				return wp_remote_retrieve_body($response);
+			}
+		}
+		return $_SERVER["REMOTE_ADDR"] ?? "127.0.0.1";
+	}
 }

@@ -4,6 +4,7 @@ namespace App\Features\Acf\Blocks\Modifiers;
 
 use App\Features\Acf\Blocks\BlockRenderer;
 use App\Integrations\Geolocation\GeolocationServiceFactory;
+use App\Utils\RequestUtils;
 
 BlockRenderer::registerContextModifier("geolocation", function (
 	$context,
@@ -20,9 +21,7 @@ BlockRenderer::registerContextModifier("geolocation", function (
 		if (IS_DEVELOPMENT) {
 			$geolocationService = GeolocationServiceFactory::createService();
 
-			$ip = defined("IS_DEVELOPMENT")
-				? "xxx.xxx.xxx.xxx"
-				: $_SERVER["REMOTE_ADDR"] ?? "127.0.0.1";
+			$ip = RequestUtils::getIPForTesting();
 
 			$geoData = $geolocationService->getGeolocationData($ip);
 
