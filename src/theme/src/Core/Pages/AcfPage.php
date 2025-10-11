@@ -32,6 +32,14 @@ class AcfPage extends AbstractPage
 	protected string $fieldGroupTitle;
 
 	/**
+	 * Indica si la página debe redirigirse a la primera subpágina.
+	 * Solo aplica para páginas de nivel superior.
+	 *
+	 * @var bool
+	 */
+	protected bool $redirect = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string      $pageTitle      Título de la página.
@@ -64,6 +72,42 @@ class AcfPage extends AbstractPage
 
 		// Registrar los campos ACF cuando se inicialice ACF
 		add_action("acf/init", [$this, "registerFields"]);
+
+		// Registrar la página de opciones ACF
+		add_action("acf/init", [$this, "registerAcfOptionsPage"]);
+	}
+
+	/**
+	 * Registra la página de opciones en ACF.
+	 */
+	public function registerAcfOptionsPage(): void
+	{
+		if (
+			!function_exists("acf_add_options_page") ||
+			!function_exists("acf_add_options_sub_page")
+		) {
+			return;
+		}
+
+		if ($this->parentSlug) {
+			acf_add_options_sub_page([
+				"page_title" => $this->pageTitle,
+				"menu_title" => $this->menuTitle,
+				"parent_slug" => $this->parentSlug,
+				"menu_slug" => $this->menuSlug,
+				"capability" => $this->capability,
+			]);
+		} else {
+			acf_add_options_page([
+				"page_title" => $this->pageTitle,
+				"menu_title" => $this->menuTitle,
+				"menu_slug" => $this->menuSlug,
+				"capability" => $this->capability,
+				"redirect" => $this->redirect,
+				"position" => $this->position,
+				"icon_url" => $this->iconUrl,
+			]);
+		}
 	}
 
 	/**
@@ -93,6 +137,19 @@ class AcfPage extends AbstractPage
 	}
 
 	/**
+	 * Establece si la página debe redireccionar a su primera subpágina.
+	 * Solo aplica para páginas de nivel superior.
+	 *
+	 * @param bool $redirect Verdadero para redireccionar.
+	 * @return self
+	 */
+	public function setRedirect(bool $redirect): self
+	{
+		$this->redirect = $redirect;
+		return $this;
+	}
+
+	/**
 	 * Registra los campos ACF para esta página.
 	 */
 	public function registerFields(): void
@@ -117,6 +174,18 @@ class AcfPage extends AbstractPage
 			"show_in_rest" => true,
 			"menu_order" => 0,
 		]);
+	}
+
+	/**
+	 * Sobrescribe el método de registro de la página.
+	 *
+	 * Para páginas ACF, el registro se maneja a través de
+	 * las funciones de ACF, no mediante add_menu_page.
+	 */
+	public function register(): void
+	{
+		// No hacemos nada aquí, ya que ACF maneja el registro
+		// a través del método registerAcfOptionsPage() llamado en init()
 	}
 
 	/**
