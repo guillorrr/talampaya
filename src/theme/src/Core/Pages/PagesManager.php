@@ -2,6 +2,8 @@
 
 namespace App\Core\Pages;
 
+use App\Utils\FileUtils;
+
 /**
  * Gestor de páginas personalizadas.
  *
@@ -16,6 +18,13 @@ class PagesManager
 	 * @var AbstractPage[]
 	 */
 	private array $pages = [];
+
+	/**
+	 * Instancias de clases de páginas personalizadas
+	 *
+	 * @var object[]
+	 */
+	private array $pageClasses = [];
 
 	/**
 	 * Constructor.
@@ -54,10 +63,36 @@ class PagesManager
 	 */
 	public function initPages(): void
 	{
+		$this->registerCustomPages();
+
 		do_action("talampaya_register_admin_pages", $this);
 
 		foreach ($this->pages as $page) {
 			$page->init();
+		}
+	}
+
+	/**
+	 * Registra páginas personalizadas a partir de clases en el directorio de páginas.
+	 *
+	 * Busca todas las clases en el directorio de páginas de administración
+	 * y las instancia automáticamente si implementan la interfaz necesaria.
+	 */
+	protected function registerCustomPages(): void
+	{
+		if (!defined("ADMIN_PAGES_PATH") || !is_dir(ADMIN_PAGES_PATH)) {
+			return;
+		}
+
+		$files = FileUtils::talampaya_directory_iterator(ADMIN_PAGES_PATH);
+
+		foreach ($files as $file) {
+			$className = pathinfo($file, PATHINFO_FILENAME);
+			$fullyQualifiedClassName = "\\App\\Features\\Admin\\Pages\\$className";
+
+			if (class_exists($fullyQualifiedClassName)) {
+				$this->pageClasses[] = new $fullyQualifiedClassName();
+			}
 		}
 	}
 
@@ -88,7 +123,5 @@ class PagesManager
 	{
 		// Registro de páginas predeterminadas...
 		// Las implementaciones concretas se hacen en clases específicas
-		$geolocationSettings = new \App\Features\Admin\Pages\GeolocationSettings();
-		$geolocationSettings->registerPage($this);
 	}
 }

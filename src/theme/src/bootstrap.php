@@ -140,7 +140,7 @@ class Bootstrap
 			ACF_MODIFIERS_PATH,
 			ACF_BLOCKS_PATH,
 			HOOKS_PATH,
-			SETTINGS_PAGES_PATH,
+			ADMIN_PAGES_PATH,
 		];
 
 		foreach ($directories as $dir) {
