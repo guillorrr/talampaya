@@ -73,17 +73,17 @@ class ProjectImportService extends AbstractImportService
 		if (!empty($data["category"]) && $data["category"] !== "NULL") {
 			$category_id = null;
 
-			if (!term_exists($data["category"], "category")) {
+			$taxonomy = "epic_taxonomy";
+
+			if (!term_exists($data["category"], $taxonomy)) {
 				if (method_exists(TermHelper::class, "talampaya_create_category")) {
-					$category_id = TermHelper::talampaya_create_category($data["category"]);
-				} else {
-					$category = wp_insert_term($data["category"], "category");
-					if (!is_wp_error($category)) {
-						$category_id = $category["term_id"];
-					}
+					$category_id = TermHelper::talampaya_create_category(
+						$data["category"],
+						$taxonomy
+					);
 				}
 			} else {
-				$category = get_term_by("name", $data["category"], "category");
+				$category = get_term_by("name", $data["category"], $taxonomy);
 				if ($category) {
 					$category_id = $category->term_id;
 				}
@@ -107,7 +107,17 @@ class ProjectImportService extends AbstractImportService
 			$tags = explode(";", $data["tags"]);
 			$tags = array_map("trim", $tags);
 			if (!empty($tags)) {
-				wp_set_post_tags($post->ID, $tags, true);
+				foreach ($tags as $tag) {
+					$term = null;
+					if (!term_exists($tag, "post_tag")) {
+						$term = wp_insert_term($tag, "post_tag");
+					} else {
+						$term = get_term_by("name", $tag, "post_tag");
+					}
+					if ($term) {
+						wp_set_post_terms($post->ID, [$term->term_id], "post_tag", true);
+					}
+				}
 			}
 		}
 
