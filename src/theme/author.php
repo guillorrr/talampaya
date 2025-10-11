@@ -15,4 +15,4 @@ if (isset($context["author"])) {
 	$context["title"] = sprintf(__("Archive of %s", "talampaya"), $context["author"]->name());
 }
 
-Timber::render(["pages/author.twig", "pages/archive.twig"], $context);
+Timber::render(["@pages/author.twig", "@pages/archive.twig"], $context);

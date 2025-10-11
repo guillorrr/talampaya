@@ -186,6 +186,11 @@
 			"dotenv-name": ".env"
 		}
 	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "wp-content/themes/talampaya/src/"
+		}
+	},
 	"config": {
 		"vendor-dir": "wp-content/vendor",
 		"allow-plugins": {

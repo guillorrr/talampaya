@@ -10,6 +10,7 @@
  */
 
 use Timber\Timber;
+use App\Inc\Controllers\DefaultController;
 
 $context = Timber::context();
 

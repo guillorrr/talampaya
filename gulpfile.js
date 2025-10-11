@@ -312,7 +312,7 @@ function transformJsonUrls() {
 }
 
 function devCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', {
+	return copyFiles(patternsJson, '/src/Mockups', {
 		checkDir: './patternlab/source/_data',
 		transforms: [transformJsonUrls()],
 		extraMessage: 'and transforming JSON URLs',
@@ -320,7 +320,7 @@ function devCopyJson() {
 }
 
 function prodCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', {
+	return copyFiles(patternsJson, '/src/Mockups', {
 		isDev: false,
 		transforms: [transformJsonUrls()],
 	});
@@ -339,7 +339,7 @@ function wrapWithTemplate(content) {
 		return content;
 	} else {
 		// Si no tiene extends, aplicamos el wrapper
-		const template = `{% extends "layouts/base.twig" %}
+		const template = `{% extends "@layouts/base.twig" %}
 
 {% block content %}
 ###CONTENT###
@@ -627,10 +627,17 @@ function watchFiles() {
 		devCopyStylesBack();
 		Reload();
 	});
-	watch(scriptsFiles, {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path) {
+	watch(
+		scriptsFiles.concat([
+			'./patternlab/source/js/**/*.js',
+			'./patternlab/source/_patterns/**/*.js',
+			'./src/theme/assets/scripts/**/*.js',
+		]),
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		devWebpackScripts();
 		Reload();
