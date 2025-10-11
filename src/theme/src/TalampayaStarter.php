@@ -8,6 +8,7 @@ use App\Core\ContextExtender\ContextManager;
 use App\Core\Endpoints\EndpointsManager;
 use App\Core\TwigExtender\EnvironmentOptions;
 use App\Core\TwigExtender\TwigManager;
+use App\Core\Pages\PagesManager;
 
 class TalampayaStarter extends Site
 {
@@ -31,22 +32,38 @@ class TalampayaStarter extends Site
 	 */
 	private EndpointsManager $endpointsManager;
 
+	/**
+	 * Gestor de páginas personalizadas
+	 */
+	private PagesManager $pagesManager;
+
 	public function __construct()
 	{
 		$this->contextManager = new ContextManager();
 		$this->twigManager = new TwigManager();
 		$this->environmentOptions = new EnvironmentOptions();
 		$this->endpointsManager = new EndpointsManager();
+		$this->pagesManager = new PagesManager();
 
 		add_filter("timber/context", [$this, "addToContext"]);
 		add_filter("timber/twig", [$this, "addToTwig"]);
 		add_filter("timber/twig/environment/options", [$this, "updateTwigEnvironmentOptions"]);
 		add_filter("timber/locations", [$this, "addLocations"]);
 
-		// Registrar todos los endpoints de la API
 		$this->endpointsManager->registerAllEndpoints();
+		$this->initializeCustomPages();
 
 		parent::__construct();
+	}
+
+	/**
+	 * Inicializa las páginas personalizadas del admin
+	 */
+	private function initializeCustomPages(): void
+	{
+		do_action("talampaya_register_admin_pages", $this->pagesManager);
+
+		$this->pagesManager->initPages();
 	}
 
 	/**
