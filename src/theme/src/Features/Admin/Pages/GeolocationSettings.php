@@ -120,28 +120,28 @@ class GeolocationSettings
 	 */
 	public function renderMaxMindCredentialsField(): void
 	{
-		$accountId = get_option("talampaya_maxmind_account_id", "");
-		$licenseKey = get_option("talampaya_maxmind_license_key", "");
-
-		// Campo para el ID de cuenta
-		echo '<div style="margin-bottom: 10px;">';
-		echo '<label for="talampaya_maxmind_account_id">ID de Cuenta:</label><br>';
-		echo '<input type="text" id="talampaya_maxmind_account_id" name="talampaya_maxmind_account_id" value="' .
-			esc_attr($accountId) .
-			'" class="regular-text">';
-		echo "</div>";
-
-		// Campo para la clave de licencia
-		echo "<div>";
-		echo '<label for="talampaya_maxmind_license_key">Clave de Licencia:</label><br>';
-		echo '<input type="password" id="talampaya_maxmind_license_key" name="talampaya_maxmind_license_key" value="' .
-			esc_attr($licenseKey) .
-			'" class="regular-text">';
-		echo "</div>";
-
 		// Mensaje si las credenciales están definidas en wp-config.php
 		if (defined("MAXMIND_ACCOUNT_ID") && defined("MAXMIND_LICENSE_KEY")) {
 			echo '<p class="description">Las credenciales están definidas en wp-config.php. Los valores ingresados aquí serán ignorados.</p>';
+		} else {
+			$accountId = get_option("talampaya_maxmind_account_id", "");
+			$licenseKey = get_option("talampaya_maxmind_license_key", "");
+
+			// Campo para el ID de cuenta
+			echo '<div style="margin-bottom: 10px;">';
+			echo '<label for="talampaya_maxmind_account_id">ID de Cuenta:</label><br>';
+			echo '<input type="text" id="talampaya_maxmind_account_id" name="talampaya_maxmind_account_id" value="' .
+				esc_attr($accountId) .
+				'" class="regular-text">';
+			echo "</div>";
+
+			// Campo para la clave de licencia
+			echo "<div>";
+			echo '<label for="talampaya_maxmind_license_key">Clave de Licencia:</label><br>';
+			echo '<input type="password" id="talampaya_maxmind_license_key" name="talampaya_maxmind_license_key" value="' .
+				esc_attr($licenseKey) .
+				'" class="regular-text">';
+			echo "</div>";
 		}
 	}
 
