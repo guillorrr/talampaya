@@ -5,13 +5,24 @@ namespace App\Inc\Services;
 use App\Inc\Helpers\AcfHelper;
 use App\Inc\Helpers\TermHelper;
 use App\Inc\Models\AbstractPost;
+use App\Inc\Models\ProjectPost;
 use Timber\Timber;
 
 /**
- * Servicio personalizado para importación
+ * Servicio para la importación de proyectos
  */
 class ProjectImportService extends AbstractImportService
 {
+	/**
+	 * Obtiene la clase del modelo asociado a este servicio
+	 *
+	 * @return string Nombre completo de la clase del modelo
+	 */
+	public function getModelClass(): string
+	{
+		return ProjectPost::class;
+	}
+
 	/**
 	 * Procesa datos específicos para este tipo de importación
 	 *
@@ -48,12 +59,12 @@ class ProjectImportService extends AbstractImportService
 	 * Crea o actualiza un elemento con procesamiento adicional para este tipo
 	 *
 	 * @param array $data Datos procesados
-	 * @param AbstractPost $modelClass Instancia del modelo a utilizar
+	 * @param AbstractPost|null $modelInstance Instancia del modelo (opcional)
 	 * @return \Timber\Post|null
 	 */
-	public function createOrUpdate(array $data, AbstractPost $modelClass): ?\Timber\Post
+	public function createOrUpdate(array $data, ?AbstractPost $modelInstance = null): ?\Timber\Post
 	{
-		$post = parent::createOrUpdate($data, $modelClass);
+		$post = parent::createOrUpdate($data, $modelInstance);
 
 		if (!$post) {
 			return null;
@@ -63,7 +74,7 @@ class ProjectImportService extends AbstractImportService
 			$category_id = null;
 
 			if (!term_exists($data["category"], "category")) {
-				if (function_exists("talampaya_create_category")) {
+				if (method_exists(TermHelper::class, "talampaya_create_category")) {
 					$category_id = TermHelper::talampaya_create_category($data["category"]);
 				} else {
 					$category = wp_insert_term($data["category"], "category");
