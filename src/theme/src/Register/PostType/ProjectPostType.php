@@ -2,23 +2,21 @@
 
 namespace App\Register\PostType;
 
-use App\Register\PostType\AbstractPostType;
-
-class CustomPostType extends AbstractPostType
+class ProjectPostType extends AbstractPostType
 {
-	protected string $slug = "custom_post";
+	protected string $slug = "project_post";
 
 	protected function configure(): array
 	{
-		$labels = $this->getLabels("Custom Post", "Custom Posts");
+		$labels = $this->getLabels("Project", "Projects");
 
 		return [
-			"label" => __("Custom Post", "talampaya"),
+			"label" => __("Project", "talampaya"),
 			"description" => __("description", "talampaya"),
 			"labels" => $labels,
 			"menu_icon" => "dashicons-admin-appearance",
 			"supports" => [],
-			"taxonomies" => ["custom_taxonomy"],
+			"taxonomies" => ["project_taxonomy"],
 			"hierarchical" => false,
 			"exclude_from_search" => false,
 			"publicly_queryable" => true,
@@ -32,7 +30,7 @@ class CustomPostType extends AbstractPostType
 			"menu_position" => 20,
 			"capability_type" => "post",
 			"show_in_rest" => true,
-			"rewrite" => ["slug" => "custom"],
+			"rewrite" => ["slug" => "project"],
 		];
 	}
 }

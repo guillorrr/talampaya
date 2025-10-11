@@ -4,14 +4,14 @@ namespace App\Register\Taxonomy;
 
 use App\Register\Taxonomy\AbstractTaxonomy;
 
-class CustomTaxonomy extends AbstractTaxonomy
+class EpicTaxonomy extends AbstractTaxonomy
 {
-	protected string $slug = "custom_taxonomy";
-	protected array $object_types = ["custom_post"];
+	protected string $slug = "epic_taxonomy";
+	protected array $object_types = ["project_post"];
 
 	protected function configure(): array
 	{
-		$labels = $this->getLabels("Custom Taxonomy", "Custom Taxonomies");
+		$labels = $this->getLabels("Epic", "Epics");
 
 		return [
 			"labels" => $labels,
@@ -28,7 +28,7 @@ class CustomTaxonomy extends AbstractTaxonomy
 			"show_admin_column" => false,
 			"show_in_rest" => false,
 			"rewrite" => [
-				"slug" => "custom",
+				"slug" => "epic_taxonomy",
 				"with_front" => true,
 			],
 		];

@@ -1,12 +1,12 @@
 <?php
-// Post Type Key: custom_post_type
+// Post Type Key: project_post
 use Illuminate\Support\Str;
 use App\Inc\Helpers\AcfHelper;
 
-function add_acf_custom_post_type_fields(): void
+function add_acf_project_post_fields(): void
 {
-	$post_type = "custom_post_type";
-	$block_title = __("Custom Fields", "talampaya");
+	$post_type = "project_post";
+	$block_title = __("Project Fields", "talampaya");
 
 	$additional_args = [
 		"display_format" => "Y-m-d",
@@ -48,4 +48,4 @@ function add_acf_custom_post_type_fields(): void
 		);
 	}
 }
-add_action("acf/init", "add_acf_custom_post_type_fields", 10);
+add_action("acf/init", "add_acf_project_post_fields", 10);
