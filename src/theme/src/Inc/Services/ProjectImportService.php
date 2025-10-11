@@ -10,7 +10,7 @@ use Timber\Timber;
 /**
  * Servicio personalizado para importación
  */
-class CustomImportService extends AbstractImportService
+class ProjectImportService extends AbstractImportService
 {
 	/**
 	 * Procesa datos específicos para este tipo de importación
