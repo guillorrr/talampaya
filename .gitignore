@@ -13,4 +13,4 @@ logs/*.xt
 .env
 *.log
 dependencyGraph.json
-src/theme/inc/plugins/*.zip
+src/theme/src/**/*.zip
