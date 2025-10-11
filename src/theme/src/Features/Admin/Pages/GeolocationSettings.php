@@ -153,88 +153,35 @@ class GeolocationSettings
 		if (!current_user_can("manage_options")) {
 			return;
 		} ?>
-        <div class="wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-            <form action="options.php" method="post">
-                <?php
-                settings_fields("talampaya_geolocation_settings");
-                do_settings_sections("talampaya-geolocation");
-                submit_button("Guardar Cambios");
-                ?>
-            </form>
+	        <div class="wrap">
+	            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+	            <form action="options.php" method="post">
+	                <?php
+                 settings_fields("talampaya_geolocation_settings");
+                 do_settings_sections("talampaya-geolocation");
+                 submit_button("Guardar Cambios");
+                 ?>
+	            </form>
 
-            <hr>
+	            <hr>
 
-            <h2>Probar Geolocalización</h2>
-            <p>Puedes probar tu configuración de geolocalización para verificar que funciona correctamente.</p>
+	            <h2>Probar Geolocalización</h2>
+	            <p>Puedes probar tu configuración de geolocalización para verificar que funciona correctamente.</p>
 
-            <div class="card" style="max-width: 600px; margin-top: 20px; padding: 20px;">
-                <div id="geolocation-test-result">
-                    <p>Haz clic en "Probar" para verificar la configuración de geolocalización.</p>
-                </div>
-                <button type="button" class="button button-primary" id="test-geolocation">Probar</button>
-            </div>
-
-            <script>
-            jQuery(document).ready(function($) {
-                $('#test-geolocation').on('click', function() {
-                    var $result = $('#geolocation-test-result');
-                    $result.html('<p>Consultando API de geolocalización...</p>');
-
-                    $.ajax({
-                        url: '<?php echo esc_url(rest_url("talampaya/v1/geolocation")); ?>',
-                        method: 'GET',
-                        beforeSend: function(xhr) {
-                            xhr.setRequestHeader('X-WP-Nonce', '<?php echo esc_js(
-                            	wp_create_nonce("wp_rest")
-                            ); ?>');
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                var html = '<h4>Resultado exitoso</h4>';
-                                html += '<table class="widefat" style="margin-top: 10px;">';
-                                html += '<tr><th>IP</th><td>' + response.ip + '</td></tr>';
-
-                                if (response.data.country) {
-                                    html += '<tr><th>País</th><td>' + response.data.country.name + ' (' + response.data.country.code + ')</td></tr>';
-                                }
-
-                                if (response.data.city && response.data.city !== 'Unknown') {
-                                    html += '<tr><th>Ciudad</th><td>' + response.data.city + '</td></tr>';
-                                }
-
-                                if (response.data.subdivision) {
-                                    html += '<tr><th>Región</th><td>' + response.data.subdivision.name + '</td></tr>';
-                                }
-
-                                if (response.data.location) {
-                                    html += '<tr><th>Coordenadas</th><td>' + response.data.location.latitude + ', ' + response.data.location.longitude + '</td></tr>';
-                                    html += '<tr><th>Zona horaria</th><td>' + response.data.location.timezone + '</td></tr>';
-                                }
-
-                                html += '<tr><th>Proveedor</th><td>' + response.data.provider + '</td></tr>';
-
-                                if (response.data.error) {
-                                    html += '<tr><th>Error</th><td>' + response.data.error + '</td></tr>';
-                                }
-
-                                html += '</table>';
-                                $result.html(html);
-                            } else {
-                                $result.html('<p class="error">Error: ' + response.message + '</p>');
-                            }
-                        },
-                        error: function(jqXHR) {
-                            var message = jqXHR.responseJSON && jqXHR.responseJSON.message
-                                ? jqXHR.responseJSON.message
-                                : 'Error desconocido al contactar el API.';
-
-                            $result.html('<p class="error">Error: ' + message + '</p>');
-                        }
-                    });
-                });
-            });
-            </script>
+	            <div class="card" style="max-width: 600px; margin-top: 20px; padding: 20px;">
+	                <div id="geolocation-test-result">
+	                    <p>Haz clic en "Probar" para verificar la configuración de geolocalización.</p>
+	                </div>
+	                <button
+	                    type="button"
+	                    class="button button-primary"
+	                    id="test-geolocation"
+	                    data-api-url="<?php echo esc_url(rest_url("talampaya/v1/geolocation")); ?>"
+	                    data-nonce="<?php echo esc_attr(wp_create_nonce("wp_rest")); ?>"
+	                >
+	                    Probar
+	                </button>
+	            </div>
         </div>
         <?php
 	}
