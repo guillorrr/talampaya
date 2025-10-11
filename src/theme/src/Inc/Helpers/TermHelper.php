@@ -4,11 +4,11 @@ namespace App\Inc\Helpers;
 
 class TermHelper
 {
-	public static function talampaya_create_category($category_name)
+	public static function talampaya_create_category($category_name, $taxonomy = "category")
 	{
 		$category_id = get_cat_ID($category_name);
 		if ($category_id == 0) {
-			$new_category = wp_insert_term($category_name, "category");
+			$new_category = wp_insert_term($category_name, $taxonomy);
 			if (!is_wp_error($new_category)) {
 				$category_id = $new_category["term_id"];
 			}
