@@ -51,19 +51,9 @@ class TalampayaStarter extends Site
 		add_filter("timber/locations", [$this, "addLocations"]);
 
 		$this->endpointsManager->registerAllEndpoints();
-		$this->initializeCustomPages();
+		$this->pagesManager->initPages();
 
 		parent::__construct();
-	}
-
-	/**
-	 * Inicializa las páginas personalizadas del admin
-	 */
-	private function initializeCustomPages(): void
-	{
-		do_action("talampaya_register_admin_pages", $this->pagesManager);
-
-		$this->pagesManager->initPages();
 	}
 
 	/**

@@ -54,6 +54,8 @@ class PagesManager
 	 */
 	public function initPages(): void
 	{
+		do_action("talampaya_register_admin_pages", $this);
+
 		foreach ($this->pages as $page) {
 			$page->init();
 		}
