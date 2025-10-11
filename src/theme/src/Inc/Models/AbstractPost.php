@@ -57,65 +57,118 @@ abstract class AbstractPost extends \Timber\Post
 	 * Actualiza los datos del post a partir de un array
 	 *
 	 * @param array $data Datos a actualizar
-	 * @return bool
+	 * @return bool True si la actualización fue exitosa, false en caso contrario
 	 */
 	public function updateFromData(array $data): bool
 	{
-		$post_update_data = [
-			"ID" => $this->ID,
-		];
+		try {
+			error_log(
+				static::class . "::updateFromData: Iniciando actualización para post_id={$this->ID}"
+			);
 
-		// Solo actualizar campos si tienen un valor
-		if (!empty($data["title"])) {
-			$post_update_data["post_title"] = sanitize_text_field($data["title"]);
-		}
-		if (!empty($data["content"])) {
-			$post_update_data["post_content"] = wp_kses_post($data["content"]);
-		}
-		if (!empty($data["slug"])) {
-			$post_update_data["post_name"] = sanitize_title($data["slug"]);
-		}
-		if (!empty($data["status"])) {
-			$post_update_data["post_status"] = $data["status"];
-		}
-		if (!empty($data["post_date"])) {
-			$post_update_data["post_date"] = $data["post_date"];
-		}
-		if (!empty($data["post_modified"])) {
-			$post_update_data["post_modified"] = $data["post_modified"];
-		}
-		if (!empty($data["menu_order"])) {
-			$post_update_data["menu_order"] = $data["menu_order"];
-		}
+			$post_update_data = [
+				"ID" => $this->ID,
+			];
 
-		// Solo ejecutar wp_update_post si hay algo que cambiar
-		if (count($post_update_data) > 1) {
-			$result = wp_update_post($post_update_data, true);
-			if (is_wp_error($result)) {
+			// Solo actualizar campos si tienen un valor
+			if (!empty($data["title"])) {
+				$post_update_data["post_title"] = sanitize_text_field($data["title"]);
+			}
+			if (!empty($data["content"])) {
+				$post_update_data["post_content"] = wp_kses_post($data["content"]);
+			}
+			if (!empty($data["slug"])) {
+				$post_update_data["post_name"] = sanitize_title($data["slug"]);
+			} elseif (!empty($data["post_slug"])) {
+				$post_update_data["post_name"] = sanitize_title($data["post_slug"]);
+			}
+			if (!empty($data["status"])) {
+				$post_update_data["post_status"] = $data["status"];
+			}
+			if (!empty($data["post_date"])) {
+				$post_update_data["post_date"] = $data["post_date"];
+			}
+			if (!empty($data["post_modified"])) {
+				$post_update_data["post_modified"] = $data["post_modified"];
+			}
+			if (!empty($data["menu_order"])) {
+				$post_update_data["menu_order"] = $data["menu_order"];
+			}
+
+			// Solo ejecutar wp_update_post si hay algo que cambiar
+			if (count($post_update_data) > 1) {
 				error_log(
 					static::class .
-						"::updateFromData: Error al actualizar post_id={$this->ID}, error={$result->get_error_message()}"
+						"::updateFromData: Actualizando datos básicos del post para post_id={$this->ID}"
 				);
-				return false;
+				$result = wp_update_post($post_update_data, true);
+				if (is_wp_error($result)) {
+					error_log(
+						static::class .
+							"::updateFromData: Error al actualizar post_id={$this->ID}, error={$result->get_error_message()}"
+					);
+					return false;
+				}
+
+				// Actualizar propiedades del objeto actual con los datos del post actualizado
+				$updated_post = get_post($this->ID);
+				if ($updated_post) {
+					$this->post_title = $updated_post->post_title;
+					$this->post_content = $updated_post->post_content;
+					$this->post_status = $updated_post->post_status;
+					if (isset($updated_post->post_date)) {
+						$this->post_date = $updated_post->post_date;
+					}
+					if (isset($updated_post->post_modified)) {
+						$this->post_modified = $updated_post->post_modified;
+					}
+				}
 			}
+
+			// Actualizar campos personalizados
+			$custom_fields_success = $this->updateCustomFields($data);
+			if (!$custom_fields_success) {
+				error_log(
+					static::class .
+						"::updateFromData: Advertencia - Algunos campos personalizados no se actualizaron para post_id={$this->ID}"
+				);
+				// Continuamos a pesar de problemas con campos personalizados
+			}
+
+			// Actualizar datos SEO si existe el método
+			if (method_exists($this, "updateSeoData")) {
+				$seo_update_success = $this->updateSeoData($data);
+				if (!$seo_update_success) {
+					error_log(
+						static::class .
+							"::updateFromData: Advertencia - Algunos datos SEO no se actualizaron para post_id={$this->ID}"
+					);
+					// Continuamos a pesar de problemas con datos SEO
+				}
+			}
+
+			error_log(
+				static::class .
+					"::updateFromData: Finalizada actualización exitosa para post_id={$this->ID}"
+			);
+			return true;
+		} catch (\Exception $e) {
+			error_log(
+				static::class .
+					"::updateFromData: Error inesperado al actualizar post_id={$this->ID}, error=" .
+					$e->getMessage()
+			);
+			return false;
 		}
-
-		$this->updateCustomFields($data);
-
-		if (method_exists($this, "updateSeoData")) {
-			$this->updateSeoData($data);
-		}
-
-		return true;
 	}
 
 	/**
 	 * Actualiza los campos personalizados del post
 	 *
 	 * @param array $data Datos a actualizar
-	 * @return void
+	 * @return bool True si la actualización fue exitosa, false en caso contrario
 	 */
-	public function updateCustomFields(array $data): void
+	public function updateCustomFields(array $data): bool
 	{
 		$exclude_keys = [
 			"post_type",
@@ -128,31 +181,75 @@ abstract class AbstractPost extends \Timber\Post
 			"menu_order",
 		];
 
-		foreach ($data as $key => $value) {
-			if (!empty($value) && !in_array($key, $exclude_keys)) {
-				$post_type = $data["post_type"] ?? null;
-				$class_name = (new \ReflectionClass($this))->getShortName();
-				if (empty($post_type)) {
-					$post_type = Str::snake($class_name);
-				}
+		$success = true;
+		$updated_fields_count = 0;
 
-				// Intentar primero con la clave específica para este tipo de post
-				$field_key = "field_post_type_{$post_type}_{$key}";
-				$field_exists = function_exists("acf_get_field") ? acf_get_field($field_key) : null;
+		try {
+			foreach ($data as $key => $value) {
+				if (!empty($value) && !in_array($key, $exclude_keys)) {
+					$post_type = $data["post_type"] ?? null;
+					$class_name = (new \ReflectionClass($this))->getShortName();
+					if (empty($post_type)) {
+						$post_type = Str::snake($class_name);
+					}
 
-				if (!$field_exists) {
-					// Si no existe, buscar si hay un campo en los campos generados por articles_post-fields.php
-					error_log(
-						"Campo ACF no encontrado: {$field_key}, intentando con clave alternativa"
-					);
+					// Intentar primero con la clave específica para este tipo de post
 					$field_key = "field_post_type_{$post_type}_{$key}";
-				}
+					$field_exists = function_exists("acf_get_field")
+						? acf_get_field($field_key)
+						: null;
 
-				if (function_exists("update_field")) {
-					update_field($field_key, $value, $this->ID);
+					if (!$field_exists) {
+						// Si no existe, buscar si hay un campo en los campos generados por articles_post-fields.php
+						$field_key = "field_post_type_{$post_type}_{$key}";
+						error_log(
+							static::class .
+								"::updateCustomFields: Campo ACF no encontrado: {$field_key} para post_id={$this->ID}"
+						);
+					}
+
+					if (function_exists("update_field")) {
+						$result = update_field($field_key, $value, $this->ID);
+						if ($result) {
+							$updated_fields_count++;
+						} else {
+							error_log(
+								static::class .
+									"::updateCustomFields: No se pudo actualizar el campo {$key} con clave {$field_key} para post_id={$this->ID}"
+							);
+						}
+					} else {
+						error_log(
+							static::class .
+								"::updateCustomFields: La función update_field no está disponible para post_id={$this->ID}"
+						);
+						$success = false;
+					}
 				}
 			}
+
+			// Si hay campos para actualizar y no se actualizó ninguno, considerar como error
+			if (
+				$updated_fields_count === 0 &&
+				count(array_diff_key($data, array_flip($exclude_keys))) > 0
+			) {
+				error_log(
+					static::class .
+						"::updateCustomFields: No se actualizó ningún campo personalizado para post_id={$this->ID}"
+				);
+				// No fallar solo por esto, podría ser que no hay campos ACF disponibles
+				// $success = false;
+			}
+		} catch (\Exception $e) {
+			error_log(
+				static::class .
+					"::updateCustomFields: Error al actualizar campos personalizados para post_id={$this->ID}, error=" .
+					$e->getMessage()
+			);
+			$success = false;
 		}
+
+		return $success;
 	}
 
 	/**
