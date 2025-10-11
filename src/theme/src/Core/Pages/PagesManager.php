@@ -88,5 +88,7 @@ class PagesManager
 	{
 		// Registro de páginas predeterminadas...
 		// Las implementaciones concretas se hacen en clases específicas
+		$geolocationSettings = new \App\Features\Admin\Pages\GeolocationSettings();
+		$geolocationSettings->registerPage($this);
 	}
 }
