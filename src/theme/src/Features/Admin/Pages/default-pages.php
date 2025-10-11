@@ -11,12 +11,10 @@ use App\Core\Pages\PagesManager;
  */
 function register_talampaya_default_pages(PagesManager $pagesManager): void
 {
-	// Verificar si ACF está activado
 	if (!function_exists("acf_add_options_page")) {
 		return;
 	}
 
-	// Página principal de configuración del tema
 	$mainSettingsPage = new AcfPage(
 		"Configuración General del Tema",
 		__("Configuración del Tema", "talampaya"),
@@ -25,10 +23,10 @@ function register_talampaya_default_pages(PagesManager $pagesManager): void
 		__("Configuración General", "talampaya")
 	);
 
-	$mainSettingsPage->setCapability("edit_posts");
+	$mainSettingsPage->setCapability("edit_posts")->setRedirect(true);
+
 	$pagesManager->addPage($mainSettingsPage);
 
-	// Página de configuración del encabezado
 	$headerPage = new AcfPage(
 		"Configuración del Encabezado",
 		__("Encabezado", "talampaya"),
@@ -47,7 +45,6 @@ function register_talampaya_default_pages(PagesManager $pagesManager): void
 
 	$pagesManager->addPage($headerPage);
 
-	// Página de configuración del pie de página
 	$footerPage = new AcfPage(
 		"Configuración del Pie de Página",
 		__("Pie de página", "talampaya"),
