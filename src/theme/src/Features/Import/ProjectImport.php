@@ -2,6 +2,7 @@
 
 namespace App\Features\Import;
 
+use App\Inc\Models\ProjectPost;
 use App\Inc\Services\ProjectImportService;
 
 /**
@@ -31,7 +32,7 @@ class ProjectImport
 			$file_path,
 			function ($row) use ($service) {
 				$data = $service->processData($row);
-				return $service->createOrUpdate($data) !== null;
+				return $service->createOrUpdate($data, ProjectPost::getInstance()) !== null;
 			},
 			null, // No validar encabezados para máxima compatibilidad
 			$start_line,

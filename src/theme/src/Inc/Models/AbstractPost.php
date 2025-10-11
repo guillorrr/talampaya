@@ -25,13 +25,24 @@ abstract class AbstractPost extends \Timber\Post
 
 	/**
 	 * Obtiene el tipo de post predeterminado basado en el nombre de la clase
+	 * Versión estática que no requiere una instancia
+	 *
+	 * @return string
+	 */
+	public static function getPostType(): string
+	{
+		$class_name = (new \ReflectionClass(static::class))->getShortName();
+		return Str::snake($class_name);
+	}
+
+	/**
+	 * Obtiene el tipo de post predeterminado basado en el nombre de la clase
 	 *
 	 * @return string
 	 */
 	public function default_post_type(): string
 	{
-		$class_name = (new \ReflectionClass($this))->getShortName();
-		return Str::snake($class_name);
+		return static::getPostType();
 	}
 
 	/**

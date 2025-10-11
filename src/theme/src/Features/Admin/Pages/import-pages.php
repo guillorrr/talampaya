@@ -72,7 +72,10 @@ function process_csv_project_on_save($post_id): void
 				$project_file_path,
 				function ($row) use ($service) {
 					$data = $service->processData($row);
-					return $service->createOrUpdate($data);
+					return $service->createOrUpdate(
+						$data,
+						\App\Inc\Models\ProjectPost::getInstance()
+					) !== null;
 				},
 				null
 			);

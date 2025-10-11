@@ -59,10 +59,10 @@ class ProjectImportService extends AbstractImportService
 	 * Crea o actualiza un elemento con procesamiento adicional para este tipo
 	 *
 	 * @param array $data Datos procesados
-	 * @param AbstractPost|null $modelInstance Instancia del modelo (opcional)
+	 * @param AbstractPost $modelInstance Instancia del modelo
 	 * @return \Timber\Post|null
 	 */
-	public function createOrUpdate(array $data, ?AbstractPost $modelInstance = null): ?\Timber\Post
+	public function createOrUpdate(array $data, AbstractPost $modelInstance): ?\Timber\Post
 	{
 		$post = parent::createOrUpdate($data, $modelInstance);
 

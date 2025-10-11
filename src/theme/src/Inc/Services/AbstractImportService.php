@@ -92,8 +92,15 @@ abstract class AbstractImportService
 			return Str::snake($postType);
 		}
 
-		$model = new $modelClass();
-		return $model->default_post_type();
+		// Usar el método estático para obtener el tipo de post sin instanciar la clase
+		if (method_exists($modelClass, "getPostType")) {
+			return $modelClass::getPostType();
+		}
+
+		// Fallback por si no existe el método estático
+		$ref = new \ReflectionClass($modelClass);
+		$className = $ref->getShortName();
+		return Str::snake($className);
 	}
 
 	/**
@@ -125,26 +132,15 @@ abstract class AbstractImportService
 	 * Crea o actualiza un elemento basado en los datos proporcionados
 	 *
 	 * @param array $data Datos procesados para importar
-	 * @param AbstractPost|null $modelInstance Instancia del modelo (opcional)
+	 * @param AbstractPost $modelInstance Instancia del modelo
 	 * @return Post|null El post creado/actualizado o null si hay error
 	 */
-	public function createOrUpdate(array $data, ?AbstractPost $modelInstance = null): ?Post
+	public function createOrUpdate(array $data, AbstractPost $modelInstance): ?Post
 	{
 		$custom_id = sanitize_text_field($data["custom_id"]);
 		if (empty($custom_id)) {
 			error_log(static::class . "::createOrUpdate: CustomID vacío");
 			return null;
-		}
-
-		if ($modelInstance === null) {
-			$modelClass = $this->getModelClass();
-			if (!class_exists($modelClass)) {
-				error_log(
-					static::class . "::createOrUpdate: La clase del modelo {$modelClass} no existe"
-				);
-				return null;
-			}
-			$modelInstance = new $modelClass();
 		}
 
 		$post_type = $data["post_type"] ?? $this->getPostType();
