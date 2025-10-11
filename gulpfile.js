@@ -312,7 +312,7 @@ function transformJsonUrls() {
 }
 
 function devCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', {
+	return copyFiles(patternsJson, '/src/Mockups', {
 		checkDir: './patternlab/source/_data',
 		transforms: [transformJsonUrls()],
 		extraMessage: 'and transforming JSON URLs',
@@ -320,7 +320,7 @@ function devCopyJson() {
 }
 
 function prodCopyJson() {
-	return copyFiles(patternsJson, '/inc/mockups', {
+	return copyFiles(patternsJson, '/src/Mockups', {
 		isDev: false,
 		transforms: [transformJsonUrls()],
 	});

@@ -147,7 +147,7 @@ class DefaultController
 	 */
 	public static function load_json_data(string $json_name, array $context = []): array
 	{
-		$json_file = get_template_directory() . "/inc/mockups/{$json_name}.json";
+		$json_file = get_template_directory() . "/src/Mockups/{$json_name}.json";
 
 		if (!file_exists($json_file)) {
 			return $context;
