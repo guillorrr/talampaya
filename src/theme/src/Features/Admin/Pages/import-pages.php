@@ -109,7 +109,7 @@ function process_csv_project_on_save($post_id): void
 				$project_message .= "</ul>";
 			}
 
-			error_log("process_csv_project_on_save: FAQs message prepared: " . $project_message);
+			error_log("process_csv_project_on_save: Import message prepared: " . $project_message);
 
 			add_settings_error(
 				"csv_import",
