@@ -116,7 +116,19 @@
 		"wpengine/advanced-custom-fields-pro": "6.6.0",
 		"wpackagist-plugin/wordpress-seo": "*",
 		"wpml/sitepress-multilingual-cms": "*",
-		"wpml/wpml-string-translation": "*"
+		"wpml/wpml-string-translation": "*",
+		"wpml/wp-seo-multilingual": "*",
+		"wpml/acfml": "*",
+		"wpml/wpml-import": "*",
+		"wpml/wpml-all-import": "*"
+	},
+	"suggest": {
+		"wpml/sitepress-multilingual-cms": "Plugin principal de WPML para soporte multilingüe",
+		"wpml/wpml-string-translation": "Componente de WPML para traducción de strings",
+		"wpml/wp-seo-multilingual": "Integración de WPML con Yoast SEO",
+		"wpml/acfml": "Integración de WPML con Advanced Custom Fields",
+		"wpml/wpml-import": "Importación de traducciones WPML",
+		"wpml/wpml-all-import": "Integración de WPML con WP All Import"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
@@ -161,10 +173,6 @@
 		"wpackagist-plugin/regenerate-thumbnails": "*",
 		"wpackagist-plugin/image-regenerate-select-crop": "*",
 		"wpackagist-theme/poema": "*",
-		"wpml/wp-seo-multilingual": "*",
-		"wpml/acfml": "*",
-		"wpml/wpml-import": "*",
-		"wpml/wpml-all-import": "*",
 		"hellonico/timber-dump-extension": "*",
 		"wp-cli/wp-cli-bundle": "^2.11"
 	},
@@ -202,6 +210,20 @@
 	"scripts": {
 		"test": "phpunit",
 		"env": "printenv COMPOSER_AUTH",
-		"wp": "wp-content/vendor/bin/wp"
+		"wp": "wp-content/vendor/bin/wp",
+		"post-install-cmd": [
+			"@check-wpml-credentials"
+		],
+		"post-update-cmd": [
+			"@check-wpml-credentials"
+		],
+		"check-wpml-credentials": "php -r \"if (getenv('WORDPRESS_WPML_USER_ID') && getenv('WORDPRESS_WPML_KEY')) { echo \\\"WPML credentials found. Run 'composer install-wpml' to install WPML plugins.\\n\\\"; } else { echo \\\"WPML credentials not found. WPML plugins will not be installed.\\n\\\"; }\"",
+		"install-wpml": [
+			"composer require wpml/sitepress-multilingual-cms:* wpml/wpml-string-translation:* wpml/wp-seo-multilingual:* wpml/acfml:* wpml/wpml-import:* wpml/wpml-all-import:* --no-interaction"
+		],
+		"install-without-wpml": [
+			"composer install --no-plugins --no-scripts",
+			"composer dump-autoload"
+		]
 	}
 }
