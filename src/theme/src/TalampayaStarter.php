@@ -39,19 +39,24 @@ class TalampayaStarter extends Site
 
 	public function __construct()
 	{
-		$this->contextManager = new ContextManager();
-		$this->twigManager = new TwigManager();
-		$this->environmentOptions = new EnvironmentOptions();
-		$this->endpointsManager = new EndpointsManager();
-		$this->pagesManager = new PagesManager();
+		add_action(
+			"after_setup_theme",
+			function () {
+				$this->contextManager = new ContextManager();
+				$this->twigManager = new TwigManager();
+				$this->environmentOptions = new EnvironmentOptions();
+				$this->endpointsManager = new EndpointsManager();
+				$this->endpointsManager->registerAllEndpoints();
+				$this->pagesManager = new PagesManager();
+				$this->pagesManager->initPages();
+			},
+			999
+		);
 
 		add_filter("timber/context", [$this, "addToContext"]);
 		add_filter("timber/twig", [$this, "addToTwig"]);
 		add_filter("timber/twig/environment/options", [$this, "updateTwigEnvironmentOptions"]);
 		add_filter("timber/locations", [$this, "addLocations"]);
-
-		$this->endpointsManager->registerAllEndpoints();
-		$this->pagesManager->initPages();
 
 		parent::__construct();
 	}

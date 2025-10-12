@@ -60,13 +60,23 @@ class PagesManager
 
 	/**
 	 * Inicializa todas las páginas.
+	 *
+	 * Este método se ejecuta durante el hook 'after_setup_theme' con prioridad 999,
+	 * lo que garantiza que las traducciones ya estén completamente cargadas.
+	 * Las páginas pueden usar funciones como __() sin problemas.
 	 */
 	public function initPages(): void
 	{
+		// Cargar clases de páginas en el directorio ADMIN_PAGES_PATH
+		// Este paso es opcional si ya se están cargando mediante 'plugins_loaded'
 		$this->registerCustomPages();
 
+		// Permitir que otras clases registren sus páginas
+		// Las clases deben implementar un método 'registerPage' o 'registerPages'
+		// que acepte un objeto PagesManager como parámetro
 		do_action("talampaya_register_admin_pages", $this);
 
+		// Inicializar cada página registrada
 		foreach ($this->pages as $page) {
 			$page->init();
 		}
