@@ -1,5 +1,21 @@
 # Sistema de Páginas Personalizadas
+# Páginas de Administración
 
+Este directorio contiene las clases para crear y gestionar páginas personalizadas en el panel de administración de WordPress.
+
+## Estructura
+
+Las páginas de administración se implementan como clases que extienden de `AbstractPageSetting` o siguen su mismo patrón. Esta estructura garantiza que las traducciones se carguen correctamente antes de que las páginas intenten utilizarlas.
+
+## Cómo crear una nueva página de administración
+
+1. Crea una nueva clase PHP en este directorio que siga el patrón de las existentes.
+
+2. La clase debe implementar como mínimo:
+   - Un constructor que llame a los hooks necesarios
+   - Un método `registerPage` que añada la página al gestor
+
+### Ejemplo básico
 Esta característica proporciona una forma modular y escalable de agregar páginas personalizadas al panel de administración de WordPress.
 
 ## Características principales

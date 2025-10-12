@@ -135,13 +135,7 @@ class Bootstrap
 	 */
 	private static function loadAdditionalFiles(): void
 	{
-		$directories = [
-			ACF_FIELDS_PATH,
-			ACF_MODIFIERS_PATH,
-			ACF_BLOCKS_PATH,
-			HOOKS_PATH,
-			ADMIN_PAGES_PATH,
-		];
+		$directories = [ACF_FIELDS_PATH, ACF_MODIFIERS_PATH, ACF_BLOCKS_PATH, HOOKS_PATH];
 
 		foreach ($directories as $dir) {
 			FileUtils::talampaya_directory_iterator_universal($dir, [
