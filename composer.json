@@ -18,7 +18,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/sitepress-multilingual-cms",
-				"version": "4.7.1",
+				"version": "4.8.2",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -33,7 +33,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-string-translation",
-				"version": "3.3.1",
+				"version": "3.4.1",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -48,7 +48,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wp-seo-multilingual",
-				"version": "2.1.1",
+				"version": "2.2.4",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -78,7 +78,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-import",
-				"version": "1.0.2",
+				"version": "1.1.0",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -93,7 +93,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-all-import",
-				"version": "2.3.0",
+				"version": "2.3.2",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -112,7 +112,11 @@
 		"twig/extra-bundle": "^3.0",
 		"vlucas/phpdotenv": "^5.6",
 		"illuminate/support": "^10.0",
-		"timber/wp-i18n-twig": "^1.0"
+		"timber/wp-i18n-twig": "^1.0",
+		"wpengine/advanced-custom-fields-pro": "6.6.0",
+		"wpackagist-plugin/wordpress-seo": "*",
+		"wpml/sitepress-multilingual-cms": "*",
+		"wpml/wpml-string-translation": "*"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
@@ -143,7 +147,6 @@
 		"wpackagist-plugin/acf-to-custom-database-tables": "*",
 		"wpackagist-plugin/tinymce-advanced": "*",
 		"wpackagist-plugin/disable-xml-rpc-pingback": "*",
-		"wpackagist-plugin/wordpress-seo": "*",
 		"wpackagist-plugin/posts-to-posts": "*",
 		"wpackagist-plugin/wp-tota11y": "*",
 		"wpackagist-plugin/disable-emojis": "*",
@@ -158,9 +161,6 @@
 		"wpackagist-plugin/regenerate-thumbnails": "*",
 		"wpackagist-plugin/image-regenerate-select-crop": "*",
 		"wpackagist-theme/poema": "*",
-		"wpengine/advanced-custom-fields-pro": "^6.3.2",
-		"wpml/sitepress-multilingual-cms": "*",
-		"wpml/wpml-string-translation": "*",
 		"wpml/wp-seo-multilingual": "*",
 		"wpml/acfml": "*",
 		"wpml/wpml-import": "*",
