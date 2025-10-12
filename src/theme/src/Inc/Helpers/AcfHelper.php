@@ -125,8 +125,8 @@ class AcfHelper
 	public static function talampaya_create_acf_field(
 		string $name,
 		string $type = "text",
-		int $wrapper_width = null,
-		string $label = null,
+		?int $wrapper_width = null,
+		?string $label = null,
 		int $required = 0,
 		array $additional_args = [],
 		int $wpml = 0
@@ -227,8 +227,8 @@ class AcfHelper
 	public static function talampaya_create_acf_field_repeater(
 		string $name,
 		array $subfields = [],
-		int $wrapper_width = null,
-		string $label = null,
+		?int $wrapper_width = null,
+		?string $label = null,
 		int $required = 0,
 		array $additional_args = [],
 		int $wpml = 0,
@@ -413,7 +413,7 @@ class AcfHelper
 		int|string $post_id,
 		string $image_url,
 		string $custom_field,
-		string $title = null
+		?string $title = null
 	): bool {
 		if (!empty($image_url)) {
 			$filename = basename($image_url);
