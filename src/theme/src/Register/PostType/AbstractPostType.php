@@ -25,7 +25,7 @@ abstract class AbstractPostType
 	protected function getLabels(
 		$singular = "Post",
 		$plural = "Posts",
-		string $gender = null
+		?string $gender = null
 	): array {
 		$p_lower = strtolower($plural);
 		$s_lower = strtolower($singular);
