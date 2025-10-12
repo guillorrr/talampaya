@@ -88,6 +88,9 @@ class PagesManager
 
 		foreach ($files as $file) {
 			$className = pathinfo($file, PATHINFO_FILENAME);
+			if ($className === "AbstractPage" || $className === "AbstractPageSetting") {
+				continue;
+			}
 			$fullyQualifiedClassName = "\\App\\Features\\Admin\\Pages\\$className";
 
 			if (class_exists($fullyQualifiedClassName)) {
