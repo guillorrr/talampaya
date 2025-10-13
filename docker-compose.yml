@@ -93,7 +93,8 @@ services:
       - '${FORWARD_HTTP_PORT:-80}:80'
       - '${FORWARD_HTTPS_PORT:-443}:${FORWARD_HTTPS_PORT:-443}'
     volumes:
-      - './docker/nginx/templates:/etc/nginx/templates'
+      - './docker/nginx/templates/single.conf:/etc/nginx/templates/single.conf'
+      - './docker/nginx/templates/multisite.conf:/etc/nginx/templates/multisite.conf'
       - './certs:/etc/certs'
       - './build:/var/www/html'
       - './logs:/var/log/nginx'
@@ -105,10 +106,21 @@ services:
       WORDPRESS_HOST: wp
       WORDPRESS_PROD_URL: ${WORDPRESS_PROD_URL:-wp}
       PROTOCOL_PROD_URL: ${PROTOCOL_PROD_URL:-http}
+      WP_ALLOW_MULTISITE: ${WP_ALLOW_MULTISITE:-false}
     depends_on:
       - wp
       - mkcert
       - chmod
+    entrypoint: ""
+    command: >
+        /bin/sh -c "
+        if [ \"${WP_ALLOW_MULTISITE}\" = \"true\" ]; then
+          cp /etc/nginx/templates/multisite.conf /etc/nginx/templates/default.conf.conf
+        else
+          cp /etc/nginx/templates/single.conf /etc/nginx/templates/default.conf.conf
+        fi &&
+        /docker-entrypoint.sh nginx -g 'daemon off;'
+        "
 
   node:
     build:
