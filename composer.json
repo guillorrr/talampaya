@@ -172,6 +172,8 @@
 		"wpackagist-plugin/wp-mail-smtp": "*",
 		"wpackagist-plugin/regenerate-thumbnails": "*",
 		"wpackagist-plugin/image-regenerate-select-crop": "*",
+		"wpackagist-plugin/multisite-language-switcher": "*",
+		"wpackagist-plugin/threewp-broadcast": "*",
 		"wpackagist-theme/poema": "*",
 		"hellonico/timber-dump-extension": "*",
 		"wp-cli/wp-cli-bundle": "^2.11"
