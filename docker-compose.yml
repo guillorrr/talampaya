@@ -41,13 +41,13 @@ services:
         define( 'WP_MEMORY_LIMIT', '512M' );
         define( 'MAXMIND_ACCOUNT_ID', '${MAXMIND_ACCOUNT_ID}' );
         define( 'MAXMIND_LICENSE_KEY', '${MAXMIND_LICENSE_KEY}' );
-      #  define( 'WP_ALLOW_MULTISITE', true );
-      #  define( 'MULTISITE', true );
-      #  define( 'SUBDOMAIN_INSTALL', false );
-      #  define( 'DOMAIN_CURRENT_SITE', '${DOMAIN}' );
-      #  define( 'PATH_CURRENT_SITE', '/' );
-      #  define( 'SITE_ID_CURRENT_SITE', 1 );
-      #  define( 'BLOG_ID_CURRENT_SITE', 1 );
+        define( 'WP_ALLOW_MULTISITE', ${WP_ALLOW_MULTISITE} );
+#        define( 'MULTISITE', true );
+#        define( 'SUBDOMAIN_INSTALL', false );
+#        define( 'DOMAIN_CURRENT_SITE', '${DOMAIN}' );
+#        define( 'PATH_CURRENT_SITE', '/' );
+#        define( 'SITE_ID_CURRENT_SITE', 1 );
+#        define( 'BLOG_ID_CURRENT_SITE', 1 );
     volumes:
       - './build:/var/www/html'
       - './docker/wp/php.ini:/usr/local/etc/php/conf.d/overrides.ini'
@@ -63,8 +63,8 @@ services:
             bash -c "
             chmod -R 755 /var/www/scripts &&
             php-fpm &
-            if [ \"${WORDPRESS_AUTO_SETUP:-true}\" = \"true\" ]; then
-              bash /var/www/scripts/wp-init.sh &
+            if [ \"${WORDPRESS_AUTO_SETUP:-true}\" = \"true\" ] && [ \"${WP_ALLOW_MULTISITE:-false}\" = \"false\" ]; then
+                bash /var/www/scripts/wp-init.sh &
             fi &&
             wait
             "
