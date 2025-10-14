@@ -24,7 +24,7 @@ class ProjectImport
 		int $line_count = 100
 	): void {
 		if (is_null($file_path)) {
-			$file_path = get_template_directory() . "/mockups/projects.csv";
+			$file_path = get_template_directory() . "/Mockups/projects.csv";
 		}
 
 		$service = new ProjectImportService();
