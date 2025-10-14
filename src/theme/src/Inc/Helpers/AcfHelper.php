@@ -409,7 +409,7 @@ class AcfHelper
 	 * @see https://developer.wordpress.org/reference/functions/media_sideload_image/
 	 * @see https://developer.wordpress.org/reference/functions/wp_insert_attachment/
 	 */
-	public static function set_image_on_custom_field(
+	public static function talampaya_set_image_on_custom_field(
 		int|string $post_id,
 		string $image_url,
 		string $custom_field,
@@ -430,5 +430,57 @@ class AcfHelper
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Generate post content for ACF blocks.
+	 *
+	 * @param array $blocks
+	 * @return string
+	 *
+	 * Example usage:
+	 * [
+	 *      "name" => "sitemap",
+	 *      "data" => [
+	 *          "field_block_sitemap_title" => "Mapa Web",
+	 *          "field_block_sitemap_subtitle" => "Así estructuramos nuestros contenidos",
+	 *      ],
+	 * ],
+	 *
+	 * Result:
+	 * <!-- wp:acf/sitemap {
+	 *      "id":"block_64b8f0ed3e4a7",
+	 *      "name":"acf/sitemap",
+	 *      "data":{
+	 *          "field_block_sitemap_title":"Mapa Web",
+	 *          "field_block_sitemap_subtitle":"Así estructuramos nuestros contenidos"
+	 *      }
+	 * } -->
+	 * <!-- /wp:acf/sitemap -->
+	 *
+	 */
+	public static function talampaya_make_content_for_blocks_acf(array $blocks = []): string
+	{
+		$content = "";
+
+		foreach ($blocks as $index => $block) {
+			$block_name = $block["name"];
+			$data = $block["data"] ?? [];
+
+			$block_id = "block_" . uniqid();
+
+			$data_json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+			$content .= sprintf(
+				'<!-- wp:acf/%s {"id":"%s","name":"acf/%s","data":%s} -->' . PHP_EOL,
+				$block_name,
+				$block_id,
+				$block_name,
+				$data_json
+			);
+			$content .= "<!-- /wp:acf/" . $block_name . " -->" . PHP_EOL;
+		}
+
+		return $content;
 	}
 }

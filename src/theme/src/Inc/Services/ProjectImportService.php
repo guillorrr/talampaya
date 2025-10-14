@@ -95,7 +95,7 @@ class ProjectImportService extends AbstractImportService
 		}
 
 		if (!empty($data["image"])) {
-			AcfHelper::set_image_on_custom_field(
+			AcfHelper::talampaya_set_image_on_custom_field(
 				$post->ID,
 				$data["image"],
 				"field_post_type_" . $data["post_type"] . "_image",
