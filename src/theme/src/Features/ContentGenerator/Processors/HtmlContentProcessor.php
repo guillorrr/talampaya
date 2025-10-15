@@ -33,7 +33,7 @@ class HtmlContentProcessor implements ContentProcessorInterface
 	public function process(mixed $content): string
 	{
 		// Si es una ruta relativa, construir ruta completa
-		if (is_string($content) && strpos($content, "/") === 0) {
+		if (is_string($content) && str_starts_with($content, "/")) {
 			$file_path = get_template_directory() . $content;
 		} elseif (is_string($content) && !preg_match("/<[^>]*>/", $content)) {
 			// Si parece un nombre de archivo sin tags HTML

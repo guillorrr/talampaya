@@ -2,6 +2,9 @@
 
 namespace App\Features\ContentGenerator;
 
+use App\Features\ContentGenerator\Processors\BlocksContentProcessor;
+use App\Features\ContentGenerator\Processors\HtmlContentProcessor;
+
 /**
  * Fábrica para crear instancias de generadores de contenido
  */
@@ -68,7 +71,7 @@ class ContentGeneratorFactory
 
 		// Crear generador con procesador HTML
 		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
-			"html" => [ContentTypeGenerator::class, "htmlContentProcessor"],
+			"html" => [HtmlContentProcessor::class, "process"],
 		]);
 	}
 
@@ -100,7 +103,7 @@ class ContentGeneratorFactory
 
 		// Crear generador con procesador de bloques
 		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
-			"blocks" => [ContentTypeGenerator::class, "blocksContentProcessor"],
+			"blocks" => [BlocksContentProcessor::class, "process"],
 		]);
 	}
 }

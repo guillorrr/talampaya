@@ -168,7 +168,7 @@ class ContentTypeGenerator extends AbstractContentGenerator
 			$block_name = $block["name"] ?? "";
 			if (!empty($block_name)) {
 				$attrs = isset($block["attributes"]) ? " " . json_encode($block["attributes"]) : "";
-				$inner_content = isset($block["innerContent"]) ? $block["innerContent"] : "";
+				$inner_content = $block["innerContent"] ?? "";
 				$content .= "<!-- wp:" . $block_name . $attrs . " -->";
 				if (!empty($inner_content)) {
 					$content .= $inner_content;
