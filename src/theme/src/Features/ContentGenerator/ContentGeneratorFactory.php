@@ -8,50 +8,99 @@ namespace App\Features\ContentGenerator;
 class ContentGeneratorFactory
 {
 	/**
-	 * Crea un generador de contenido para páginas
+	 * Crea un generador de contenido genérico
 	 *
 	 * @param string $option_key Clave de opción para rastrear si el contenido ya ha sido creado
-	 * @param array $pages_data Datos de contenido para páginas
-	 * @return PageContentGenerator
+	 * @param string $post_type Tipo de post
+	 * @param array $content_data Datos del contenido
+	 * @param array $content_processors Procesadores de contenido opcionales
+	 * @return ContentTypeGenerator
 	 */
-	public static function createPageGenerator(
-		string $option_key,
-		array $pages_data
-	): PageContentGenerator {
-		return new PageContentGenerator($option_key, $pages_data);
-	}
-
-	/**
-	 * Crea un generador de contenido para Custom Post Types
-	 *
-	 * @param string $option_key Clave de opción para rastrear si el contenido ya ha sido creado
-	 * @param string $post_type El tipo de post personalizado
-	 * @param array $posts_data Datos de los posts a crear
-	 * @return CustomPostTypeGenerator
-	 */
-	public static function createCustomPostTypeGenerator(
+	public static function createContentGenerator(
 		string $option_key,
 		string $post_type,
-		array $posts_data
-	): CustomPostTypeGenerator {
-		return new CustomPostTypeGenerator($option_key, $post_type, $posts_data);
+		array $content_data,
+		array $content_processors = []
+	): ContentTypeGenerator {
+		return new ContentTypeGenerator(
+			$option_key,
+			$post_type,
+			$content_data,
+			$content_processors
+		);
 	}
 
 	/**
-	 * Crea un generador de contenido legal
+	 * Crea un generador para contenido HTML
 	 *
 	 * @param string $option_key Clave de opción para rastrear si el contenido ya ha sido creado
-	 * @param array $legal_slugs Slugs de las páginas legales
-	 * @param string $content_base_path Ruta base a los archivos de contenido
 	 * @param string $post_type Tipo de post
-	 * @return LegalContentGenerator
+	 * @param array $content_data Datos del contenido
+	 * @param string $base_path Ruta base para archivos HTML
+	 * @return ContentTypeGenerator
 	 */
-	public static function createLegalContentGenerator(
+	public static function createHtmlContentGenerator(
 		string $option_key,
-		array $legal_slugs,
-		string $content_base_path = "/src/Features/Content/legal-content/",
-		string $post_type = "page"
-	): LegalContentGenerator {
-		return new LegalContentGenerator($option_key, $legal_slugs, $content_base_path, $post_type);
+		string $post_type,
+		array $content_data,
+		string $base_path = "/src/Features/DefaultContent/html-content/"
+	): ContentTypeGenerator {
+		// Preparar datos de contenido con rutas HTML
+		$prepared_data = [];
+		foreach ($content_data as $slug => $data) {
+			if (is_array($data)) {
+				// Si ya es un array con configuración, añadir ruta HTML
+				$file_path = $base_path . ($data["file"] ?? $slug . ".html");
+				$prepared_data[$slug] = array_merge($data, [
+					"content" => $file_path,
+					"content_type" => "html",
+				]);
+			} else {
+				// Si es simplemente un slug, configurar con datos básicos
+				$file_path = $base_path . $slug . ".html";
+				$prepared_data[$slug] = [
+					"title" => ucfirst(str_replace("-", " ", $slug)),
+					"content" => $file_path,
+					"content_type" => "html",
+				];
+			}
+		}
+
+		// Crear generador con procesador HTML
+		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
+			"html" => [ContentTypeGenerator::class, "htmlContentProcessor"],
+		]);
+	}
+
+	/**
+	 * Crea un generador de contenido para bloques
+	 *
+	 * @param string $option_key Clave de opción para rastrear si el contenido ya ha sido creado
+	 * @param string $post_type Tipo de post
+	 * @param array $content_data Datos de contenido con bloques
+	 * @return ContentTypeGenerator
+	 */
+	public static function createBlocksContentGenerator(
+		string $option_key,
+		string $post_type,
+		array $content_data
+	): ContentTypeGenerator {
+		// Preparar datos para formato de bloques
+		$prepared_data = [];
+		foreach ($content_data as $slug => $data) {
+			if (isset($data["blocks"])) {
+				$prepared_data[$slug] = array_merge($data, [
+					"content" => $data["blocks"],
+					"content_type" => "blocks",
+				]);
+			} else {
+				$prepared_data[$slug] = $data;
+			}
+		}
+
+		// Crear generador con procesador de bloques
+		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
+			"blocks" => [ContentTypeGenerator::class, "blocksContentProcessor"],
+		]);
 	}
 }
