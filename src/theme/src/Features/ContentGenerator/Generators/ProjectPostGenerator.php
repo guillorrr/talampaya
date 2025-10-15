@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\ContentGenerator\Examples;
+namespace App\Features\ContentGenerator\Generators;
 
 use App\Features\ContentGenerator\ContentGeneratorFactory;
 use App\Features\ContentGenerator\ContentGeneratorManager;

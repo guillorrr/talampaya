@@ -9,6 +9,7 @@ use App\Core\Endpoints\EndpointsManager;
 use App\Core\TwigExtender\EnvironmentOptions;
 use App\Core\TwigExtender\TwigManager;
 use App\Core\Pages\PagesManager;
+use App\Features\ContentGenerator\ContentGeneratorManager;
 
 class TalampayaStarter extends Site
 {
@@ -37,6 +38,11 @@ class TalampayaStarter extends Site
 	 */
 	private PagesManager $pagesManager;
 
+	/**
+	 * Gestor de generadores de contenido
+	 */
+	private ContentGeneratorManager $contentGeneratorManager;
+
 	public function __construct()
 	{
 		add_action(
@@ -49,6 +55,8 @@ class TalampayaStarter extends Site
 				$this->endpointsManager->registerAllEndpoints();
 				$this->pagesManager = new PagesManager();
 				$this->pagesManager->initPages();
+				$this->contentGeneratorManager = new ContentGeneratorManager();
+				$this->contentGeneratorManager->initGenerators();
 			},
 			999
 		);

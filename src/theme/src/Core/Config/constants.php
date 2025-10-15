@@ -29,6 +29,7 @@ define("ACF_FIELDS_PATH", THEME_DIR . "/src/Features/Acf/Fields");
 define("ACF_MODIFIERS_PATH", THEME_DIR . "/src/Features/Acf/Blocks/Modifiers");
 define("HOOKS_PATH", THEME_DIR . "/src/Hooks");
 define("ADMIN_PAGES_PATH", THEME_DIR . "/src/Features/Admin/Pages");
+define("CONTENT_GENERATORS_PATH", THEME_DIR . "/src/Features/ContentGenerator/Generators");
 define("TWIG_EXTENDERS_PATH", THEME_DIR . "/src/Core/TwigExtender/Custom");
 define("CONTEXT_EXTENDERS_PATH", THEME_DIR . "/src/Core/ContextExtender/Custom");
 define("API_ENDPOINTS_PATH", THEME_DIR . "/src/Core/Endpoints/Custom");

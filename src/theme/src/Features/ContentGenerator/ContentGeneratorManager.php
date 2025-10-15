@@ -2,6 +2,8 @@
 
 namespace App\Features\ContentGenerator;
 
+use App\Utils\FileUtils;
+
 /**
  * Administrador para coordinar los distintos generadores de contenido
  */
@@ -12,6 +14,13 @@ class ContentGeneratorManager
 	 * @var AbstractContentGenerator[]
 	 */
 	protected array $generators = [];
+
+	/**
+	 * Instancias de clases de generadores de contenido
+	 *
+	 * @var object[]
+	 */
+	private array $generatorClasses = [];
 
 	/**
 	 * Si el generador se ejecutará al activar el tema
@@ -31,6 +40,9 @@ class ContentGeneratorManager
 		if ($run_on_theme_activation) {
 			add_action("after_switch_theme", [$this, "generateAllContent"]);
 		}
+
+		// Añadir acción para inicializar los generadores cuando se cargue el tema
+		add_action("after_setup_theme", [$this, "initGenerators"], 999);
 	}
 
 	/**
@@ -77,5 +89,62 @@ class ContentGeneratorManager
 	public function forceRegenerateAll(): void
 	{
 		$this->generateAllContent(true);
+	}
+
+	/**
+	 * Inicializa todos los generadores de contenido.
+	 *
+	 * Este método busca y registra automáticamente todos los generadores de contenido
+	 * disponibles en el directorio de generadores de contenido.
+	 */
+	public function initGenerators(): void
+	{
+		// Cargar clases de generadores en el directorio CONTENT_GENERATORS_PATH
+		$this->registerCustomGenerators();
+
+		// Permitir que otras clases registren sus generadores
+		do_action("talampaya_register_content_generators", $this);
+	}
+
+	/**
+	 * Registra generadores de contenido a partir de clases en el directorio de generadores.
+	 *
+	 * Busca todas las clases en el directorio de generadores de contenido
+	 * y las instancia automáticamente si extienden AbstractContentGenerator.
+	 */
+	protected function registerCustomGenerators(): void
+	{
+		if (!defined("CONTENT_GENERATORS_PATH") || !is_dir(CONTENT_GENERATORS_PATH)) {
+			return;
+		}
+
+		$files = FileUtils::talampaya_directory_iterator(CONTENT_GENERATORS_PATH);
+
+		foreach ($files as $file) {
+			$className = pathinfo($file, PATHINFO_FILENAME);
+			if ($className === "AbstractContentGenerator") {
+				continue;
+			}
+
+			// Determinar el namespace basado en la estructura de carpetas
+			$relativePath = str_replace(
+				get_template_directory() . "/src/",
+				"",
+				CONTENT_GENERATORS_PATH
+			);
+			$namespaceParts = array_map("ucfirst", explode("/", $relativePath));
+			$namespace = "\\App\\" . implode("\\", $namespaceParts);
+
+			$fullyQualifiedClassName = $namespace . "\\$className";
+
+			if (
+				class_exists($fullyQualifiedClassName) &&
+				is_subclass_of($fullyQualifiedClassName, AbstractContentGenerator::class)
+			) {
+				$generator = new $fullyQualifiedClassName();
+				$this->generatorClasses[] = $generator;
+				$this->register($generator);
+			}
+		}
 	}
 }
