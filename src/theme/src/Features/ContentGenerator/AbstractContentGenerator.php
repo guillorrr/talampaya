@@ -5,7 +5,7 @@ namespace App\Features\ContentGenerator;
 /**
  * Clase abstracta que define la estructura base para todos los generadores de contenido
  */
-abstract class AbstractContentGenerator
+abstract class AbstractContentGenerator implements ContentGeneratorInterface
 {
 	/**
 	 * Clave de opción única para este generador
@@ -21,6 +21,16 @@ abstract class AbstractContentGenerator
 	public function __construct(string $option_key)
 	{
 		$this->option_key = $option_key;
+	}
+
+	/**
+	 * Obtiene la clave de opción del generador
+	 *
+	 * @return string
+	 */
+	public function getOptionKey(): string
+	{
+		return $this->option_key;
 	}
 
 	/**
