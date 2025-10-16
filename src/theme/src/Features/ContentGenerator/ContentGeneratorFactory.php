@@ -69,9 +69,14 @@ class ContentGeneratorFactory
 			}
 		}
 
-		// Crear generador con procesador HTML
+		// Crear instancia del procesador HTML
+		$htmlProcessor = new HtmlContentProcessor($base_path);
+
+		// Crear generador con procesador HTML instanciado
 		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
-			"html" => [HtmlContentProcessor::class, "process"],
+			"html" => function ($content) use ($htmlProcessor) {
+				return $htmlProcessor->process($content);
+			},
 		]);
 	}
 
@@ -101,9 +106,14 @@ class ContentGeneratorFactory
 			}
 		}
 
+		// Crear instancia del procesador de bloques
+		$blocksProcessor = new BlocksContentProcessor();
+
 		// Crear generador con procesador de bloques
 		return self::createContentGenerator($option_key, $post_type, $prepared_data, [
-			"blocks" => [BlocksContentProcessor::class, "process"],
+			"blocks" => function ($content) use ($blocksProcessor) {
+				return $blocksProcessor->process($content);
+			},
 		]);
 	}
 }

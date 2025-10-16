@@ -37,12 +37,33 @@ class ContentGeneratorManager
 	{
 		$this->run_on_theme_activation = $run_on_theme_activation;
 
-		if ($run_on_theme_activation) {
-			add_action("after_switch_theme", [$this, "generateAllContent"]);
-		}
-
 		// Añadir acción para inicializar los generadores cuando se cargue el tema
-		add_action("after_setup_theme", [$this, "initGenerators"], 999);
+		// Usar prioridad 800 para que se ejecute antes que otros procesos que dependan de estos datos
+		add_action("after_setup_theme", [$this, "initGenerators"], 800);
+
+		// Registrar el hook para la activación del tema
+		if ($run_on_theme_activation) {
+			// Usar una prioridad alta (30) para asegurarse de que se ejecuta después de otros procesos de inicialización
+			add_action("after_switch_theme", [$this, "runGenerators"], 30);
+		}
+	}
+
+	/**
+	 * Método específico para ejecutar durante la activación del tema
+	 *
+	 * Este método asegura que los generadores se ejecuten correctamente
+	 * después de haber sido inicializados
+	 *
+	 * @return void
+	 */
+	public function runGenerators(): void
+	{
+		// Primero nos aseguramos de que los generadores estén inicializados
+		$this->initGenerators();
+
+		// Luego ejecutamos la generación de contenido
+		error_log("ContentGeneratorManager: Ejecutando generadores durante la activación del tema");
+		$this->generateAllContent();
 	}
 
 	/**
@@ -67,18 +88,46 @@ class ContentGeneratorManager
 	public function generateAllContent(bool $force = false): void
 	{
 		if (empty($this->generators)) {
+			error_log("ContentGeneratorManager: No hay generadores registrados para ejecutar");
 			return;
 		}
 
 		// Ordenamos los generadores por prioridad
 		ksort($this->generators);
 
+		error_log(
+			"ContentGeneratorManager: Ejecutando " .
+				count($this->generators) .
+				" grupos de generadores"
+		);
+
 		// Ejecutamos cada generador
-		foreach ($this->generators as $priority_group) {
+		foreach ($this->generators as $priority => $priority_group) {
+			error_log(
+				"ContentGeneratorManager: Ejecutando grupo de prioridad $priority con " .
+					count($priority_group) .
+					" generadores"
+			);
+
 			foreach ($priority_group as $generator) {
-				$generator->generate($force);
+				$class_name = get_class($generator);
+				error_log("ContentGeneratorManager: Ejecutando generador $class_name");
+
+				try {
+					$generator->generate($force);
+					error_log(
+						"ContentGeneratorManager: Generador $class_name ejecutado correctamente"
+					);
+				} catch (\Exception $e) {
+					error_log(
+						"ContentGeneratorManager: Error al ejecutar el generador $class_name: " .
+							$e->getMessage()
+					);
+				}
 			}
 		}
+
+		error_log("ContentGeneratorManager: Generación de contenido completada");
 	}
 
 	/**
@@ -114,36 +163,80 @@ class ContentGeneratorManager
 	 */
 	protected function registerCustomGenerators(): void
 	{
-		if (!defined("CONTENT_GENERATORS_PATH") || !is_dir(CONTENT_GENERATORS_PATH)) {
+		// Ruta predeterminada para los generadores
+		$generators_path = get_template_directory() . "/src/Features/ContentGenerator/Generators";
+
+		// Si está definida la constante, usarla en su lugar
+		if (defined("CONTENT_GENERATORS_PATH") && is_dir(CONTENT_GENERATORS_PATH)) {
+			$generators_path = CONTENT_GENERATORS_PATH;
+		}
+
+		// Verificar que el directorio existe
+		if (!is_dir($generators_path)) {
+			error_log(
+				"ContentGeneratorManager: El directorio de generadores no existe: $generators_path"
+			);
 			return;
 		}
 
-		$files = FileUtils::talampaya_directory_iterator(CONTENT_GENERATORS_PATH);
+		// Obtener los archivos del directorio
+		$files = [];
+		if (function_exists("FileUtils::talampaya_directory_iterator")) {
+			$files = FileUtils::talampaya_directory_iterator($generators_path);
+		} else {
+			// Fallback si el método no existe
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($generators_path, \FilesystemIterator::SKIP_DOTS)
+			);
 
+			foreach ($iterator as $file) {
+				if ($file->isFile() && $file->getExtension() === "php") {
+					$files[] = $file->getPathname();
+				}
+			}
+		}
+
+		// Procesamos cada archivo
 		foreach ($files as $file) {
 			$className = pathinfo($file, PATHINFO_FILENAME);
-			if ($className === "AbstractContentGenerator") {
+
+			// Ignorar archivos especiales
+			if ($className === "AbstractContentGenerator" || $className === "README") {
 				continue;
 			}
 
 			// Determinar el namespace basado en la estructura de carpetas
-			$relativePath = str_replace(
-				get_template_directory() . "/src/",
-				"",
-				CONTENT_GENERATORS_PATH
-			);
+			$relativePath = str_replace(get_template_directory() . "/src/", "", dirname($file));
 			$namespaceParts = array_map("ucfirst", explode("/", $relativePath));
 			$namespace = "\\App\\" . implode("\\", $namespaceParts);
 
-			$fullyQualifiedClassName = $namespace . "\\$className";
+			$fullyQualifiedClassName = $namespace . "\\" . $className;
 
+			// Verificamos si la clase existe y hereda de AbstractContentGenerator
 			if (
 				class_exists($fullyQualifiedClassName) &&
 				is_subclass_of($fullyQualifiedClassName, AbstractContentGenerator::class)
 			) {
-				$generator = new $fullyQualifiedClassName();
-				$this->generatorClasses[] = $generator;
-				$this->register($generator);
+				error_log(
+					"ContentGeneratorManager: Registrando generador: $fullyQualifiedClassName"
+				);
+				try {
+					$generator = new $fullyQualifiedClassName();
+					$this->generatorClasses[] = $generator;
+					$this->register($generator);
+				} catch (\Exception $e) {
+					error_log(
+						"ContentGeneratorManager: Error al instanciar $fullyQualifiedClassName: " .
+							$e->getMessage()
+					);
+				}
+			} else {
+				// Si la clase existe pero no hereda de AbstractContentGenerator, registrarlo en el log
+				if (class_exists($fullyQualifiedClassName)) {
+					error_log(
+						"ContentGeneratorManager: La clase $fullyQualifiedClassName no hereda de AbstractContentGenerator"
+					);
+				}
 			}
 		}
 	}
