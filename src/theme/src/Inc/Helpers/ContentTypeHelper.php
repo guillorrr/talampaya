@@ -49,7 +49,7 @@ class ContentTypeHelper
 			$attrs = " " . json_encode($attributes);
 		}
 
-		return "<!-- wp:heading{$attrs} -->\n<h{$level}>{$content}</h{$level}>\n<!-- /wp:heading -->";
+		return "<!-- wp:heading{$attrs}  {\"level\":{$level}} -->\n<h{$level} class=\"wp-block-heading\">{$content}</h{$level}>\n<!-- /wp:heading -->";
 	}
 
 	/**
@@ -72,9 +72,9 @@ class ContentTypeHelper
 
 		$list_type = $type === "ol" ? "ordered" : "unordered";
 
-		$list_content = "<{$type}>\n";
+		$list_content = "<{$type}  class=\"wp-block-list\">\n";
 		foreach ($items as $item) {
-			$list_content .= "\t<li>{$item}</li>\n";
+			$list_content .= "\t<!-- wp:list-item --><li>{$item}</li><!-- /wp:list-item -->\n";
 		}
 		$list_content .= "</{$type}>";
 
