@@ -14,74 +14,73 @@
 			alt="{{ fields.block_example_image.alt }}" />
 	{% endif %}
 
-	{% if metadata %}
-		<div class="block-example__metadata">
-			<p>
-				Block Slug: {{ metadata.blockSlug }}
-			</p>
-			{% if post_published_date %}
-				<p>
-					Published: {{ post_published_date }}
-				</p>
-			{% endif %}
-		</div>
-	{% endif %}
-
-	{# Sección de datos de geolocalización #}
-	{% if geolocation_data %}
-		<div class="block-example__geolocation">
-			<h3 class="block-example__subtitle">Información de geolocalización</h3>
-			<div class="block-example__geolocation-data">
-				<p class="geolocation-item">
-					<strong>IP:</strong> {{ geolocation_ip }}
-				</p>
-				{% if geolocation_data.country %}
-					<p class="geolocation-item">
-						<strong>País:</strong>
-						{% if geolocation_data.country.code != "XX" %}
-							<span class="country-flag">{{ geolocation_data.country.code }}</span>
-							{{ geolocation_data.country.name }}
-						{% else %}
-							Desconocido
-						{% endif %}
-					</p>
-				{% endif %}
-
-				{% if geolocation_data.city and geolocation_data.city != "Unknown" %}
-					<p class="geolocation-item">
-						<strong>Ciudad:</strong> {{ geolocation_data.city }}
-					</p>
-				{% endif %}
-
-				{% if geolocation_data.subdivision %}
-					<p class="geolocation-item">
-						<strong>Región:</strong> {{ geolocation_data.subdivision.name }}
-					</p>
-				{% endif %}
-
-				{% if geolocation_data.location %}
-					<p class="geolocation-item">
-						<strong>Coordenadas:</strong>
-						{{ geolocation_data.location.latitude }}, {{
-							geolocation_data.location.longitude
-						}}
-					</p>
-
-					<p class="geolocation-item">
-						<strong>Zona horaria:</strong>
-						{{ geolocation_data.location.timezone }}
-					</p>
-				{% endif %}
-			</div>
-		</div>
-	{% endif %}
-
 	{% if fields.block_example_list %}
 		<ul>
 			{% for field in fields.block_example_list %}
-				<li><h4>{{ field.list_text }}</h4></li>
+				<li><h4>{{ field.example_text }}</h4></li>
 			{% endfor %}
 		</ul>
 	{% endif %}
 </div>
 {% dump fields %}
+{% if metadata %}
+	<div class="block-example__metadata">
+		<p>
+			Block Slug: {{ metadata.blockSlug }}
+		</p>
+		{% if post_published_date %}
+			<p>
+				Published: {{ post_published_date }}
+			</p>
+		{% endif %}
+	</div>
+{% endif %}
+
+{# Sección de datos de geolocalización #}
+{% if geolocation_data %}
+	<div class="block-example__geolocation">
+		<h3 class="block-example__subtitle">Información de geolocalización</h3>
+		<div class="block-example__geolocation-data">
+			<p class="geolocation-item">
+				<strong>IP:</strong> {{ geolocation_ip }}
+			</p>
+			{% if geolocation_data.country %}
+				<p class="geolocation-item">
+					<strong>País:</strong>
+					{% if geolocation_data.country.code != "XX" %}
+						<span class="country-flag">{{ geolocation_data.country.code }}</span>
+						{{ geolocation_data.country.name }}
+					{% else %}
+						Desconocido
+					{% endif %}
+				</p>
+			{% endif %}
+
+			{% if geolocation_data.city and geolocation_data.city != "Unknown" %}
+				<p class="geolocation-item">
+					<strong>Ciudad:</strong> {{ geolocation_data.city }}
+				</p>
+			{% endif %}
+
+			{% if geolocation_data.subdivision %}
+				<p class="geolocation-item">
+					<strong>Región:</strong> {{ geolocation_data.subdivision.name }}
+				</p>
+			{% endif %}
+
+			{% if geolocation_data.location %}
+				<p class="geolocation-item">
+					<strong>Coordenadas:</strong>
+					{{ geolocation_data.location.latitude }}, {{
+						geolocation_data.location.longitude
+					}}
+				</p>
+
+				<p class="geolocation-item">
+					<strong>Zona horaria:</strong>
+					{{ geolocation_data.location.timezone }}
+				</p>
+			{% endif %}
+		</div>
+	</div>
+{% endif %}
