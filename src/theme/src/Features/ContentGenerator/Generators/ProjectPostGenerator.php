@@ -2,24 +2,89 @@
 
 namespace App\Features\ContentGenerator\Generators;
 
+use App\Features\ContentGenerator\AbstractContentGenerator;
 use App\Features\ContentGenerator\ContentGeneratorFactory;
 use App\Features\ContentGenerator\ContentGeneratorManager;
+use App\Features\ContentGenerator\ContentTypeGenerator;
 use App\Inc\Helpers\ContentTypeHelper;
 
 /**
  * Ejemplo de generador de proyectos con bloques personalizados
  */
-class ProjectPostGenerator
+class ProjectPostGenerator extends AbstractContentGenerator
 {
 	/**
-	 * Inicializa y registra el generador de proyectos
-	 *
-	 * @return void
+	 * El tipo de post para proyectos
+	 * @var string
 	 */
-	public static function register(): void
+	protected string $post_type = "project_post";
+
+	/**
+	 * Flag para incluir proyecto manual
+	 * @var bool
+	 */
+	protected bool $includeManualProject;
+
+	/**
+	 * Generador interno para manejar la creación de contenido
+	 * @var ContentTypeGenerator|null
+	 */
+	protected ?ContentTypeGenerator $internalGenerator = null;
+
+	/**
+	 * Constructor
+	 *
+	 * @param bool $includeManualProject Si debe incluir también el proyecto manual
+	 */
+	public function __construct(bool $includeManualProject = true)
 	{
-		// Crear contenido de ejemplo usando bloques
-		$projects_data = [
+		parent::__construct("projects_content_generated");
+		$this->includeManualProject = $includeManualProject;
+	}
+
+	/**
+	 * Implementación del método abstracto para generar el contenido
+	 *
+	 * @return bool Verdadero si la generación fue exitosa
+	 */
+	protected function generateContent(): bool
+	{
+		// Crear el generador de contenido de bloques con la factory usando los datos de proyectos
+		//        $projects_data = $this->getProjectsData();
+		//        $this->internalGenerator = ContentGeneratorFactory::createBlocksContentGenerator(
+		//            $this->getOptionKey() . '_main',
+		//            $this->post_type,
+		//            $projects_data
+		//        );
+
+		$projects_data = $this->generateManualProject();
+		$this->internalGenerator = ContentGeneratorFactory::createContentGenerator(
+			$this->getOptionKey() . "_manual",
+			$this->post_type,
+			$projects_data,
+			[
+				"raw" => function ($content) {
+					return $content;
+				},
+			] // Procesador que no modifica el contenido
+		);
+
+		try {
+			return $this->internalGenerator->generateContent();
+		} catch (\Exception $e) {
+			error_log("ProjectPostGenerator: Error al generar contenido: " . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Obtiene los datos de los proyectos
+	 *
+	 * @return array Datos de proyectos
+	 */
+	protected function getProjectsData(): array
+	{
+		return [
 			"proyecto-principal" => [
 				"title" => "Proyecto Principal",
 				"status" => "publish",
@@ -46,17 +111,17 @@ class ProjectPostGenerator
 						"name" => "acf/example",
 						"attributes" => [
 							"data" => [
-								"title" => "Características del Proyecto",
-								"subtitle" => "Innovación y Tecnología",
-								"intro" =>
+								"field_block_example_title" => "Características del Proyecto",
+								"field_block_example_subtitle" => "Innovación y Tecnología",
+								"field_block_example_intro" =>
 									"Descubre lo que hace especial a este proyecto y por qué destaca entre los demás.",
-								"background_color" => "#f5f5f5",
-								"image" => [
+								"field_block_example_background_color" => "#f5f5f5",
+								"field_block_example_image" => [
 									"id" => 123, // ID de la imagen (debe existir en la biblioteca de medios)
 									"url" => "https://via.placeholder.com/800x600",
 									"alt" => "Imagen del proyecto",
 								],
-								"list" => [
+								"field_block_example_list" => [
 									["text" => "Diseño moderno y responsive"],
 									["text" => "Optimización de rendimiento"],
 									["text" => "Accesibilidad web integrada"],
@@ -157,52 +222,15 @@ class ProjectPostGenerator
 				],
 			],
 		];
-
-		// Crear el generador de contenido de bloques con la factory
-		$projectsGenerator = ContentGeneratorFactory::createBlocksContentGenerator(
-			"projects_content_generated", // Clave única para seguimiento
-			"project_post", // Tipo de post personalizado
-			$projects_data // Datos de los proyectos con bloques
-		);
-
-		// Instanciar o recuperar el manager
-		$manager = new ContentGeneratorManager();
-
-		// Registrar el generador con prioridad 20
-		$manager->register($projectsGenerator, 20);
-	}
-
-	/**
-	 * Ejecuta la generación de proyectos
-	 *
-	 * @param bool $force Forzar regeneración aunque ya existan
-	 * @return void
-	 */
-	public static function generate(bool $force = false): void
-	{
-		// Registrar el generador
-		self::register();
-
-		// Instanciar el manager
-		$manager = new ContentGeneratorManager();
-
-		// Generar el contenido
-		if ($force) {
-			// Forzar regeneración de todo el contenido
-			$manager->forceRegenerateAll();
-		} else {
-			// Solo generar contenido que no existe
-			$manager->generateAllContent();
-		}
 	}
 
 	/**
 	 * Genera un proyecto individual usando el ContentTypeHelper para mayor flexibilidad
 	 * Esta es una forma alternativa de generar contenido usando el helper
 	 *
-	 * @return void
+	 * @return array|bool Si la generación fue exitosa
 	 */
-	public static function generateManualProject(): void
+	protected function generateManualProject(): array|bool
 	{
 		// Crear contenido usando el helper
 		$blocks = [];
@@ -225,14 +253,15 @@ class ProjectPostGenerator
 		// Añadir bloque personalizado de ejemplo
 		$example_block = ContentTypeHelper::createCustomBlock("acf/example", [
 			"data" => [
-				"title" => "Sección Destacada",
-				"subtitle" => "Creada con Helper",
-				"intro" => "Esta sección utiliza el bloque personalizado Example.",
-				"background_color" => "#f0f8ff",
-				"list" => [
-					["text" => "Elemento 1 de la lista"],
-					["text" => "Elemento 2 de la lista"],
-					["text" => "Elemento 3 de la lista"],
+				"field_block_example_title" => "Sección Destacada",
+				"field_block_example_subtitle" => "Creada con Helper",
+				"field_block_example_intro" =>
+					"Esta sección utiliza el bloque personalizado Example.",
+				"field_block_example_background_color" => "#f0f8ff",
+				"field_block_example_list" => [
+					["example_text" => "Elemento 1 de la lista"],
+					["example_text" => "Elemento 2 de la lista"],
+					["example_text" => "Elemento 3 de la lista"],
 				],
 			],
 		]);
@@ -242,7 +271,7 @@ class ProjectPostGenerator
 		$content = ContentTypeHelper::combineBlocks($blocks);
 
 		// Preparar datos para un único post
-		$project_data = [
+		return [
 			"manual-project" => [
 				"title" => "Proyecto Creado con Helper",
 				"content" => $content,
@@ -258,27 +287,5 @@ class ProjectPostGenerator
 				],
 			],
 		];
-
-		// Crear generador para este único post
-		$manualGenerator = ContentGeneratorFactory::createContentGenerator(
-			"manual_project_generated",
-			"project_post",
-			$project_data,
-			[
-				"raw" => function ($content) {
-					return $content;
-				},
-			] // Procesador que no modifica el contenido
-		);
-
-		// Registrar y ejecutar
-		$manager = new ContentGeneratorManager();
-		$manager->register($manualGenerator, 30);
-		$manager->generateAllContent();
 	}
 }
-
-// Ejemplo de uso:
-// ProjectPostGenerator::register(); // Solo registra el generador para activación del tema
-// ProjectPostGenerator::generate(); // Registra y ejecuta la generación
-// ProjectPostGenerator::generateManualProject(); // Genera un proyecto usando el helper
