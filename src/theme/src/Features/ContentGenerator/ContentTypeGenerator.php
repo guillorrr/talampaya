@@ -134,48 +134,48 @@ class ContentTypeGenerator extends AbstractContentGenerator
 		return $success;
 	}
 
-	/**
-	 * Procesador de contenido HTML
-	 *
-	 * @param string $path Ruta al archivo HTML
-	 * @return string Contenido HTML o cadena vacía en caso de error
-	 */
-	public static function htmlContentProcessor(string $path): string
-	{
-		$file_path = get_template_directory() . $path;
-		if (file_exists($file_path)) {
-			$content = file_get_contents($file_path);
-			return $content !== false ? $content : "";
-		}
-		return "";
-	}
-
-	/**
-	 * Procesador de contenido para bloques Gutenberg
-	 *
-	 * @param array $blocks Definición de bloques
-	 * @return string Contenido de bloques procesado
-	 */
-	public static function blocksContentProcessor(array $blocks): string
-	{
-		if (function_exists("\App\Inc\Helpers\AcfHelper::talampaya_make_content_for_blocks_acf")) {
-			return \App\Inc\Helpers\AcfHelper::talampaya_make_content_for_blocks_acf($blocks);
-		}
-
-		// Implementación básica para bloques
-		$content = "";
-		foreach ($blocks as $block) {
-			$block_name = $block["name"] ?? "";
-			if (!empty($block_name)) {
-				$attrs = isset($block["attributes"]) ? " " . json_encode($block["attributes"]) : "";
-				$inner_content = $block["innerContent"] ?? "";
-				$content .= "<!-- wp:" . $block_name . $attrs . " -->";
-				if (!empty($inner_content)) {
-					$content .= $inner_content;
-					$content .= "<!-- /wp:" . $block_name . " -->";
-				}
-			}
-		}
-		return $content;
-	}
+	//	/**
+	//	 * Procesador de contenido HTML
+	//	 *
+	//	 * @param string $path Ruta al archivo HTML
+	//	 * @return string Contenido HTML o cadena vacía en caso de error
+	//	 */
+	//	public static function htmlContentProcessor(string $path): string
+	//	{
+	//		$file_path = get_template_directory() . $path;
+	//		if (file_exists($file_path)) {
+	//			$content = file_get_contents($file_path);
+	//			return $content !== false ? $content : "";
+	//		}
+	//		return "";
+	//	}
+	//
+	//	/**
+	//	 * Procesador de contenido para bloques Gutenberg
+	//	 *
+	//	 * @param array $blocks Definición de bloques
+	//	 * @return string Contenido de bloques procesado
+	//	 */
+	//	public static function blocksContentProcessor(array $blocks): string
+	//	{
+	//		if (function_exists("\App\Inc\Helpers\AcfHelper::talampaya_make_content_for_blocks_acf")) {
+	//			return \App\Inc\Helpers\AcfHelper::talampaya_make_content_for_blocks_acf($blocks);
+	//		}
+	//
+	//		// Implementación básica para bloques
+	//		$content = "";
+	//		foreach ($blocks as $block) {
+	//			$block_name = $block["name"] ?? "";
+	//			if (!empty($block_name)) {
+	//				$attrs = isset($block["attributes"]) ? " " . json_encode($block["attributes"]) : "";
+	//				$inner_content = $block["innerContent"] ?? "";
+	//				$content .= "<!-- wp:" . $block_name . $attrs . " -->";
+	//				if (!empty($inner_content)) {
+	//					$content .= $inner_content;
+	//					$content .= "<!-- /wp:" . $block_name . " -->";
+	//				}
+	//			}
+	//		}
+	//		return $content;
+	//	}
 }
