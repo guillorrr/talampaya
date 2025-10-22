@@ -29,13 +29,23 @@ class ContentGeneratorManager
 	protected bool $run_on_theme_activation;
 
 	/**
+	 * Si se deben registrar automáticamente los generadores
+	 * @var bool
+	 */
+	protected bool $auto_register_generators;
+
+	/**
 	 * Constructor
 	 *
 	 * @param bool $run_on_theme_activation Si es verdadero, los generadores se ejecutarán cuando se active el tema
+	 * @param bool $auto_register_generators Si es verdadero, se registrarán automáticamente los generadores encontrados
 	 */
-	public function __construct(bool $run_on_theme_activation = true)
-	{
+	public function __construct(
+		bool $run_on_theme_activation = true,
+		bool $auto_register_generators = true
+	) {
 		$this->run_on_theme_activation = $run_on_theme_activation;
+		$this->auto_register_generators = $auto_register_generators;
 
 		// Añadir acción para inicializar los generadores cuando se cargue el tema
 		// Usar prioridad 800 para que se ejecute antes que otros procesos que dependan de estos datos
@@ -141,18 +151,150 @@ class ContentGeneratorManager
 	}
 
 	/**
+	 * Método público para volver a ejecutar los generadores después de que el tema ya está activo
+	 * Útil cuando se ha eliminado contenido y se necesita regenerarlo
+	 *
+	 * @param bool $force Si es verdadero, regenera el contenido incluso si ya existe
+	 * @return void
+	 */
+	public function regenerateContent(bool $force = false): void
+	{
+		// Asegurarnos de que los generadores estén inicializados
+		$this->initGenerators();
+
+		error_log("ContentGeneratorManager: Regenerando contenido bajo demanda");
+		$this->generateAllContent($force);
+	}
+
+	/**
 	 * Inicializa todos los generadores de contenido.
 	 *
 	 * Este método busca y registra automáticamente todos los generadores de contenido
-	 * disponibles en el directorio de generadores de contenido.
+	 * disponibles en el directorio de generadores de contenido si auto_register_generators es true.
 	 */
 	public function initGenerators(): void
 	{
 		// Cargar clases de generadores en el directorio CONTENT_GENERATORS_PATH
-		$this->registerCustomGenerators();
+		// solo si el auto registro está activado
+		if ($this->auto_register_generators) {
+			$this->registerCustomGenerators();
+		}
 
 		// Permitir que otras clases registren sus generadores
 		do_action("talampaya_register_content_generators", $this);
+	}
+
+	/**
+	 * Obtiene la lista de generadores disponibles en el directorio de generadores
+	 * sin instanciarlos ni registrarlos automáticamente.
+	 *
+	 * @return array Arreglo asociativo de clases con sus nombres completos como clave
+	 */
+	public function getAvailableGenerators(): array
+	{
+		$availableGenerators = [];
+
+		// Ruta predeterminada para los generadores
+		$generators_path = get_template_directory() . "/src/Features/ContentGenerator/Generators";
+
+		// Si está definida la constante, usarla en su lugar
+		if (defined("CONTENT_GENERATORS_PATH") && is_dir(CONTENT_GENERATORS_PATH)) {
+			$generators_path = CONTENT_GENERATORS_PATH;
+		}
+
+		// Verificar que el directorio existe
+		if (!is_dir($generators_path)) {
+			error_log(
+				"ContentGeneratorManager: El directorio de generadores no existe: $generators_path"
+			);
+			return $availableGenerators;
+		}
+
+		// Obtener los archivos del directorio
+		$files = [];
+		if (function_exists("FileUtils::talampaya_directory_iterator")) {
+			$files = FileUtils::talampaya_directory_iterator($generators_path);
+		} else {
+			// Fallback si el método no existe
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($generators_path, \FilesystemIterator::SKIP_DOTS)
+			);
+
+			foreach ($iterator as $file) {
+				if ($file->isFile() && $file->getExtension() === "php") {
+					$files[] = $file->getPathname();
+				}
+			}
+		}
+
+		// Procesamos cada archivo
+		foreach ($files as $file) {
+			$className = pathinfo($file, PATHINFO_FILENAME);
+
+			// Ignorar archivos especiales
+			if ($className === "AbstractContentGenerator" || $className === "README") {
+				continue;
+			}
+
+			// Determinar el namespace basado en la estructura de carpetas
+			$relativePath = str_replace(get_template_directory() . "/src/", "", dirname($file));
+			$namespaceParts = array_map("ucfirst", explode("/", $relativePath));
+			$namespace = "\\App\\" . implode("\\", $namespaceParts);
+
+			$fullyQualifiedClassName = $namespace . "\\" . $className;
+
+			// Verificamos si la clase existe y hereda de AbstractContentGenerator
+			if (
+				class_exists($fullyQualifiedClassName) &&
+				is_subclass_of($fullyQualifiedClassName, AbstractContentGenerator::class)
+			) {
+				$availableGenerators[$fullyQualifiedClassName] = $className;
+			}
+		}
+
+		return $availableGenerators;
+	}
+
+	/**
+	 * Registra un generador por su nombre de clase completamente cualificado
+	 *
+	 * @param string $fullyQualifiedClassName Nombre de clase completamente cualificado
+	 * @param int $priority Prioridad de ejecución (menor número = mayor prioridad)
+	 * @return bool Verdadero si se registró correctamente, falso en caso contrario
+	 */
+	public function registerGeneratorByClassName(
+		string $fullyQualifiedClassName,
+		int $priority = 10
+	): bool {
+		// Verificamos si la clase existe y hereda de AbstractContentGenerator
+		if (
+			class_exists($fullyQualifiedClassName) &&
+			is_subclass_of($fullyQualifiedClassName, AbstractContentGenerator::class)
+		) {
+			error_log(
+				"ContentGeneratorManager: Registrando generador: $fullyQualifiedClassName con prioridad $priority"
+			);
+			try {
+				$generator = new $fullyQualifiedClassName();
+				$this->generatorClasses[] = $generator;
+				$this->register($generator, $priority);
+				return true;
+			} catch (\Exception $e) {
+				error_log(
+					"ContentGeneratorManager: Error al instanciar $fullyQualifiedClassName: " .
+						$e->getMessage()
+				);
+				return false;
+			}
+		} else {
+			// Si la clase existe pero no hereda de AbstractContentGenerator, registrarlo en el log
+			if (class_exists($fullyQualifiedClassName)) {
+				error_log(
+					"ContentGeneratorManager: La clase $fullyQualifiedClassName no hereda de AbstractContentGenerator"
+				);
+			}
+			return false;
+		}
 	}
 
 	/**
