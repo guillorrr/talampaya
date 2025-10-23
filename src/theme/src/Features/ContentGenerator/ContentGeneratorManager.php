@@ -196,10 +196,10 @@ class ContentGeneratorManager
 	}
 
 	/**
-	 * Inicializa los generadores de contenido en un orden específico
+	 * Inicializa los generadores de contenido consultando sus prioridades declaradas
 	 *
-	 * Este método permite registrar manualmente los generadores con diferentes prioridades
-	 * en lugar de depender del registro automático.
+	 * Este método instancia cada generador y consulta su prioridad mediante getPriority()
+	 * eliminando la dependencia de convenciones de nombres.
 	 *
 	 * @return void
 	 */
@@ -208,33 +208,21 @@ class ContentGeneratorManager
 		// Obtener generadores disponibles
 		$availableGenerators = $this->getAvailableGenerators();
 
-		// Registro con orden específico basado en nombres (un solo loop)
+		// Instanciar y registrar cada generador con su prioridad declarada
 		foreach ($availableGenerators as $className => $shortName) {
-			$priority = $this->determinePriority($shortName);
-			$this->registerGeneratorByClassName($className, $priority);
+			try {
+				$generator = new $className();
+				$priority = $generator->getPriority();
+				error_log(
+					"ContentGeneratorManager: Registrando generador: $className con prioridad $priority"
+				);
+				$this->register($generator, $priority);
+			} catch (\Exception $e) {
+				error_log(
+					"ContentGeneratorManager: Error al instanciar $className: " . $e->getMessage()
+				);
+			}
 		}
-	}
-
-	/**
-	 * Determina la prioridad de un generador basándose en su nombre
-	 *
-	 * @param string $shortName Nombre corto de la clase del generador
-	 * @return int Prioridad (5 para taxonomías, 10 para post types, 15 para otros)
-	 */
-	private function determinePriority(string $shortName): int
-	{
-		// Generadores de taxonomías primero (prioridad 5)
-		if (strpos($shortName, "Taxonomy") !== false) {
-			return 5;
-		}
-
-		// Luego los generadores de post types (prioridad 10)
-		if (strpos($shortName, "PostType") !== false) {
-			return 10;
-		}
-
-		// Finalmente otros generadores (prioridad 15)
-		return 15;
 	}
 
 	/**

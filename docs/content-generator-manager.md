@@ -453,9 +453,28 @@ protected function registerCustomGenerators(): void
 
 ---
 
-#### 2. Asignación de Prioridades Eficiente
+#### 2. Sistema de Prioridades Declarativo
 
-La asignación de prioridades se realiza en un solo recorrido mediante un método dedicado:
+Cada generador declara su prioridad mediante el método `getPriority()`, eliminando dependencias de nombres:
+
+```php
+// En AbstractContentGenerator:
+public function getPriority(): int
+{
+    return 10; // Prioridad por defecto
+}
+
+// En generadores específicos (opcional):
+class TaxonomyGenerator extends AbstractContentGenerator
+{
+    public function getPriority(): int
+    {
+        return 5; // Mayor prioridad - ejecutar primero
+    }
+}
+```
+
+El manager consulta la prioridad de cada generador al inicializarlos:
 
 ```php
 public function initContentGeneratorsWithPriority(): void
@@ -463,20 +482,14 @@ public function initContentGeneratorsWithPriority(): void
     $availableGenerators = $this->getAvailableGenerators();
 
     foreach ($availableGenerators as $className => $shortName) {
-        $priority = $this->determinePriority($shortName);
-        $this->registerGeneratorByClassName($className, $priority);
+        $generator = new $className();
+        $priority = $generator->getPriority(); // Consulta declarativa
+        $this->register($generator, $priority);
     }
-}
-
-private function determinePriority(string $shortName): int
-{
-    if (strpos($shortName, 'Taxonomy') !== false) return 5;  // Taxonomías primero
-    if (strpos($shortName, 'PostType') !== false) return 10; // Post types
-    return 15; // Otros
 }
 ```
 
-**Ventajas:** Lógica encapsulada, eficiente O(n), fácil de extender
+**Ventajas:** Sin dependencias de nombres, autoexplicativo, cada generador controla su prioridad
 
 ---
 
@@ -532,7 +545,7 @@ public function initGenerators(): void
 
 ## Ejemplos de Uso
 
-### Ejemplo 1: Generador Simple con Prioridad Manual
+### Ejemplo 1: Generador de Taxonomía con Prioridad Alta
 
 ```php
 use App\Features\ContentGenerator\AbstractContentGenerator;
@@ -544,9 +557,15 @@ class BannerTaxonomyGenerator extends AbstractContentGenerator
 		parent::__construct('banner_taxonomy_generated');
 	}
 
+	// Declarar prioridad alta (ejecutar primero)
+	public function getPriority(): int
+	{
+		return 5; // Taxonomías primero
+	}
+
 	protected function generateContent(): bool
 	{
-		// 1. Crear taxonomía vacía (solo estructura)
+		// Crear términos de taxonomía
 		$term_data = [
 			'hero-banner' => 'Hero Banner',
 			'sidebar-banner' => 'Sidebar Banner',
@@ -561,63 +580,62 @@ class BannerTaxonomyGenerator extends AbstractContentGenerator
 }
 ```
 
-**Registro en TalampayaStarter:**
+**Características:**
 
-```php
-$this->contentGeneratorManager = new ContentGeneratorManager(true, false);
-
-// Registrar con prioridad 5 (antes de posts)
-add_action(
-	'talampaya_register_content_generators',
-	function ($manager) {
-		$manager->register(new BannerTaxonomyGenerator(), 5);
-	},
-	10
-);
-```
+-   No requiere registro manual con prioridad
+-   Auto-descubierto por el sistema con prioridad 5
+-   Se ejecuta antes que otros generadores
 
 ---
 
-### Ejemplo 2: Generador con Dependencias (Banners → Projects)
+### Ejemplo 2: Generador con Prioridad Por Defecto
 
 ```php
-class BannerPostGenerator extends AbstractContentGenerator
+class ProjectPostGenerator extends AbstractContentGenerator
 {
 	public function __construct()
 	{
-		parent::__construct('banner_posts_generated');
+		parent::__construct('project_posts_generated');
 	}
+
+	// No se sobrescribe getPriority(), usa prioridad 10 por defecto
 
 	protected function generateContent(): bool
 	{
-		// PASO 1: Crear banners vacíos (solo título y slug)
-		$banner_ids = [];
-
-		$initial_banners = [
-			'home-hero' => 'Banner Principal Home',
-			'about-hero' => 'Banner Página About',
+		// Crear posts de proyectos
+		$projects = [
+			'proyecto-principal' => [
+				'title' => 'Proyecto Principal',
+				'content' => 'Contenido del proyecto...',
+			],
 		];
 
-		foreach ($initial_banners as $slug => $title) {
-			$banner_id = wp_insert_post([
-				'post_title' => $title,
+		foreach ($projects as $slug => $data) {
+			wp_insert_post([
+				'post_title' => $data['title'],
 				'post_name' => $slug,
-				'post_type' => 'banner',
+				'post_type' => 'project_post',
+				'post_content' => $data['content'],
 				'post_status' => 'publish',
 			]);
-
-			$banner_ids[$slug] = $banner_id;
 		}
 
-		// PASO 2: Esperar a que otros generadores creen proyectos
-		// (esto pasaría en otro generador con prioridad mayor)
-
-		// PASO 3: Actualizar banners con referencias
-		// (esto se haría en un generador con prioridad 15)
 		return true;
 	}
 }
+```
 
+**Características:**
+
+-   Usa prioridad 10 por defecto (heredada de AbstractContentGenerator)
+-   Se ejecuta después de taxonomías (prioridad 5)
+-   Antes de contenido dependiente (prioridad 15)
+
+---
+
+### Ejemplo 3: Generador con Prioridad Baja (Depende de Otros)
+
+```php
 class BannerContentUpdater extends AbstractContentGenerator
 {
 	public function __construct()
@@ -625,9 +643,15 @@ class BannerContentUpdater extends AbstractContentGenerator
 		parent::__construct('banner_content_updated');
 	}
 
+	// Declarar prioridad baja (ejecutar al final)
+	public function getPriority(): int
+	{
+		return 15; // Después de que otros posts existan
+	}
+
 	protected function generateContent(): bool
 	{
-		// Obtener IDs de proyectos ya creados
+		// Obtener posts ya creados por otros generadores
 		$project = get_page_by_path('proyecto-principal', OBJECT, 'project_post');
 
 		if (!$project) {
@@ -635,18 +659,10 @@ class BannerContentUpdater extends AbstractContentGenerator
 			return false;
 		}
 
-		// Actualizar banner con referencia al proyecto
+		// Actualizar contenido que depende del proyecto
 		$banner = get_page_by_path('home-hero', OBJECT, 'banner');
-
 		if ($banner) {
 			update_post_meta($banner->ID, 'referenced_project', $project->ID);
-			update_post_meta($banner->ID, 'banner_link', get_permalink($project->ID));
-
-			// Actualizar contenido del banner
-			wp_update_post([
-				'ID' => $banner->ID,
-				'post_content' => 'Descubre nuestro proyecto destacado',
-			]);
 		}
 
 		return true;
@@ -654,24 +670,15 @@ class BannerContentUpdater extends AbstractContentGenerator
 }
 ```
 
-**Registro con orden correcto:**
+**Características:**
 
-```php
-add_action(
-	'talampaya_register_content_generators',
-	function ($manager) {
-		$manager->register(new BannerTaxonomyGenerator(), 5); // Taxonomías primero
-		$manager->register(new ProjectPostGenerator(), 10); // Proyectos
-		$manager->register(new BannerPostGenerator(), 10); // Banners vacíos
-		$manager->register(new BannerContentUpdater(), 15); // Rellenar banners
-	},
-	10
-);
-```
+-   Prioridad 15 asegura que se ejecuta al final
+-   Puede acceder a posts creados por generadores anteriores
+-   Útil para relaciones y referencias cruzadas
 
 ---
 
-### Ejemplo 3: Regeneración Manual desde Admin
+### Ejemplo 4: Regeneración Manual desde Admin
 
 ```php
 // En un admin page o settings
@@ -691,7 +698,7 @@ add_action('admin_post_regenerate_demo_content', function () {
 
 ---
 
-### Ejemplo 4: Usar ContentGeneratorFactory para HTML
+### Ejemplo 5: Usar ContentGeneratorFactory para HTML
 
 ```php
 use App\Features\ContentGenerator\ContentGeneratorFactory;
@@ -738,14 +745,7 @@ class LegalPagesGenerator extends AbstractContentGenerator
 
 ### Prioridad ALTA
 
-1. **Mejorar sistema de prioridades**
-    - Agregar método `getPriority()` en AbstractContentGenerator
-    - Eliminar dependencia de nombres de clase
-    - Permitir que cada generador declare su prioridad
-
-### Prioridad MEDIA
-
-2. **Agregar validación de dependencias**
+1. **Agregar validación de dependencias**
     - Permitir que generadores declaren dependencias
     - Verificar orden antes de ejecutar
 
@@ -767,7 +767,9 @@ class BannerContentUpdater extends AbstractContentGenerator
 }
 ```
 
-3. **Agregar modo "dry-run"**
+### Prioridad MEDIA
+
+2. **Agregar modo "dry-run"**
     - Permitir simular generación sin crear contenido
     - Útil para debugging
 
@@ -777,12 +779,12 @@ $manager->generateAllContent($force = false, $dryRun = true);
 
 ### Prioridad BAJA
 
-4. **Mejorar logging**
+3. **Mejorar logging**
 
     - Usar WP_CLI::log() cuando esté disponible
     - Agregar niveles de log (debug, info, error)
 
-5. **Agregar callbacks de progreso**
+4. **Agregar callbacks de progreso**
     - Permitir hooks después de cada generador
     - Útil para progress bars en WP-CLI o admin
 
@@ -790,7 +792,7 @@ $manager->generateAllContent($force = false, $dryRun = true);
 do_action('talampaya_content_generator_progress', $current, $total, $generator_name);
 ```
 
-6. **Unit tests**
+5. **Unit tests**
     - Agregar tests para ContentGeneratorManager
     - Mockear generadores para testing
 

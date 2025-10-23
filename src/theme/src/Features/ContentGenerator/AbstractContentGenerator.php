@@ -34,6 +34,21 @@ abstract class AbstractContentGenerator implements ContentGeneratorInterface
 	}
 
 	/**
+	 * Obtiene la prioridad de ejecución del generador
+	 *
+	 * Prioridades recomendadas:
+	 * - 5: Taxonomías (deben crearse primero)
+	 * - 10: Post types (valor por defecto)
+	 * - 15: Contenido que depende de otros posts
+	 *
+	 * @return int Prioridad de ejecución (menor número = mayor prioridad)
+	 */
+	public function getPriority(): int
+	{
+		return 10;
+	}
+
+	/**
 	 * Verifica si el contenido ya se ha generado
 	 *
 	 * @param bool $force Si es verdadero, ignora la verificación y genera el contenido de todos modos
