@@ -55,10 +55,8 @@ class TalampayaStarter extends Site
 				$this->endpointsManager->registerAllEndpoints();
 				$this->pagesManager = new PagesManager();
 				$this->pagesManager->initPages();
-				// Inicializar el ContentGeneratorManager con auto-registro desactivado
+				// Inicializar ContentGeneratorManager con auto-registro desactivado
 				$this->contentGeneratorManager = new ContentGeneratorManager(true, false);
-				// Inicializar generadores
-				$this->initContentGenerators();
 			},
 			999
 		);
@@ -126,56 +124,12 @@ class TalampayaStarter extends Site
 	}
 
 	/**
-	 * Inicializa los generadores de contenido en un orden específico
+	 * Expone el ContentGeneratorManager para permitir acceso desde otras partes del tema
 	 *
-	 * Este método permite registrar manualmente los generadores con diferentes prioridades
-	 * en lugar de depender del registro automático
+	 * @return ContentGeneratorManager|null
 	 */
-	protected function initContentGenerators(): void
+	public function getContentGeneratorManager(): ?ContentGeneratorManager
 	{
-		// Obtener generadores disponibles
-		$availableGenerators = $this->contentGeneratorManager->getAvailableGenerators();
-
-		// Ejemplo de registro con orden específico (puedes personalizar según sea necesario)
-		// Las prioridades más bajas se ejecutan primero
-
-		// Generadores de taxonomías primero (prioridad 5)
-		foreach ($availableGenerators as $className => $shortName) {
-			if (str_contains($shortName, "Taxonomy")) {
-				$this->contentGeneratorManager->registerGeneratorByClassName($className, 5);
-			}
-		}
-
-		// Luego los generadores de post types (prioridad 10)
-		foreach ($availableGenerators as $className => $shortName) {
-			if (str_contains($shortName, "PostType")) {
-				$this->contentGeneratorManager->registerGeneratorByClassName($className, 10);
-			}
-		}
-
-		// Finalmente otros generadores (prioridad 15)
-		foreach ($availableGenerators as $className => $shortName) {
-			if (!str_contains($shortName, "Taxonomy") && !str_contains($shortName, "PostType")) {
-				$this->contentGeneratorManager->registerGeneratorByClassName($className, 15);
-			}
-		}
-
-		// También puedes registrar generadores individuales con prioridades específicas
-		// $this->contentGeneratorManager->registerGeneratorByClassName('\\App\\Features\\ContentGenerator\\Generators\\MiGenerador', 20);
-	}
-
-	/**
-	 * Método público para regenerar todo el contenido bajo demanda
-	 *
-	 * Útil cuando se ha eliminado contenido y se quiere volver a crearlo
-	 * sin necesidad de reactivar el tema
-	 *
-	 * @param bool $force Si es verdadero, regenera incluso el contenido ya existente
-	 */
-	public function regenerateAllContent(bool $force = false): void
-	{
-		if (isset($this->contentGeneratorManager)) {
-			$this->contentGeneratorManager->regenerateContent($force);
-		}
+		return $this->contentGeneratorManager ?? null;
 	}
 }
