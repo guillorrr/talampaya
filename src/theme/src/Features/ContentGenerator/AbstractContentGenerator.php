@@ -49,6 +49,30 @@ abstract class AbstractContentGenerator implements ContentGeneratorInterface
 	}
 
 	/**
+	 * Obtiene las dependencias del generador
+	 *
+	 * Retorna un array de nombres de clase completamente cualificados de los
+	 * generadores que deben ejecutarse antes que este.
+	 *
+	 * Ejemplo:
+	 * ```php
+	 * public function getDependencies(): array
+	 * {
+	 *     return [
+	 *         TaxonomyGenerator::class,
+	 *         ProjectPostGenerator::class,
+	 *     ];
+	 * }
+	 * ```
+	 *
+	 * @return array<string> Array de nombres de clase de generadores dependientes
+	 */
+	public function getDependencies(): array
+	{
+		return [];
+	}
+
+	/**
 	 * Verifica si el contenido ya se ha generado
 	 *
 	 * @param bool $force Si es verdadero, ignora la verificación y genera el contenido de todos modos

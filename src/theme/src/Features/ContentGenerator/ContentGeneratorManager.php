@@ -101,6 +101,12 @@ class ContentGeneratorManager
 			return;
 		}
 
+		// Validar dependencias antes de ejecutar
+		if (!$this->validateDependencies()) {
+			error_log("ContentGeneratorManager: Error en validación de dependencias");
+			return;
+		}
+
 		// Ordenamos los generadores por prioridad
 		ksort($this->generators);
 
@@ -298,6 +304,200 @@ class ContentGeneratorManager
 					"ContentGeneratorManager: Error al instanciar $fullyQualifiedClassName: " .
 						$e->getMessage()
 				);
+			}
+		}
+	}
+
+	/**
+	 * Valida que todas las dependencias estén satisfechas y no haya ciclos
+	 *
+	 * @return bool true si todas las dependencias son válidas
+	 */
+	private function validateDependencies(): bool
+	{
+		$allGenerators = $this->getAllRegisteredGenerators();
+
+		// Verificar que todas las dependencias declaradas existan
+		foreach ($allGenerators as $generator) {
+			$className = get_class($generator);
+			$dependencies = $generator->getDependencies();
+
+			foreach ($dependencies as $dependencyClass) {
+				if (!$this->isGeneratorRegistered($dependencyClass, $allGenerators)) {
+					error_log(
+						"ContentGeneratorManager: El generador $className depende de $dependencyClass que no está registrado"
+					);
+					return false;
+				}
+			}
+		}
+
+		// Verificar que no haya dependencias circulares
+		if (!$this->checkCircularDependencies($allGenerators)) {
+			error_log("ContentGeneratorManager: Se detectaron dependencias circulares");
+			return false;
+		}
+
+		// Verificar que las prioridades respeten las dependencias
+		$this->verifyDependencyOrder($allGenerators);
+
+		return true;
+	}
+
+	/**
+	 * Obtiene lista plana de todos los generadores registrados
+	 *
+	 * @return array<AbstractContentGenerator>
+	 */
+	private function getAllRegisteredGenerators(): array
+	{
+		$allGenerators = [];
+		foreach ($this->generators as $priority_group) {
+			foreach ($priority_group as $generator) {
+				$allGenerators[] = $generator;
+			}
+		}
+		return $allGenerators;
+	}
+
+	/**
+	 * Verifica si un generador está registrado
+	 *
+	 * @param string $className Nombre de clase a buscar
+	 * @param array $generators Lista de generadores
+	 * @return bool
+	 */
+	private function isGeneratorRegistered(string $className, array $generators): bool
+	{
+		foreach ($generators as $generator) {
+			if (get_class($generator) === $className) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Detecta dependencias circulares usando DFS
+	 *
+	 * @param array $generators Lista de generadores
+	 * @return bool true si no hay ciclos
+	 */
+	private function checkCircularDependencies(array $generators): bool
+	{
+		$visited = [];
+		$recursionStack = [];
+
+		// Crear mapa de clase => generador para búsqueda rápida
+		$generatorMap = [];
+		foreach ($generators as $generator) {
+			$generatorMap[get_class($generator)] = $generator;
+		}
+
+		// DFS para detectar ciclos
+		foreach ($generators as $generator) {
+			$className = get_class($generator);
+			if (!isset($visited[$className])) {
+				if ($this->hasCycleDFS($className, $generatorMap, $visited, $recursionStack)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * DFS helper para detectar ciclos
+	 *
+	 * @param string $className Clase actual
+	 * @param array $generatorMap Mapa de generadores
+	 * @param array &$visited Nodos visitados
+	 * @param array &$recursionStack Stack de recursión
+	 * @return bool true si hay ciclo
+	 */
+	private function hasCycleDFS(
+		string $className,
+		array $generatorMap,
+		array &$visited,
+		array &$recursionStack
+	): bool {
+		$visited[$className] = true;
+		$recursionStack[$className] = true;
+
+		// Explorar dependencias
+		if (isset($generatorMap[$className])) {
+			$dependencies = $generatorMap[$className]->getDependencies();
+
+			foreach ($dependencies as $dependencyClass) {
+				// Si no visitado, explorar recursivamente
+				if (!isset($visited[$dependencyClass])) {
+					if (
+						$this->hasCycleDFS(
+							$dependencyClass,
+							$generatorMap,
+							$visited,
+							$recursionStack
+						)
+					) {
+						error_log(
+							"ContentGeneratorManager: Ciclo detectado: $className -> $dependencyClass"
+						);
+						return true;
+					}
+				}
+				// Si está en el stack de recursión, hay ciclo
+				elseif (
+					isset($recursionStack[$dependencyClass]) &&
+					$recursionStack[$dependencyClass]
+				) {
+					error_log(
+						"ContentGeneratorManager: Ciclo detectado: $className -> $dependencyClass"
+					);
+					return true;
+				}
+			}
+		}
+
+		$recursionStack[$className] = false;
+		return false;
+	}
+
+	/**
+	 * Verifica y advierte si las prioridades no respetan las dependencias
+	 *
+	 * @param array $generators Lista de generadores
+	 * @return void
+	 */
+	private function verifyDependencyOrder(array $generators): void
+	{
+		// Crear mapa de clase => prioridad
+		$priorityMap = [];
+		foreach ($this->generators as $priority => $priority_group) {
+			foreach ($priority_group as $generator) {
+				$priorityMap[get_class($generator)] = $priority;
+			}
+		}
+
+		// Verificar que las dependencias tengan mayor o igual prioridad (menor número)
+		foreach ($generators as $generator) {
+			$className = get_class($generator);
+			$generatorPriority = $priorityMap[$className];
+			$dependencies = $generator->getDependencies();
+
+			foreach ($dependencies as $dependencyClass) {
+				if (isset($priorityMap[$dependencyClass])) {
+					$dependencyPriority = $priorityMap[$dependencyClass];
+
+					// La dependencia debe tener mayor o igual prioridad (menor o igual número)
+					if ($dependencyPriority > $generatorPriority) {
+						error_log(
+							"ContentGeneratorManager: ADVERTENCIA - El generador $className (prioridad $generatorPriority) " .
+								"depende de $dependencyClass (prioridad $dependencyPriority). " .
+								"La dependencia debería tener mayor prioridad (número menor)."
+						);
+					}
+				}
 			}
 		}
 	}

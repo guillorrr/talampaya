@@ -524,19 +524,28 @@ public function initGenerators(): void
     - Ordenamiento con `ksort()` antes de ejecutar
     - Permite ejecución ordenada respetando dependencias
 
-2. **Patrón Factory:**
+2. **Validación de Dependencias:**
+
+    - Método `getDependencies()` declara dependencias explícitas
+    - Validación automática antes de ejecutar:
+        - Verifica que todas las dependencias estén registradas
+        - Detecta ciclos mediante algoritmo DFS
+        - Advierte si prioridades no respetan dependencias
+    - Previene errores de ejecución en tiempo de desarrollo
+
+3. **Patrón Factory:**
 
     - `ContentGeneratorFactory` centraliza la creación de instancias
     - Simplifica código cliente
     - Facilita testing y mantenimiento
 
-3. **Verificación de Estado:**
+4. **Verificación de Estado:**
 
     - `isAlreadyGenerated()` consulta `wp_options`
     - Evita duplicaciones mediante `option_key` único
     - Permite forzar regeneración con parámetro `$force`
 
-4. **Extensibilidad vía Hooks:**
+5. **Extensibilidad vía Hooks:**
     - `do_action('talampaya_register_content_generators', $this)`
     - Permite que plugins/temas registren generadores personalizados
     - Mantiene el código cerrado a modificación, abierto a extensión (OCP)
@@ -633,9 +642,12 @@ class ProjectPostGenerator extends AbstractContentGenerator
 
 ---
 
-### Ejemplo 3: Generador con Prioridad Baja (Depende de Otros)
+### Ejemplo 3: Generador con Dependencias Declaradas
 
 ```php
+use App\Features\ContentGenerator\Generators\ProjectPostGenerator;
+use App\Features\ContentGenerator\Generators\BannerTaxonomyGenerator;
+
 class BannerContentUpdater extends AbstractContentGenerator
 {
 	public function __construct()
@@ -646,12 +658,21 @@ class BannerContentUpdater extends AbstractContentGenerator
 	// Declarar prioridad baja (ejecutar al final)
 	public function getPriority(): int
 	{
-		return 15; // Después de que otros posts existan
+		return 15;
+	}
+
+	// ✨ Declarar dependencias explícitas
+	public function getDependencies(): array
+	{
+		return [
+			BannerTaxonomyGenerator::class, // Necesita taxonomías primero
+			ProjectPostGenerator::class, // Necesita proyectos existentes
+		];
 	}
 
 	protected function generateContent(): bool
 	{
-		// Obtener posts ya creados por otros generadores
+		// El sistema garantiza que estas dependencias se ejecutaron antes
 		$project = get_page_by_path('proyecto-principal', OBJECT, 'project_post');
 
 		if (!$project) {
@@ -659,7 +680,6 @@ class BannerContentUpdater extends AbstractContentGenerator
 			return false;
 		}
 
-		// Actualizar contenido que depende del proyecto
 		$banner = get_page_by_path('home-hero', OBJECT, 'banner');
 		if ($banner) {
 			update_post_meta($banner->ID, 'referenced_project', $project->ID);
@@ -672,9 +692,13 @@ class BannerContentUpdater extends AbstractContentGenerator
 
 **Características:**
 
--   Prioridad 15 asegura que se ejecuta al final
--   Puede acceder a posts creados por generadores anteriores
--   Útil para relaciones y referencias cruzadas
+-   Declara dependencias explícitamente mediante `getDependencies()`
+-   El sistema valida automáticamente:
+    -   ✅ Que `ProjectPostGenerator` esté registrado
+    -   ✅ Que `BannerTaxonomyGenerator` esté registrado
+    -   ✅ Que no haya ciclos de dependencias
+    -   ⚠️ Advierte si las prioridades no son coherentes
+-   Previene errores en tiempo de ejecución
 
 ---
 
@@ -745,31 +769,7 @@ class LegalPagesGenerator extends AbstractContentGenerator
 
 ### Prioridad ALTA
 
-1. **Agregar validación de dependencias**
-    - Permitir que generadores declaren dependencias
-    - Verificar orden antes de ejecutar
-
-```php
-abstract class AbstractContentGenerator
-{
-	public function getDependencies(): array
-	{
-		return []; // Override to declare dependencies
-	}
-}
-
-class BannerContentUpdater extends AbstractContentGenerator
-{
-	public function getDependencies(): array
-	{
-		return [ProjectPostGenerator::class];
-	}
-}
-```
-
-### Prioridad MEDIA
-
-2. **Agregar modo "dry-run"**
+1. **Agregar modo "dry-run"**
     - Permitir simular generación sin crear contenido
     - Útil para debugging
 
@@ -779,12 +779,12 @@ $manager->generateAllContent($force = false, $dryRun = true);
 
 ### Prioridad BAJA
 
-3. **Mejorar logging**
+2. **Mejorar logging**
 
     - Usar WP_CLI::log() cuando esté disponible
     - Agregar niveles de log (debug, info, error)
 
-4. **Agregar callbacks de progreso**
+3. **Agregar callbacks de progreso**
     - Permitir hooks después de cada generador
     - Útil para progress bars en WP-CLI o admin
 
@@ -792,7 +792,7 @@ $manager->generateAllContent($force = false, $dryRun = true);
 do_action('talampaya_content_generator_progress', $current, $total, $generator_name);
 ```
 
-5. **Unit tests**
+4. **Unit tests**
     - Agregar tests para ContentGeneratorManager
     - Mockear generadores para testing
 
