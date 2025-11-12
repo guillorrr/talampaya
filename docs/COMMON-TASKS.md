@@ -131,12 +131,19 @@ Step-by-step guides for common development tasks in Talampaya.
 
 **Time**: 15 minutes
 
+Each ACF block is a self-contained directory with 3 files: JSON, PHP, and Twig.
+
 **Steps**:
 
-1. **Create block JSON** in `/src/theme/blocks/`:
+1. **Create block directory**:
+   ```bash
+   mkdir /src/theme/blocks/testimonial
+   ```
+
+2. **Create block JSON** in `/src/theme/blocks/testimonial/testimonial-block.json`:
    ```json
    {
-     "name": "testimonial",
+     "name": "acf/testimonial",
      "title": "Testimonial",
      "description": "Display a customer testimonial",
      "category": "theme",
@@ -163,7 +170,56 @@ Step-by-step guides for common development tasks in Talampaya.
    }
    ```
 
-2. **Create Twig template** in `/src/theme/views/blocks/`:
+3. **Create PHP file** in `/src/theme/blocks/testimonial/testimonial-block.php`:
+   ```php
+   <?php
+
+   use Illuminate\Support\Str;
+   use App\Inc\Helpers\AcfHelper;
+
+   function add_acf_block_testimonial(): void
+   {
+       $key = "testimonial";
+       $key_underscore = Str::snake($key);
+       $key_dash = str_replace("_", "-", $key_underscore);
+       $title = Str::title(str_replace("_", " ", $key_underscore));
+       $block_title = __($title, "talampaya");
+
+       $fields = [
+           ["testimonial_text", "textarea"],
+           ["testimonial_author"],
+           ["testimonial_rating", "number", 100, null, 0, ["min" => 1, "max" => 5]],
+       ];
+
+       $groups = [[$block_title, AcfHelper::talampaya_create_acf_group_fields($fields), 1]];
+
+       foreach ($groups as $group) {
+           $field_group = [
+               "key" => Str::snake($group[0]),
+               "title" => __($group[0], "talampaya"),
+               "fields" => $group[1],
+               "location" => [
+                   [
+                       [
+                           "param" => "block",
+                           "operator" => "==",
+                           "value" => "acf/" . $key_dash,
+                       ],
+                   ],
+               ],
+               "show_in_rest" => true,
+               "menu_order" => $group[2],
+           ];
+
+           acf_add_local_field_group(
+               AcfHelper::talampaya_replace_keys_from_acf_register_fields($field_group, $key_underscore)
+           );
+       }
+   }
+   add_action("acf/init", "add_acf_block_testimonial", 10);
+   ```
+
+4. **Create Twig template** in `/src/theme/blocks/testimonial/testimonial-block.twig`:
    ```twig
    {# Block: Testimonial #}
    <div class="testimonial {{ block.classes }}">
@@ -189,18 +245,9 @@ Step-by-step guides for common development tasks in Talampaya.
    </div>
    ```
 
-3. **Create ACF field group** in WordPress admin:
-   - Custom Fields → Add New
-   - Title: "Testimonial Block"
-   - Location: Block is equal to `acf/testimonial`
-   - Add fields:
-     - `testimonial_text` (Textarea)
-     - `testimonial_author` (Text)
-     - `testimonial_rating` (Number, 1-5)
+5. **Block is auto-registered** - ACF automatically discovers and registers the block from the JSON file.
 
-4. **Field group auto-exports** to `/src/theme/acf-json/`
-
-5. **(Optional) Create context modifier** in `/src/theme/src/Features/Acf/Blocks/Modifiers/`:
+6. **(Optional) Create context modifier** in `/src/theme/src/Features/Acf/Blocks/Modifiers/TestimonialBlockModifier.php`:
    ```php
    <?php
 
@@ -218,14 +265,14 @@ Step-by-step guides for common development tasks in Talampaya.
    }
    ```
 
-6. **Register modifier** in `BlockRenderer.php`:
+7. **Register modifier** using `BlockRenderer::registerContextModifier()`:
    ```php
-   private array $modifiers = [
-       'testimonial' => TestimonialBlockModifier::class,
-   ];
+   BlockRenderer::registerContextModifier('testimonial', [TestimonialBlockModifier::class, 'modify']);
    ```
 
-7. **Test** in Gutenberg editor - block should appear in "Theme" category
+8. **Test** in Gutenberg editor - block should appear in "Theme" category
+
+**Note**: ACF fields are defined programmatically in the PHP file (step 3). Field groups will also auto-export to `/src/theme/acf-json/` if you create/edit them in WordPress admin.
 
 See [ACF-BLOCKS.md](ACF-BLOCKS.md) for detailed documentation.
 

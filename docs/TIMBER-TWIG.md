@@ -46,41 +46,42 @@ Complete guide to the Timber/Twig templating system used in Talampaya.
 
 ### Directory Organization
 
-Based on Atomic Design and component architecture:
+Talampaya integrates PatternLab for design system components and uses views/ for WordPress-specific templates:
 
 ```
 /src/theme/views/
 ├── layouts/          # Base templates (overall structure)
-│   ├── base.twig     # Main layout with header/footer
-│   └── blog.twig     # Blog-specific layout
-├── pages/            # Page-specific templates
-│   ├── 404.twig
-│   ├── about.twig
+│   └── base.twig     # Main layout extending PatternLab templates
+├── pages/            # WordPress page templates
+│   ├── 404.twig      # Compose pages using PatternLab & WP-specific components
 │   ├── archive.twig
-│   └── contact.twig
-├── components/       # Reusable components
-│   ├── accordion.twig
-│   ├── breadcrumbs.twig
-│   ├── modal.twig
-│   ├── nav.twig
-│   └── pagination.twig
-├── blocks/           # ACF block templates
-│   ├── hero.twig
-│   └── footer.twig
-├── sections/         # Page sections
-│   ├── faq.twig
-│   ├── hero.twig
-│   └── comments.twig
-└── includes/         # Third-party scripts/snippets
+│   ├── single.twig
+│   └── front-page.twig
+├── components/       # WordPress-specific components
+│   └── post-meta.twig    # WP logic not suitable for PatternLab
+├── includes/         # Third-party scripts/snippets
     ├── facebook-pixel.twig
     └── google-analytics.twig
+
+/src/theme/blocks/    # ACF Gutenberg blocks (not in views/)
+└── hero/
+    ├── hero-block.json
+    ├── hero-block.php
+    └── hero-block.twig
 ```
 
+**PatternLab Integration**:
+- PatternLab components (atoms, molecules, organisms, templates) are integrated via namespaces
+- Views templates include/extend PatternLab components
+- `components/` contains only WordPress-specific logic not present in PatternLab
+
 **Logic**:
-1. **Reusability**: `blocks/` and `components/` store small, reusable pieces (DRY principle)
-2. **Organization**: `layouts/` establish overall structure, `pages/` customize specific pages
-3. **Sections**: `sections/` contain complete, independent content sections
-4. **Includes**: Third-party scripts managed centrally
+1. **PatternLab**: Design system components (atoms, molecules, organisms)
+2. **views/pages**: WordPress pages that compose PatternLab components
+3. **views/components**: WordPress-specific components (post meta, pagination, etc.)
+4. **views/layouts**: Base layouts extending PatternLab templates
+5. **views/includes**: Third-party tracking/analytics scripts
+6. **blocks/**: ACF blocks with self-contained JSON, PHP, and Twig files
 
 ## Context Data
 
@@ -192,24 +193,36 @@ class MyExtension implements TwigExtenderInterface
 
 Configured in `TalampayaStarter::addLocations()`:
 
-| Namespace | Path | Usage |
-|-----------|------|-------|
-| `@atoms` | `views/atoms` | `{% include '@atoms/button.twig' %}` |
-| `@molecules` | `views/molecules` | `{% include '@molecules/card.twig' %}` |
-| `@organisms` | `views/organisms` | `{% include '@organisms/header.twig' %}` |
-| `@templates` | `views/templates` | `{% extends '@templates/base.twig' %}` |
-| `@pages` | `views/pages` | `{% extends '@pages/home.twig' %}` |
-| `@layouts` | `views/layouts` | `{% extends '@layouts/base.twig' %}` |
-| `@blocks` | `views/blocks` | `{% include '@blocks/hero.twig' %}` |
+| Namespace | Path | Usage | Notes |
+|-----------|------|-------|-------|
+| `@atoms` | `views/atoms` | `{% include '@atoms/button.twig' %}` | PatternLab |
+| `@molecules` | `views/molecules` | `{% include '@molecules/card.twig' %}` | PatternLab |
+| `@organisms` | `views/organisms` | `{% include '@organisms/header.twig' %}` | PatternLab |
+| `@templates` | `views/templates` | `{% extends '@templates/base.twig' %}` | PatternLab |
+| `@macros` | `views/macros` | `{% import '@macros/forms.twig' %}` | Twig macros |
+| `@layouts` | `views/layouts` | `{% extends '@layouts/base.twig' %}` | WordPress |
+| `@pages` | `views/pages` | `{% extends '@pages/home.twig' %}` | WordPress |
+| `@components` | `views/components` | `{% include '@components/post-meta.twig' %}` | WordPress |
+| `@blocks` | `blocks/` | - | ACF blocks (auto-rendered) |
 
 **Example usage**:
 ```twig
+{# WordPress page template #}
 {% extends '@layouts/base.twig' %}
+
 {% block content %}
-  {% include '@components/breadcrumbs.twig' %}
-  {% include '@blocks/hero.twig' %}
+  {# PatternLab components #}
+  {% include '@organisms/header.twig' with { title: post.title } %}
+
+  {# WordPress-specific component #}
+  {% include '@components/post-meta.twig' %}
+
+  {# PatternLab molecules #}
+  {% include '@molecules/card.twig' with { content: post.content } %}
 {% endblock %}
 ```
+
+**Note**: ACF blocks in `@blocks` namespace are rendered automatically by `BlockRenderer`. You don't typically include them manually in templates - they're added via Gutenberg editor.
 
 ## Common Template Patterns
 
@@ -226,7 +239,7 @@ Configured in `TalampayaStarter::addLocations()`:
   {{ function('wp_head') }}
 </head>
 <body class="{{ body_class }}">
-  {% include '@blocks/header.twig' %}
+  {% include '@organisms/header.twig' %}
 
   <main class="main">
     {% block content %}
@@ -234,7 +247,7 @@ Configured in `TalampayaStarter::addLocations()`:
     {% endblock %}
   </main>
 
-  {% include '@blocks/footer.twig' %}
+  {% include '@organisms/footer.twig' %}
   {{ function('wp_footer') }}
 </body>
 </html>

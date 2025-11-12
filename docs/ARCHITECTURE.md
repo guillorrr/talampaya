@@ -77,17 +77,26 @@ The theme follows a structured initialization chain to ensure proper loading ord
 │   │   ├── Helpers/          # WordPress-specific utilities
 │   │   └── Utils/            # General utilities
 │   └── Hooks/                # WordPress hooks/filters
-├── views/                    # Twig templates
-│   ├── layouts/
-│   ├── pages/
-│   ├── blocks/               # ACF block templates
-│   └── components/
+├── views/                    # Twig templates (WordPress-specific)
+│   ├── layouts/              # Base layouts
+│   ├── pages/                # Page templates
+│   ├── components/           # WordPress-specific components
+│   ├── includes/             # Third-party scripts/snippets
+│   ├── atoms/                # PatternLab atoms (symlink/integration)
+│   ├── molecules/            # PatternLab molecules (symlink/integration)
+│   ├── organisms/            # PatternLab organisms (symlink/integration)
+│   ├── templates/            # PatternLab templates (symlink/integration)
+│   └── macros/               # Twig macros
 ├── assets/
 │   ├── styles/               # SCSS source files
 │   ├── scripts/              # JavaScript files
 │   ├── fonts/
 │   └── images/
-├── blocks/                   # ACF block JSON definitions
+├── blocks/                   # ACF Gutenberg blocks (self-contained)
+│   └── {block-name}/         # Each block has its directory
+│       ├── {block-name}-block.json  # Block definition
+│       ├── {block-name}-block.php   # ACF fields registration
+│       └── {block-name}-block.twig  # Block template
 └── acf-json/                 # ACF field group exports
 ```
 

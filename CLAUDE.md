@@ -138,8 +138,8 @@ Before answering technical questions, consult the appropriate documentation:
 **✅ Always safe to create/modify**:
 - Custom post types in `/src/theme/src/Register/PostType/`
 - Taxonomies in `/src/theme/src/Register/Taxonomy/`
-- ACF blocks in `/src/theme/blocks/` + `/src/theme/views/blocks/`
-- Twig templates in `/src/theme/views/`
+- ACF blocks in `/src/theme/blocks/{block-name}/` (JSON, PHP, Twig in same directory)
+- Twig templates in `/src/theme/views/` (layouts, pages, components, includes)
 - Twig extensions in `/src/theme/src/Core/TwigExtender/Custom/`
 - Context extenders in `/src/theme/src/Core/ContextExtender/Custom/`
 - Content generators in `/src/theme/src/Features/ContentGenerator/Generators/`
@@ -238,10 +238,12 @@ docker compose exec wp wp rewrite flush
 **Response**:
 1. Check project type (fork check)
 2. Read `/docs/ACF-BLOCKS.md#creating-acf-blocks`
-3. Create block JSON in `/src/theme/blocks/testimonial.json`
-4. Create Twig template in `/src/theme/views/blocks/testimonial.twig`
-5. Inform user to create ACF field group in WordPress admin
-6. Mention field group will auto-export to `/src/theme/acf-json/`
+3. Create block directory `/src/theme/blocks/testimonial/`
+4. Create block JSON in `/src/theme/blocks/testimonial/testimonial-block.json`
+5. Create PHP file in `/src/theme/blocks/testimonial/testimonial-block.php` (ACF fields)
+6. Create Twig template in `/src/theme/blocks/testimonial/testimonial-block.twig`
+7. Block is auto-registered by ACF
+8. Mention field group will auto-export to `/src/theme/acf-json/`
 
 ---
 

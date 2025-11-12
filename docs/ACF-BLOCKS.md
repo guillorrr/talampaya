@@ -38,28 +38,36 @@ All blocks are rendered using **Twig templates** via the `BlockRenderer` system.
 ## Block System Architecture
 
 ```
-/src/theme/blocks/                    # Block JSON definitions
-    └── hero.json
-
-/src/theme/views/blocks/              # Block Twig templates
-    └── hero.twig
+/src/theme/blocks/                    # ACF Block directories
+    └── hero/                         # Each block has its own directory
+        ├── hero-block.json           # Block definition
+        ├── hero-block.php            # ACF fields registration
+        └── hero-block.twig           # Block template
 
 /src/theme/src/Features/Acf/Blocks/
     ├── BlockRenderer.php             # Main rendering class
     └── Modifiers/                    # Context modification classes
         └── HeroBlockModifier.php
 
-/src/theme/acf-json/                  # ACF field group exports
+/src/theme/acf-json/                  # ACF field group exports (auto-synced)
     └── group_hero_block.json
 ```
 
 ## Creating ACF Blocks
 
-### 1. Define Block JSON
+Each block is a self-contained directory with three files: JSON definition, PHP field registration, and Twig template.
 
-**Location**: `/src/theme/blocks/block-name.json`
+### 1. Create Block Directory
 
-**Example** (`/src/theme/blocks/hero.json`):
+**Location**: `/src/theme/blocks/{block-name}/`
+
+Create a new directory for your block inside `/src/theme/blocks/`.
+
+### 2. Define Block JSON
+
+**Location**: `/src/theme/blocks/{block-name}/{block-name}-block.json`
+
+**Example** (`/src/theme/blocks/hero/hero-block.json`):
 ```json
 {
   "name": "hero",
@@ -97,11 +105,67 @@ All blocks are rendered using **Twig templates** via the `BlockRenderer` system.
 - `renderCallback` - Always use `BlockRenderer::render`
 - `supports` - Gutenberg editor features
 
-### 2. Create Twig Template
+### 3. Register ACF Fields (PHP)
 
-**Location**: `/src/theme/views/blocks/{block-name}.twig`
+**Location**: `/src/theme/blocks/{block-name}/{block-name}-block.php`
 
-**Example** (`/src/theme/views/blocks/hero.twig`):
+This file programmatically registers ACF field groups for the block.
+
+**Example** (`/src/theme/blocks/hero/hero-block.php`):
+```php
+<?php
+
+use Illuminate\Support\Str;
+use App\Inc\Helpers\AcfHelper;
+
+function add_acf_block_hero(): void
+{
+    $key = "hero";
+    $key_underscore = Str::snake($key);
+    $key_dash = str_replace("_", "-", $key_underscore);
+    $title = Str::title(str_replace("_", " ", $key_underscore));
+    $block_title = __($title, "talampaya");
+
+    $fields = [
+        ["hero_title"],
+        ["hero_subtitle"],
+        ["hero_background_image", "image", 100, null, 0, ["return_format" => "array"]],
+        ["hero_cta", "link"],
+    ];
+
+    $groups = [[$block_title, AcfHelper::talampaya_create_acf_group_fields($fields), 1]];
+
+    foreach ($groups as $group) {
+        $field_group = [
+            "key" => Str::snake($group[0]),
+            "title" => __($group[0], "talampaya"),
+            "fields" => $group[1],
+            "location" => [
+                [
+                    [
+                        "param" => "block",
+                        "operator" => "==",
+                        "value" => "acf/" . $key_dash,
+                    ],
+                ],
+            ],
+            "show_in_rest" => true,
+            "menu_order" => $group[2],
+        ];
+
+        acf_add_local_field_group(
+            AcfHelper::talampaya_replace_keys_from_acf_register_fields($field_group, $key_underscore)
+        );
+    }
+}
+add_action("acf/init", "add_acf_block_hero", 10);
+```
+
+### 4. Create Twig Template
+
+**Location**: `/src/theme/blocks/{block-name}/{block-name}-block.twig`
+
+**Example** (`/src/theme/blocks/hero/hero-block.twig`):
 ```twig
 {# Block: Hero Section #}
 <section class="hero {{ block.classes }}" id="{{ block.anchor }}">
@@ -136,7 +200,7 @@ All blocks are rendered using **Twig templates** via the `BlockRenderer` system.
 - `block` - Block meta (id, name, classes, anchor, etc.)
 - `is_preview` - Boolean, true if in editor preview
 
-### 3. (Optional) Add Context Modifier
+### 5. (Optional) Add Context Modifier
 
 **Location**: `/src/theme/src/Features/Acf/Blocks/Modifiers/{BlockName}Modifier.php`
 
@@ -286,32 +350,40 @@ group_page_settings.json
 
 **BlockRenderer code** (`/src/Features/Acf/Blocks/BlockRenderer.php`):
 ```php
-public static function render(array $block, string $content = '', bool $is_preview = false): void
-{
-    $context = [
-        'block' => $block,
-        'fields' => get_fields(),
-        'is_preview' => $is_preview,
-    ];
+public static function render(
+    array $attributes,
+    string $content = "",
+    bool $is_preview = false,
+    int $post_id = 0,
+    ?WP_Block $wp_block = null
+): void {
+    // Extract block slug from name (removes 'acf/' prefix)
+    $slug = str_replace("acf/", "", $attributes["name"]);
 
-    // Apply modifier if exists
-    $block_name = $block['name'] ?? '';
-    if (isset(self::$modifiers[$block_name])) {
-        $modifier = self::$modifiers[$block_name];
-        $context = $modifier::modify($context);
+    $context = Timber::context();
+    $context["attributes"] = $attributes;
+    $context["fields"] = get_fields();
+    $context["is_preview"] = $is_preview;
+
+    // Apply registered context modifiers
+    foreach (self::$contextModifiers as $modifier) {
+        $context = $modifier($context, $attributes, $content, $is_preview, $post_id, $wp_block, $slug);
     }
 
-    Timber::render("blocks/{$block_name}.twig", $context);
+    // Render template from block directory
+    Timber::render("blocks/" . $slug . "/" . $slug . "-block.twig", $context);
 }
 ```
 
 ## Best Practices
 
 1. **Use consistent naming**:
-   - Block name: `hero`
-   - JSON file: `hero.json`
-   - Template: `hero.twig`
-   - Modifier: `HeroBlockModifier.php`
+   - Block directory: `/src/theme/blocks/hero/`
+   - Block name (in JSON): `hero`
+   - JSON file: `hero-block.json`
+   - PHP file: `hero-block.php`
+   - Twig template: `hero-block.twig`
+   - Modifier (optional): `HeroBlockModifier.php`
 
 2. **Always provide example data** in block JSON for editor preview
 
