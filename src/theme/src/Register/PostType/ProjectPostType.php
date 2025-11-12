@@ -20,7 +20,7 @@ class ProjectPostType extends AbstractPostType
 			"hierarchical" => false,
 			"exclude_from_search" => false,
 			"publicly_queryable" => true,
-			"has_archive" => true,
+			"has_archive" => "projects",
 			"public" => true,
 			"show_ui" => true,
 			"show_in_menu" => true,
@@ -30,7 +30,10 @@ class ProjectPostType extends AbstractPostType
 			"menu_position" => 20,
 			"capability_type" => "post",
 			"show_in_rest" => true,
-			"rewrite" => ["slug" => "project"],
+			"rewrite" => [
+				"slug" => "project",
+				"with_front" => false,
+			],
 		];
 	}
 }
