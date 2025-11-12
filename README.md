@@ -191,5 +191,5 @@ Built with:
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-01-12
+**Version**: 2.0.0
+**Last Updated**: 2025-11-12
