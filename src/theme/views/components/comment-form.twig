@@ -1,7 +1,5 @@
 <div class="comment-form">
-	<h3>
-		Add comment
-	</h3>
+	<h3>Add comment</h3>
 	<form class="comment-form" method="post" action="{{ site.link ~ "/wp-comments-post.php" }}">
 		{% if user %}
 			<input type="hidden" name="email" value="{{ user.email }}" />

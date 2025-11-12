@@ -1,15 +1,1 @@
-{% extends "pages/index.twig" %}
-
-{% block content %}
-	{% for post in posts %}
-		{% include ["blocks/tease-" ~ post.type ~ ".twig", "blocks/tease.twig"] %}
-	{% endfor %}
-
-	{% include "components/pagination.twig" with {
-		pagination: posts.pagination({
-			show_all: false,
-			mid_size: 3,
-			end_size: 2
-		})
-	} %}
-{% endblock content %}
+{% include "@templates/blog.twig" %}
