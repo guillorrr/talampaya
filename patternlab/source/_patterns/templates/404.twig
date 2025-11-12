@@ -1,0 +1,9 @@
+{% extends "@templates/layouts/site.twig" %}
+{% block hero %}
+	{% if emergency %}
+		{% include "@molecules/messaging/alert.twig" with emergency %}
+	{% endif %}
+	{% if hero %}
+		{% include "@molecules/blocks/block-hero.twig" with hero %}
+	{% endif %}
+{% endblock hero %}

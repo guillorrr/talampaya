@@ -11,13 +11,16 @@
  */
 
 use Timber\Timber;
+use App\Inc\Controllers\DefaultController;
 
-$templates = ["pages/index.twig"];
+$templates = ["@pages/index.twig"];
 
 if (is_home()) {
-	array_unshift($templates, "pages/front-page.twig", "pages/home.twig");
+	array_unshift($templates, "@pages/home.twig");
 }
 
 $context = Timber::context();
 
-Timber::render($templates, $context);
+$controller = new DefaultController();
+
+Timber::render($templates, $controller->get_blog_context($context));

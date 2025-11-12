@@ -1,9 +1,16 @@
 <div class="page" id="page">
-    {% include "@organisms/global/header.twig" %}
-    <div role="main">
-        {% block hero %}{% endblock %}
-        {% block title %}{% endblock %}
-        {% block content %}{% endblock %}
-    </div><!--End role=main-->
-    {% include "@organisms/global/footer.twig" %}
+	{% include "@organisms/global/header.twig" %}
+	<div role="main">
+		{% block hero %}
+
+		{% endblock hero %}
+		{% block title %}
+
+		{% endblock title %}
+		{% block main_content %}
+
+		{% endblock main_content %}
+	</div>
+	<!-- End role=main -->
+	{% include "@organisms/global/footer.twig" %}
 </div>

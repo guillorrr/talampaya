@@ -24,72 +24,6 @@ Theme Name
 const themeName = process.env.APP_NAME.toLowerCase() || 'talampaya';
 
 /* -------------------------------------------------------------------------------------------------
-Styles Bundles
--------------------------------------------------------------------------------------------------- */
-const frontendStyles = [
-	'./src/theme/assets/styles/main.scss',
-	'./patternlab/source/css/style.scss',
-];
-
-const backendStyles = [
-	'./src/theme/assets/styles/backend-*.scss',
-	'./src/theme/assets/styles/backend-*.css',
-];
-
-/* -------------------------------------------------------------------------------------------------
-JavaScript Files
--------------------------------------------------------------------------------------------------- */
-const scriptsFiles = [
-	'./src/theme/assets/scripts/scripts.js',
-	'./patternlab/source/js/main.js',
-	'./src/theme/assets/scripts/backend.js',
-];
-
-/* -------------------------------------------------------------------------------------------------
-Assets
--------------------------------------------------------------------------------------------------- */
-const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
-
-const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Theme files
--------------------------------------------------------------------------------------------------- */
-const themeFiles = [
-	'./src/theme/**',
-	'!./src/theme/assets/**',
-	'!./src/theme/blocks/**/*.scss',
-	'!./src/theme/blocks/**/*.js',
-	'!./src/theme/acf-json/**/*.json',
-];
-
-/* -------------------------------------------------------------------------------------------------
-ACF JSON files
--------------------------------------------------------------------------------------------------- */
-const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Plugin files
--------------------------------------------------------------------------------------------------- */
-const pluginsFiles = ['./src/plugins/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Wordpress Languages files
--------------------------------------------------------------------------------------------------- */
-const languagesFiles = ['./src/theme/assets/languages/**'];
-
-/* -------------------------------------------------------------------------------------------------
-Patternlab files
--------------------------------------------------------------------------------------------------- */
-const patternlabFiles = [
-	'./patternlab/source/_patterns/**/*.twig',
-	'!./patternlab/source/_patterns/templates/**',
-	'!./patternlab/source/_patterns/pages/**',
-];
-
-const patternlabTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
-
-/* -------------------------------------------------------------------------------------------------
 Environment Tasks
 -------------------------------------------------------------------------------------------------- */
 
@@ -190,71 +124,289 @@ function Reload() {
 	browserSync.reload();
 }
 
-function copyAcfJsonFiles() {
-	console.log('Copying ACF Json files...');
-	if (!fs.existsSync('./src/theme/acf-json')) {
-		log('No ACF Json dir found');
+/* -------------------------------------------------------------------------------------------------
+ACF Json
+-------------------------------------------------------------------------------------------------- */
+
+const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
+
+function devCopyAcfJson() {
+	return copyFiles(acfJsonFiles, '', {
+		checkDir: './src/theme/acf-json',
+		customDestPath: './src/theme/acf-json',
+		extraMessage: 'ACF Json files',
+	});
+}
+
+function prodCopyAcfJson() {
+	return copyFiles(acfJsonFiles, '', {
+		checkDir: './src/theme/acf-json',
+		customDestPath: './src/theme/acf-json',
+		extraMessage: 'ACF Json files',
+		isDev: false,
+		skipPlumber: true,
+	});
+}
+
+/* -------------------------------------------------------------------------------------------------
+Generic File Copy Function
+-------------------------------------------------------------------------------------------------- */
+function copyFiles(sourceFiles, destinationPath, options = {}) {
+	const {
+		checkDir = null,
+		encoding = false,
+		isDev = true,
+		transforms = [],
+		customDestPath = null,
+		extraMessage = '',
+	} = options;
+
+	if (checkDir && !fs.existsSync(checkDir)) {
+		log(`No ${checkDir} dir found`);
 		process.exit(1);
+	}
+
+	// Determinar la ruta de destino
+	let targetPath;
+	if (customDestPath) {
+		targetPath = customDestPath;
 	} else {
-		return src(acfJsonFiles, { encoding: false }).pipe(dest('./src/theme/acf-json'));
+		targetPath = isDev
+			? `./build/wp-content/themes/${themeName}${destinationPath}`
+			: `./dist/themes/${themeName}${destinationPath}`;
+	}
+
+	console.log(`Copying files to ${targetPath}...${extraMessage ? ' ' + extraMessage : ''}`);
+
+	// Crear el pipeline inicial
+	let pipeline = src(sourceFiles, { encoding });
+
+	// Aplicar las transformaciones si existen
+	if (transforms && transforms.length > 0) {
+		for (const transform of transforms) {
+			pipeline = pipeline.pipe(transform);
+		}
+	}
+
+	// Aplicar plumber en producción si es necesario
+	if (!isDev && !options.skipPlumber) {
+		pipeline = pipeline.pipe(plumber({ errorHandler: onError }));
+	}
+
+	// Finalizar el pipeline con el destino
+	pipeline = pipeline.pipe(dest(targetPath));
+
+	// Añadir browserSync.stream() si es desarrollo y se especifica
+	if (isDev && options.browserSyncStream) {
+		pipeline = pipeline.pipe(browserSync.stream());
+	}
+
+	return pipeline;
+}
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Twig files
+-------------------------------------------------------------------------------------------------- */
+
+const patternsTwig = [
+	'./patternlab/source/_patterns/**/*.twig',
+	'!./patternlab/source/_patterns/templates/**',
+	'!./patternlab/source/_patterns/pages/**',
+];
+
+function devCopyPatterns() {
+	return copyFiles(patternsTwig, '/views', './patternlab/source/_patterns');
+}
+
+function prodCopyPatterns() {
+	return copyFiles(patternsTwig, '/views', './patternlab/source/_patterns');
+}
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Json files
+-------------------------------------------------------------------------------------------------- */
+
+const patternsJson = [
+	'./patternlab/source/_data/**/*.json',
+	'./patternlab/source/_patterns/pages/*.json',
+];
+
+// Función auxiliar para procesar objetos JSON (declarada fuera para evitar inner-declarations)
+function processJsonObject(obj) {
+	const domain = process.env.DOMAIN || 'localhost';
+	const protocol = process.env.PROTOCOL || 'http';
+	const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
+
+	if (!obj || typeof obj !== 'object') return;
+
+	// Si es un array, procesamos cada elemento
+	if (Array.isArray(obj)) {
+		obj.forEach(item => processJsonObject(item));
+		return;
+	}
+
+	// Iteramos por las propiedades del objeto
+	for (const key in obj) {
+		// Si el valor es un objeto o array, procesamos recursivamente
+		if (obj[key] && typeof obj[key] === 'object') {
+			processJsonObject(obj[key]);
+		}
+		// Si es una propiedad src o href y su valor es un string
+		else if ((key === 'src' || key === 'href') && typeof obj[key] === 'string') {
+			const value = obj[key];
+
+			// Verificamos que no comience con http o https
+			if (!value.match(/^https?:\/\//)) {
+				// Eliminamos patrones como "../../" o "./" del inicio
+				let cleanPath = value.replace(/^(?:\.\.\/)+|^\.\//, '');
+
+				// Agregamos el prefijo de la URL del tema de WordPress
+				obj[key] = `${themeUrl}/${cleanPath}`;
+				console.log(`Transformed URL: ${value} -> ${obj[key]}`);
+			}
+		}
 	}
 }
 
-function copyPatternlabFiles() {
-	console.log('Copying Patternlab files...');
-	if (!fs.existsSync('./patternlab/source/_patterns')) {
-		log('No Patternlab dir found');
-		process.exit(1);
-	} else {
-		return src(patternlabFiles, { encoding: false }).pipe(
-			dest('./build/wp-content/themes/' + themeName + '/views')
-		);
-	}
+function transformJsonUrls() {
+	console.log('Iniciando transformación de URLs en archivos JSON');
+	return through2.obj(function (file, encoding, callback) {
+		console.log(`Procesando archivo: ${file.path}`);
+
+		if (file.isBuffer()) {
+			try {
+				// Convertir el contenido del archivo a string
+				let content = file.contents.toString(encoding);
+
+				// Verificar si el contenido parece ser JSON válido
+				if (!content.trim().startsWith('{') && !content.trim().startsWith('[')) {
+					console.log(`El archivo no parece contener JSON válido: ${file.path}`);
+					this.push(file);
+					return callback();
+				}
+
+				// Parsear el JSON
+				let jsonData = JSON.parse(content);
+				console.log(`JSON parseado correctamente: ${file.path}`);
+
+				// Procesar el objeto JSON con la función externa
+				processJsonObject(jsonData);
+
+				// Convertir de nuevo a string con formato
+				const newContent = JSON.stringify(jsonData, null, 2);
+
+				// Actualizar el contenido del archivo
+				file.contents = Buffer.from(newContent, encoding);
+
+				console.log(`JSON URLs transformadas en: ${file.path}`);
+			} catch (error) {
+				console.error(`Error procesando archivo JSON: ${file.path}`, error.message);
+			}
+		} else {
+			console.log(`El archivo no es un buffer: ${file.path}`);
+		}
+
+		this.push(file);
+		callback();
+	});
 }
+
+function devCopyJson() {
+	return copyFiles(patternsJson, '/src/Mockups', {
+		checkDir: './patternlab/source/_data',
+		transforms: [transformJsonUrls()],
+		extraMessage: 'and transforming JSON URLs',
+	});
+}
+
+function prodCopyJson() {
+	return copyFiles(patternsJson, '/src/Mockups', {
+		isDev: false,
+		transforms: [transformJsonUrls()],
+	});
+}
+
+/* -------------------------------------------------------------------------------------------------
+Patternlab Templates Twig files
+-------------------------------------------------------------------------------------------------- */
+
+const patternsTemplates = ['./patternlab/source/_patterns/templates/**/*.twig'];
 
 function wrapWithTemplate(content) {
-	const template = `{% extends "layouts/base.twig" %}
+	// Verificar si el contenido ya tiene una directiva extends
+	if (content.trim().startsWith('{% extends')) {
+		// Si ya extiende una plantilla, no lo envolvemos
+		return content;
+	} else {
+		// Si no tiene extends, aplicamos el wrapper
+		const template = `{% extends "@layouts/base.twig" %}
 
 {% block content %}
 ###CONTENT###
 {% endblock content %}
 `;
-	return template.replace('###CONTENT###', content);
-}
-
-function copyPatternlabTemplates() {
-	console.log('Copying and transforming Patternlab Templates files...');
-
-	if (!fs.existsSync('./patternlab/source/_patterns/templates')) {
-		log('No Patternlab dir found');
-		process.exit(1);
-	} else {
-		return src(patternlabTemplates)
-			.pipe(
-				through2.obj(function (file, _, cb) {
-					if (file.isBuffer()) {
-						const fileContent = file.contents.toString();
-						const transformedContent = wrapWithTemplate(fileContent);
-						file.contents = Buffer.from(transformedContent);
-					}
-					cb(null, file);
-				})
-			)
-			.pipe(dest('./build/wp-content/themes/' + themeName + '/views/templates'));
+		return template.replace('###CONTENT###', content);
 	}
 }
 
-function copyThemeDev() {
-	console.log('Copying theme files..., themeName: ' + themeName);
-	if (!fs.existsSync('./build')) {
-		log(buildNotFound);
-		process.exit(1);
-	} else {
-		return src(themeFiles, { encoding: false })
-			.pipe(gulpIf(isNotZip, replaceThemeName()))
-			.pipe(gulpIf(isNotZip, renameFile()))
-			.pipe(dest('./build/wp-content/themes/' + themeName));
-	}
+function transformTemplates() {
+	return through2.obj(function (file, _, cb) {
+		if (file.isBuffer()) {
+			const fileContent = file.contents.toString();
+
+			// Detectar si ya tiene una directiva extends
+			const hasExtends = fileContent.trim().startsWith('{% extends');
+
+			// Solo aplicamos la transformación si es necesario
+			const transformedContent = hasExtends ? fileContent : wrapWithTemplate(fileContent);
+
+			// Actualizar el contenido del archivo
+			file.contents = Buffer.from(transformedContent);
+		}
+		cb(null, file);
+	});
+}
+
+function devCopyPatternsTemplates() {
+	return copyFiles(patternsTemplates, '/views/templates', {
+		isDev: true,
+		checkDir: './patternlab/source/_patterns/templates',
+		transforms: [transformTemplates()],
+	});
+}
+
+function prodCopyPatternsTemplates() {
+	return copyFiles(patternsTemplates, '/views/templates', {
+		isDev: false,
+		checkDir: './patternlab/source/_patterns/templates',
+		transforms: [transformTemplates()],
+	});
+}
+
+/* -------------------------------------------------------------------------------------------------
+Theme Files
+-------------------------------------------------------------------------------------------------- */
+
+const themeFiles = [
+	'./src/theme/**',
+	'!./src/theme/assets/**',
+	'!./src/theme/blocks/**/*.scss',
+	'!./src/theme/blocks/**/*.js',
+	'!./src/theme/acf-json/**/*.json',
+];
+
+function devCopyTheme() {
+	return copyFiles(themeFiles, '', {
+		isDev: true,
+		transforms: [gulpIf(isNotZip, replaceThemeName()), gulpIf(isNotZip, renameFile())],
+	});
+}
+
+function prodCopyTheme() {
+	return copyFiles(themeFiles, '', {
+		isDev: false,
+		transforms: [replaceThemeName(), renameFile()],
+	});
 }
 
 function copyModifiedThemeFile(filePath) {
@@ -277,138 +429,286 @@ function copyModifiedThemeFile(filePath) {
 	}
 }
 
-function copyFontsDev() {
-	return src(fontsFiles, { encoding: false }).pipe(
-		dest('./build/wp-content/themes/' + themeName + '/fonts')
-	);
+/* -------------------------------------------------------------------------------------------------
+Fonts
+-------------------------------------------------------------------------------------------------- */
+
+const fontsFiles = ['./src/theme/assets/fonts/**', './patternlab/source/fonts/**'];
+
+function devCopyFonts() {
+	return copyFiles(fontsFiles, '/fonts', { isDev: true });
 }
 
-function copyImagesDev() {
-	return src(imagesFiles, { encoding: false }).pipe(
-		dest('./build/wp-content/themes/' + themeName + '/images')
-	);
+function prodCopyFonts() {
+	return copyFiles(fontsFiles, '/fonts', { isDev: false });
 }
 
-function copyLanguagesDev() {
-	return src(languagesFiles, { encoding: false })
-		.pipe(
-			rename(function (path) {
-				if (path.basename === 'talampaya') {
-					path.basename = themeName;
-				}
-			})
-		)
-		.pipe(replaceThemeName())
-		.pipe(dest('./build/wp-content/themes/' + themeName + '/languages'));
+/* -------------------------------------------------------------------------------------------------
+Images
+-------------------------------------------------------------------------------------------------- */
+
+const imagesFiles = ['./src/theme/assets/images/**', './patternlab/source/images/**'];
+
+function devCopyImages() {
+	return copyFiles(imagesFiles, '/images', { isDev: true });
 }
 
-function stylesDev() {
-	console.log('Compiling styles...');
-	return src(frontendStyles)
-		.pipe(sourcemaps.init())
+function prodCopyImages() {
+	return copyFiles(imagesFiles, '/images', { isDev: false });
+}
+
+/* -------------------------------------------------------------------------------------------------
+Languages
+-------------------------------------------------------------------------------------------------- */
+
+const languagesFiles = ['./src/theme/assets/languages/**'];
+
+function processLanguages(isDev = true) {
+	const renameLanguageFiles = rename(function (path) {
+		if (path.basename === 'talampaya') {
+			path.basename = themeName;
+		}
+	});
+
+	return copyFiles(languagesFiles, '/languages', {
+		isDev,
+		transforms: [renameLanguageFiles, replaceThemeName()],
+	});
+}
+
+function devCopyLanguages() {
+	return processLanguages(true);
+}
+
+function prodCopyLanguages() {
+	return processLanguages(false);
+}
+
+/* -------------------------------------------------------------------------------------------------
+Styles
+-------------------------------------------------------------------------------------------------- */
+
+const frontendStyles = [
+	'./src/theme/assets/styles/main.scss',
+	'./patternlab/source/css/style.scss',
+];
+
+const backendStyles = [
+	'./src/theme/assets/styles/backend-*.scss',
+	'./src/theme/assets/styles/backend-*.css',
+];
+
+function processStyles(files, outputFile, subDir = '', isDev = true) {
+	console.log(`Compiling ${outputFile} styles...`);
+
+	const domain = process.env.DOMAIN || 'localhost';
+	const protocol = process.env.PROTOCOL || 'http';
+	const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
+
+	let pipeline = src(files);
+
+	if (isDev) {
+		pipeline = pipeline.pipe(sourcemaps.init());
+	}
+
+	// Configuración común
+	pipeline = pipeline
 		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('style.css'))
-		.pipe(sourcemaps.write('.'))
-		.pipe(replace('../../', './'))
-		.pipe(replaceThemeName())
-		.pipe(dest('./build/wp-content/themes/' + themeName))
-		.pipe(browserSync.stream());
+		.pipe(concat(outputFile))
+		.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
+
+	// Configuraciones específicas
+	if (outputFile === 'style.css') {
+		pipeline = pipeline.pipe(replaceThemeName());
+	}
+
+	if (isDev) {
+		pipeline = pipeline.pipe(sourcemaps.write('.'));
+	}
+
+	// Destino
+	const destPath = isDev
+		? `./build/wp-content/themes/${themeName}${subDir ? '/' + subDir : ''}`
+		: `./dist/themes/${themeName}${subDir ? '/' + subDir : ''}`;
+
+	pipeline = pipeline.pipe(dest(destPath));
+
+	// Stream para browserSync
+	if (isDev) {
+		pipeline = pipeline.pipe(browserSync.stream());
+	}
+
+	return pipeline;
 }
 
-function backendStylesDev() {
-	return src(backendStyles)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('backend-styles.css'))
-		.pipe(replace('../../', './'))
-		.pipe(dest('./build/wp-content/themes/' + themeName + '/css'))
-		.pipe(browserSync.stream());
+function devCopyStylesFront() {
+	return processStyles(frontendStyles, 'style.css', '', true);
 }
 
-function webpackScriptsDev() {
+function devCopyStylesBack() {
+	return processStyles(backendStyles, 'backend-styles.css', 'css', true);
+}
+
+function prodCopyStylesFront() {
+	return processStyles(frontendStyles, 'style.css', '', false);
+}
+
+function prodCopyStylesBack() {
+	return processStyles(backendStyles, 'backend-styles.css', 'css', false);
+}
+
+/* -------------------------------------------------------------------------------------------------
+Scripts
+-------------------------------------------------------------------------------------------------- */
+
+const scriptsFiles = [
+	'./src/theme/assets/scripts/scripts.js',
+	'./patternlab/source/js/main.js',
+	'./src/theme/assets/scripts/backend.js',
+];
+
+function processScripts(isDev = true) {
+	const destPath = isDev
+		? `./build/wp-content/themes/${themeName}/js`
+		: `./dist/themes/${themeName}/js`;
+
 	return src('.')
 		.pipe(webpack(require('./webpack.config.js')))
-		.pipe(dest('./build/wp-content/themes/' + themeName + '/js'));
+		.pipe(dest(destPath));
 }
 
-function pluginsDev() {
-	return src(pluginsFiles).pipe(dest('./build/wp-content/plugins'));
+function devWebpackScripts() {
+	return processScripts(true);
 }
+
+function prodWebpackScripts() {
+	return processScripts(false);
+}
+
+/* -------------------------------------------------------------------------------------------------
+Plugins
+-------------------------------------------------------------------------------------------------- */
+
+const pluginsFiles = ['./src/plugins/**'];
+
+function processPlugins(isDev = true) {
+	const destPath = isDev ? './build/wp-content/plugins' : './dist/plugins';
+
+	return src(pluginsFiles).pipe(dest(destPath));
+}
+
+function devCopyPlugins() {
+	return processPlugins(true);
+}
+
+function prodCopyPlugins() {
+	return processPlugins(false);
+}
+
+/* -------------------------------------------------------------------------------------------------
+Watch Files
+-------------------------------------------------------------------------------------------------- */
 
 function watchFiles() {
-	watch(frontendStyles.concat(backendStyles), {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path, stats) {
+	watch(
+		frontendStyles
+			.concat(backendStyles)
+			.concat([
+				'./patternlab/source/css/scss/**/*.scss',
+				'./patternlab/source/_patterns/**/*.scss',
+			]),
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		stylesDev();
-		backendStylesDev();
+		devCopyStylesFront();
+		devCopyStylesBack();
+		Reload();
 	});
-	watch(scriptsFiles, {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path, stats) {
+	watch(
+		scriptsFiles.concat([
+			'./patternlab/source/js/**/*.js',
+			'./patternlab/source/_patterns/**/*.js',
+			'./src/theme/assets/scripts/**/*.js',
+		]),
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		webpackScriptsDev();
+		devWebpackScripts();
 		Reload();
 	});
 	watch(fontsFiles.concat(imagesFiles), {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		copyImagesDev();
-		copyFontsDev();
+		devCopyImages();
+		devCopyFonts();
 		Reload();
 	});
 	watch(themeFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		copyModifiedThemeFile(path);
-		stylesDev();
-		backendStylesDev();
+		devCopyStylesFront();
+		devCopyStylesBack();
 		Reload();
 	});
 	watch(pluginsFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		pluginsDev();
+		devCopyPlugins();
 		Reload();
 	});
 	watch(acfJsonFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path, stats) {
+	}).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		copyAcfJsonFiles();
+		devCopyAcfJson();
 	});
-	watch(patternlabFiles, {
-		interval: 1000,
-		usePolling: true,
-	}).on('change', function (path, stats) {
+	watch(
+		[
+			'./patternlab/source/_patterns/**/*.twig',
+			'./patternlab/source/_patterns/**/*.json',
+			'./patternlab/source/_data/**/*.json',
+		],
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
 		console.log(`File ${path} was changed`);
-		copyPatternlabFiles();
-		copyPatternlabTemplates();
+		devCopyPatterns();
+		devCopyPatternsTemplates();
+		devCopyJson();
+		Reload();
 	});
 }
 
 const dev = series(
 	registerCleanup,
-	copyThemeDev,
-	copyImagesDev,
-	copyFontsDev,
-	stylesDev,
-	backendStylesDev,
-	webpackScriptsDev,
-	pluginsDev,
-	copyLanguagesDev,
-	copyAcfJsonFiles,
-	copyPatternlabFiles,
-	copyPatternlabTemplates,
+	devCopyTheme,
+	devCopyImages,
+	devCopyFonts,
+	devCopyStylesFront,
+	devCopyStylesBack,
+	devWebpackScripts,
+	devCopyPlugins,
+	devCopyLanguages,
+	devCopyAcfJson,
+	devCopyPatterns,
+	devCopyJson,
+	devCopyPatternsTemplates,
 	devServer
 );
 dev.displayName = 'dev';
@@ -422,85 +722,6 @@ async function cleanProd() {
 	await del(['./dist/*']);
 }
 
-function copyThemeProd() {
-	return src(themeFiles, { encoding: false })
-		.pipe(replaceThemeName())
-		.pipe(renameFile())
-		.pipe(dest('./dist/themes/' + themeName));
-}
-
-function copyFontsProd() {
-	return src(fontsFiles, { encoding: false })
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(dest('./dist/themes/' + themeName + '/fonts'));
-}
-
-function copyImagesProd() {
-	return src(imagesFiles, { encoding: false })
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(dest('./dist/themes/' + themeName + '/images'));
-}
-
-function copyLanguagesProd() {
-	return src(['./src/theme/assets/languages/**'], { encoding: false })
-		.pipe(
-			rename(function (path) {
-				if (path.basename === 'talampaya') {
-					path.basename = themeName;
-				}
-			})
-		)
-		.pipe(replaceThemeName())
-		.pipe(dest('./dist/themes/' + themeName + '/languages'));
-}
-
-function stylesProd() {
-	return src(frontendStyles)
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('style.css'))
-		.pipe(replace('../../', './'))
-		.pipe(replaceThemeName())
-		.pipe(dest('./dist/themes/' + themeName));
-}
-
-function backendStylesProd() {
-	return src(backendStyles)
-		.pipe(plumber({ errorHandler: onError }))
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
-		.pipe(concat('backend-styles.css'))
-		.pipe(replace('../../', './'))
-		.pipe(dest('./dist/themes/' + themeName + '/css'));
-}
-
-function webpackScriptsProd() {
-	return src('.')
-		.pipe(webpack(require('./webpack.config.js')))
-		.pipe(dest('./dist/themes/' + themeName + '/js'));
-}
-
-function pluginsProd() {
-	return src(pluginsFiles).pipe(dest('./dist/plugins'));
-}
-
-function patternlabProd() {
-	return src(patternlabFiles).pipe(dest('./dist/themes/' + themeName + '/views'));
-}
-
-function patternlabTemplatesProd() {
-	return src(patternlabTemplates)
-		.pipe(
-			through2.obj(function (file, _, cb) {
-				if (file.isBuffer()) {
-					const fileContent = file.contents.toString();
-					const transformedContent = wrapWithTemplate(fileContent);
-					file.contents = Buffer.from(transformedContent);
-				}
-				cb(null, file);
-			})
-		)
-		.pipe(dest('./dist/themes/' + themeName + '/views/templates'));
-}
-
 function zipProd() {
 	return src('./dist/themes/' + themeName + '/**/*', { encoding: false })
 		.pipe(zip.dest('./dist/' + themeName + '.zip'))
@@ -512,17 +733,18 @@ function zipProd() {
 
 const prod = series(
 	cleanProd,
-	copyThemeProd,
-	copyFontsProd,
-	copyImagesProd,
-	stylesProd,
-	backendStylesProd,
-	webpackScriptsProd,
-	pluginsProd,
-	copyLanguagesProd,
-	//copyAcfJsonFiles,
-	patternlabProd,
-	patternlabTemplatesProd,
+	prodCopyTheme,
+	prodCopyFonts,
+	prodCopyImages,
+	prodCopyStylesFront,
+	prodCopyStylesBack,
+	prodWebpackScripts,
+	prodCopyPlugins,
+	prodCopyLanguages,
+	prodCopyAcfJson,
+	prodCopyPatterns,
+	prodCopyJson,
+	prodCopyPatternsTemplates,
 	zipProd
 );
 prod.displayName = 'prod';

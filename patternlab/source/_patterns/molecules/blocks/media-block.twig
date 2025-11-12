@@ -1,11 +1,13 @@
 <div class="block block-thumb">
-    <a href="{{ url }}" class="b-inner">
+	<a href="{{ post.url }}" class="b-inner">
 		<div class="b-thumb">
-			{% include "@atoms/images/square.twig" %}
+			{% include "@atoms/images/image.twig" with { img: post.img } %}
 		</div>
 		<div class="b-text">
-			<h2 class="b-title">{{ headline.short }}</h2>
-			<p>{{ excerpt.medium }}</p>
+			<h2 class="b-title">{{ post.title }}</h2>
+			<p>
+				{{ post.excerpt }}
+			</p>
 		</div>
 	</a>
 </div>

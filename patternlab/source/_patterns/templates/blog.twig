@@ -1,11 +1,13 @@
 {% extends "@templates/layouts/page-2col.twig" %}
-{% block title %}<h1 class="section-title">Our Outdoor Blog</h1>{% endblock %}
+{% block title %}
+	<h1 class="section-title">{{ title|default("Our Outdoor Blog") }}</h1>
+{% endblock title %}
 
 {% block main %}
-    {% include "@organisms/sections/latest-posts.twig" with { 'latest_posts': latest_posts} %}
-    {% include "@molecules/navigation/pagination.twig" %}
-{% endblock %}
+	{% include "@organisms/sections/latest-posts.twig" with posts %}
+	{% include "@molecules/navigation/pagination.twig" %}
+{% endblock main %}
 
 {% block sidebar %}
-    {% include "@organisms/sections/recent-tweets.twig" %}
-{% endblock %}
+	{% include "@organisms/sections/recent-tweets.twig" %}
+{% endblock sidebar %}

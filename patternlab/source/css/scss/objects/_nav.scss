@@ -1,12 +1,12 @@
-/*------------------------------------*\
+/* ------------------------------------*\
     $NAVIGATION
-\*------------------------------------*/
+\*------------------------------------ */
 
 .nav {
-	clear: both;
-	overflow: hidden;
 	max-height: 0;
-	
+	overflow: hidden;
+	clear: both;
+
 	a {
 		display: block;
 		padding: $pad;
@@ -18,8 +18,8 @@
 	}
 
 	@media all and (min-width: $bp-med) {
-		max-height: none;
 		float: right;
+		max-height: none;
 		clear: none;
 
 		li {
@@ -29,7 +29,7 @@
 		a {
 			border: 0;
 		}
-		
+
 	}
 }
 
@@ -46,7 +46,7 @@
 		}
 	}
 
-	a {
+	a,span {
 		padding: $pad;
 	}
 }

@@ -1,35 +1,28 @@
 {% extends "@templates/layouts/page-2col.twig" %}
 {% block hero %}
-    {% if emergency %}
-        {% include "@molecules/messaging/alert.twig" with emergency %}
-    {% endif %}
-    {% if hero %}
-        {% include "@molecules/blocks/block-hero.twig" with hero %}
-    {% endif %}
+	{% if emergency %}
+		{% include "@molecules/messaging/alert.twig" with emergency %}
+	{% endif %}
+	{% if hero %}
+		{% include "@molecules/blocks/block-hero.twig" with { post: hero } %}
+	{% endif %}
 
-    <div class="g g-3up">
-        {% for tout in touts %}
-            <div class="gi">
-                {% include "@molecules/blocks/block-inset.twig" with tout %}
-            </div>
-        {% endfor %}
-    </div><!--end 3up-->
+	<div class="g g-3up">
+		{% for tout in touts %}
+			<div class="gi">
+				{% include "@molecules/blocks/block-inset.twig" with { post: tout } %}
+			</div>
+		{% endfor %}
+	</div>
+	<!-- end 3up -->
 
-    <hr/>
-{% endblock %}
+	<hr />
+{% endblock hero %}
 
 {% block main %}
-    <section class="section latest-posts">
-        <h2 class="section-title">Latest Posts</h2>
-        <ul class="post-list">
-            {% for post in latest_posts %}
-                <li>{% include "@molecules/blocks/media-block.twig" with post %}</li>
-            {% endfor %}
-        </ul>
-        <a href="#" class="text-btn">View more posts</a>
-    </section>
-{% endblock %}
+	{% include "@organisms/sections/latest-posts.twig" with posts %}
+{% endblock main %}
 
 {% block sidebar %}
-    {% include "@organisms/sections/recent-tweets.twig" %}
-{% endblock %}
+	{% include "@organisms/sections/recent-tweets.twig" %}
+{% endblock sidebar %}

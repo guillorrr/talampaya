@@ -1,9 +1,40 @@
-<ol class="pagination">
-	<li class="current"><a href="{{ url }}">1</a></li>
-	<li><a href="{{ url }}">2</a></li>
-	<li><a href="{{ url }}">3</a></li>
-	<li><a href="{{ url }}">4</a></li>
-	<li><a href="{{ url }}">5</a></li>
-	<li><a href="{{ url }}">6</a></li>
-	<li><a href="{{ url }}">7</a></li>
-</ol>
+{% if posts.pagination.pages is not empty %}
+	<ul class="pagination">
+		{# First #}
+		{% if (posts.pagination.pages|first) and posts.pagination.pages|first.current != true %}
+			<li class="first"><a href="{{ posts.pagination.pages|first.link }}">First</a></li>
+		{% else %}
+			<li class="first disabled"><span>First</span></li>
+		{% endif %}
+
+		{# Previous #}
+		{% if posts.pagination.prev %}
+			<li class="prev"><a href="{{ posts.pagination.prev.link }}">Previous</a></li>
+		{% else %}
+			<li class="prev disabled"><span>Previous</span></li>
+		{% endif %}
+
+		{# Pages #}
+		{% for page in posts.pagination.pages %}
+			{% if page.link %}
+				<li><a href="{{ page.link }}" class="{{ page.class }}">{{ page.title }}</a></li>
+			{% else %}
+				<li class="current"><span class="{{ page.class }}">{{ page.title }}</span></li>
+			{% endif %}
+		{% endfor %}
+
+		{# Next #}
+		{% if posts.pagination.next %}
+			<li class="next"><a href="{{ posts.pagination.next.link }}">Next</a></li>
+		{% else %}
+			<li class="next disabled"><span>Next</span></li>
+		{% endif %}
+
+		{# Last #}
+		{% if (posts.pagination.pages|last) and posts.pagination.pages|last.current != true %}
+			<li class="last"><a href="{{ posts.pagination.pages|last.link }}">Last</a></li>
+		{% else %}
+			<li class="last disabled"><span>Last</span></li>
+		{% endif %}
+	</ul>
+{% endif %}

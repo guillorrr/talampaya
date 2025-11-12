@@ -4,7 +4,7 @@ services:
         build:
             context: ./
             dockerfile: ./docker/patternlab/Dockerfile
-        container_name: ${APP_NAME}-patternlab
+        container_name: ${DOCKER_APP_NAME}-patternlab
         working_dir: /app/patternlab
         ports:
             - '${PATTERNLAB_PORT:-4000}:${PATTERNLAB_PORT:-4000}'

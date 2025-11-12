@@ -10,7 +10,10 @@
  */
 
 use Timber\Timber;
+use App\Inc\Controllers\DefaultController;
 
 $context = Timber::context();
 
-Timber::render("pages/page.twig", $context);
+$controller = new DefaultController();
+
+Timber::render("@pages/page.twig", $controller->get_page_context($context));

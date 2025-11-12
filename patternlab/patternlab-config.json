@@ -8,9 +8,9 @@
 		"m": false,
 		"l": false,
 		"full": false,
-		"random": false,
-		"disco": false,
-		"hay": true,
+		"random": true,
+		"disco": true,
+		"hay": false,
 		"mqs": false,
 		"find": false,
 		"views-all": false,
@@ -25,7 +25,7 @@
 		"m": [500, 800],
 		"l": [800, 2600]
 	},
-	"logLevel": "info",
+	"logLevel": "warning",
 	"outputFileSuffixes": {
 		"rendered": ".rendered",
 		"rawTemplate": "",

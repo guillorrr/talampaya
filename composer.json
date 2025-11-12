@@ -18,7 +18,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/sitepress-multilingual-cms",
-				"version": "4.7.1",
+				"version": "4.8.2",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -33,7 +33,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-string-translation",
-				"version": "3.3.1",
+				"version": "3.4.1",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -48,7 +48,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wp-seo-multilingual",
-				"version": "2.1.1",
+				"version": "2.2.4",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -78,7 +78,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-import",
-				"version": "1.0.2",
+				"version": "1.1.0",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -93,7 +93,7 @@
 			"type": "package",
 			"package": {
 				"name": "wpml/wpml-all-import",
-				"version": "2.3.0",
+				"version": "2.3.2",
 				"type": "wordpress-plugin",
 				"dist": {
 					"type": "zip",
@@ -112,7 +112,23 @@
 		"twig/extra-bundle": "^3.0",
 		"vlucas/phpdotenv": "^5.6",
 		"illuminate/support": "^10.0",
-		"timber/wp-i18n-twig": "^1.0"
+		"timber/wp-i18n-twig": "^1.0",
+		"wpengine/advanced-custom-fields-pro": "6.6.0",
+		"wpackagist-plugin/wordpress-seo": "*",
+		"wpml/sitepress-multilingual-cms": "*",
+		"wpml/wpml-string-translation": "*",
+		"wpml/wp-seo-multilingual": "*",
+		"wpml/acfml": "*",
+		"wpml/wpml-import": "*",
+		"wpml/wpml-all-import": "*"
+	},
+	"suggest": {
+		"wpml/sitepress-multilingual-cms": "Plugin principal de WPML para soporte multilingüe",
+		"wpml/wpml-string-translation": "Componente de WPML para traducción de strings",
+		"wpml/wp-seo-multilingual": "Integración de WPML con Yoast SEO",
+		"wpml/acfml": "Integración de WPML con Advanced Custom Fields",
+		"wpml/wpml-import": "Importación de traducciones WPML",
+		"wpml/wpml-all-import": "Integración de WPML con WP All Import"
 	},
 	"require-dev": {
 		"automattic/wordbless": "^0.4.2",
@@ -143,7 +159,6 @@
 		"wpackagist-plugin/acf-to-custom-database-tables": "*",
 		"wpackagist-plugin/tinymce-advanced": "*",
 		"wpackagist-plugin/disable-xml-rpc-pingback": "*",
-		"wpackagist-plugin/wordpress-seo": "*",
 		"wpackagist-plugin/posts-to-posts": "*",
 		"wpackagist-plugin/wp-tota11y": "*",
 		"wpackagist-plugin/disable-emojis": "*",
@@ -157,14 +172,9 @@
 		"wpackagist-plugin/wp-mail-smtp": "*",
 		"wpackagist-plugin/regenerate-thumbnails": "*",
 		"wpackagist-plugin/image-regenerate-select-crop": "*",
+		"wpackagist-plugin/multisite-language-switcher": "*",
+		"wpackagist-plugin/threewp-broadcast": "*",
 		"wpackagist-theme/poema": "*",
-		"wpengine/advanced-custom-fields-pro": "^6.3.2",
-		"wpml/sitepress-multilingual-cms": "*",
-		"wpml/wpml-string-translation": "*",
-		"wpml/wp-seo-multilingual": "*",
-		"wpml/acfml": "*",
-		"wpml/wpml-import": "*",
-		"wpml/wpml-all-import": "*",
 		"hellonico/timber-dump-extension": "*",
 		"wp-cli/wp-cli-bundle": "^2.11"
 	},
@@ -186,6 +196,11 @@
 			"dotenv-name": ".env"
 		}
 	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "wp-content/themes/talampaya/src/"
+		}
+	},
 	"config": {
 		"vendor-dir": "wp-content/vendor",
 		"allow-plugins": {
@@ -197,6 +212,20 @@
 	"scripts": {
 		"test": "phpunit",
 		"env": "printenv COMPOSER_AUTH",
-		"wp": "wp-content/vendor/bin/wp"
+		"wp": "wp-content/vendor/bin/wp",
+		"post-install-cmd": [
+			"@check-wpml-credentials"
+		],
+		"post-update-cmd": [
+			"@check-wpml-credentials"
+		],
+		"check-wpml-credentials": "php -r \"if (getenv('WORDPRESS_WPML_USER_ID') && getenv('WORDPRESS_WPML_KEY')) { echo \\\"WPML credentials found. Run 'composer install-wpml' to install WPML plugins.\\n\\\"; } else { echo \\\"WPML credentials not found. WPML plugins will not be installed.\\n\\\"; }\"",
+		"install-wpml": [
+			"composer require wpml/sitepress-multilingual-cms:* wpml/wpml-string-translation:* wpml/wp-seo-multilingual:* wpml/acfml:* wpml/wpml-import:* wpml/wpml-all-import:* --no-interaction"
+		],
+		"install-without-wpml": [
+			"composer install --no-plugins --no-scripts",
+			"composer dump-autoload"
+		]
 	}
 }

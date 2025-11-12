@@ -1,9 +1,23 @@
+{% set comment_default = {
+	first_name: "John",
+	last_name: "Doe",
+	comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+} %}
+
+{% if comment is not defined %}
+	{% set comment = comment_default %}
+{% endif %}
+
 <li class="comment-container">
 	<div class="comment-meta">
 		{% include "@atoms/images/avatar.twig" %}
-		<h4 class="comment-name"><a href="#">{{ name.first }} {{ name.last }}</a></h4>
+		<h4 class="comment-name">
+			<a href="#">{{ comment.first_name }} {{ comment.last_name }}</a>
+		</h4>
 	</div>
 	<div class="comment-text">
-		<p>{{ description }}</p>
+		<p>
+			{{ comment.comment }}
+		</p>
 	</div>
 </li>

@@ -7,6 +7,7 @@ const environments = require('gulp-environments');
 const replace = require('gulp-replace');
 const gulpIf = require('gulp-if');
 const print = require('gulp-print').default;
+const through2 = require('through2');
 const webpack = require('webpack-stream');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -14,12 +15,15 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const sync_port = parseInt(process.env.SYNC_PORT) || 4001;
 const ui_port = parseInt(process.env.UI_PORT) || 4002;
 
+const PATTERNLAB_URL = process.env.PATTERNLAB_URL || 'http://localhost:' + sync_port;
+
 const development = environments.development;
 const production = environments.production;
 
 const filesStyles = [
 	'./source/css/style.scss',
 	'./source/css/scss/**/*.scss',
+	'./source/css/scss/**/**/*.scss',
 	'./source/_patterns/**/*.scss',
 ];
 
@@ -36,6 +40,70 @@ const libScripts = [
 	'./source/js/*.js',
 ];
 
+function processRegularHTML() {
+	return gulp
+		.src(['public/**/*.html', '!public/styleguide/html/styleguide.html'])
+		.pipe(
+			gulpIf(
+				!!PATTERNLAB_URL,
+				replace(/(src="|href=")\/images\//g, `$1${PATTERNLAB_URL}/images/`)
+			)
+		)
+		.pipe(
+			replace(/srcset="([^"]*?)"/g, function (match, srcsetContent) {
+				const processedSrcset = srcsetContent.replace(
+					/\/images\/([^\s,]+)(\s+[^,]*)(,|$)/g,
+					`${PATTERNLAB_URL}/images/$1$2$3`
+				);
+				return `srcset="${processedSrcset}"`;
+			})
+		)
+		.pipe(gulp.dest('public'));
+}
+
+function processStyleguideHTML() {
+	return gulp
+		.src('public/styleguide/html/styleguide.html')
+		.pipe(
+			through2.obj(function (file, enc, cb) {
+				if (file.isNull()) {
+					return cb(null, file);
+				}
+
+				let content = file.contents.toString();
+
+				// Primero procesamos los atributos HTML normales
+				content = content.replace(
+					/(src="|href=")\/images\//g,
+					`$1${PATTERNLAB_URL}/images/`
+				);
+				content = content.replace(
+					/href="(?:\.\.\/)+images\//g,
+					`href="${PATTERNLAB_URL}/images/`
+				);
+
+				// Específicamente para URLs escapadas en JSON
+				// Busca patrones como: href=\"../../images/
+				content = content.replace(
+					/href=\\"(?:\.\.\/)+images\//g,
+					`href=\\"${PATTERNLAB_URL}/images/`
+				);
+
+				// También manejar patrones absolutos escapados: href=\"/images/
+				content = content.replace(
+					/href=\\"\/images\//g,
+					`href=\\"${PATTERNLAB_URL}/images/`
+				);
+
+				file.contents = Buffer.from(content);
+				cb(null, file);
+			})
+		)
+		.pipe(gulp.dest('public/styleguide/html/'));
+}
+
+gulp.task('process-html', gulp.parallel(processRegularHTML, processStyleguideHTML));
+
 gulp.task('js', function () {
 	return gulp
 		.src('./source/js/main.js')
@@ -49,7 +117,7 @@ gulp.task('sass', function () {
 		gulp
 			.src(filesStyles, { allowEmpty: true })
 			//.pipe(print(filepath => `SCSS File: ${filepath}`))
-			.pipe(sass().on('error', sass.logError))
+			.pipe(sass({ includePaths: ['./source/css'] }).on('error', sass.logError))
 			.pipe(concat('style.css'))
 			.pipe(gulpIf(production(), replace('../../', '../')))
 			.pipe(gulp.dest('./public/css'))
@@ -69,10 +137,38 @@ gulp.task('serve', function () {
 		},
 	});
 
-	gulp.watch(filesStyles, gulp.series('sass'));
-	gulp.watch(filesScripts, gulp.series('js'));
-	gulp.watch('source/_patterns/**/*.twig').on('change', browserSync.reload);
+	gulp.watch(filesStyles).on('change', function (path) {
+		console.log(`File ${path} was changed`);
+		setTimeout(function () {
+			gulp.series('sass')();
+			browserSync.reload();
+		}, 500);
+	});
+	gulp.watch(filesScripts).on('change', function (path) {
+		console.log(`File ${path} was changed`);
+		setTimeout(function () {
+			gulp.series('js')();
+			browserSync.reload();
+		}, 500);
+	});
+	gulp.watch(
+		[
+			'./source/_patterns/**/*.twig',
+			'./source/_patterns/**/*.json',
+			'./source/_data/*.json',
+			'source/_patterns/**/*.md',
+		],
+		{
+			interval: 1000,
+			usePolling: true,
+		}
+	).on('change', function (path) {
+		console.log(`File ${path} was changed`);
+		setTimeout(function () {
+			browserSync.reload();
+		}, 500);
+	});
 });
 
 gulp.task('default', gulp.series('sass', 'js', 'serve'));
-gulp.task('build', gulp.series('sass', 'js'));
+gulp.task('build', gulp.series('sass', 'js', 'process-html'));

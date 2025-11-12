@@ -1,0 +1,22 @@
+{% extends "@templates/layouts/page-1col.twig" %}
+{% block main %}
+	<article class="article">
+		<header class="article-header">
+			<h1>{{ title|default("About Us") }}</h1>
+			{% if author.first_name %}
+				{% include "@molecules/text/byline.twig" %}
+			{% endif %}
+		</header>
+		{% if post_content %}
+			<div class="article-summary">
+				<p>
+					{{ post_content }}
+				</p>
+			</div>
+			<!-- end .article-summary -->
+		{% else %}
+			{% include "@organisms/article/article-body.twig" %}
+		{% endif %}
+	</article>
+	<!-- end .article -->
+{% endblock main %}
