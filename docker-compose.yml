@@ -196,9 +196,10 @@ services:
     restart: 'no'
     volumes:
       - './build:/var/www/html'
-      - './composer.json:/var/www/html/composer.json'
+      - './composer.json:/var/www/html/composer.json.template'
       - '.env:/var/www/html/.env'
     environment:
+        APP_NAME: ${APP_NAME}
         COMPOSER_AUTH: >
             {
               "http-basic": {
@@ -208,7 +209,12 @@ services:
                 }
               }
             }
-    command: composer update --ignore-platform-reqs --no-scripts
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      sed \"s|wp-content/themes/talampaya/|wp-content/themes/$${APP_NAME}/|g\" composer.json.template > composer.json &&
+      composer update --ignore-platform-reqs --no-scripts
+      "
 
   mkcert:
     build: ./docker/mkcert/
