@@ -10,6 +10,46 @@ fi
 
 echo "Iniciando configuración de WordPress..."
 
+# 0. Instalar WordPress si no está instalado
+if ! wp core is-installed --allow-root &>/dev/null; then
+    echo "WordPress no está instalado. Instalando..."
+
+    # Obtener variables de entorno
+    # Construir URL completa con puerto si WP_HOME está definido
+    if wp eval 'echo defined("WP_HOME") ? "yes" : "no";' --allow-root 2>/dev/null | grep -q "yes"; then
+        SITE_URL=$(wp eval 'echo WP_HOME;' --allow-root)
+    else
+        SITE_URL="${PROTOCOL:-https}://${DOMAIN:-localhost}"
+    fi
+
+    ADMIN_USER="${WORDPRESS_ADMIN_USER:-admin}"
+    ADMIN_PASS="${WORDPRESS_ADMIN_PASS:-password}"
+    # Extraer el dominio real de SITE_URL si DOMAIN no está disponible
+    DOMAIN_CLEAN="${DOMAIN:-$(echo $SITE_URL | sed -e 's|^[^/]*//||' -e 's|[:/].*||')}"
+    ADMIN_EMAIL="${ADMIN_USER}@${DOMAIN_CLEAN}"
+    SITE_TITLE="${APP_NAME:-WordPress}"
+
+    if wp core install \
+        --url="$SITE_URL" \
+        --title="$SITE_TITLE" \
+        --admin_user="$ADMIN_USER" \
+        --admin_password="$ADMIN_PASS" \
+        --admin_email="$ADMIN_EMAIL" \
+        --skip-email \
+        --allow-root; then
+
+        echo "WordPress instalado exitosamente"
+        echo "URL: $SITE_URL"
+        echo "Usuario: $ADMIN_USER"
+        echo "Contraseña: $ADMIN_PASS"
+    else
+        echo "Error: Falló la instalación de WordPress"
+        exit 1
+    fi
+else
+    echo "WordPress ya está instalado. Continuando con la configuración..."
+fi
+
 # 1. Configuraciones generales
 echo "Configurando opciones generales..."
 
