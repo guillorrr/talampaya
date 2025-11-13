@@ -129,6 +129,7 @@ ACF Json
 -------------------------------------------------------------------------------------------------- */
 
 const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
+const acfJsonSourceFiles = ['./src/theme/acf-json/**'];
 
 function devCopyAcfJson() {
 	return copyFiles(acfJsonFiles, '', {
@@ -139,9 +140,8 @@ function devCopyAcfJson() {
 }
 
 function prodCopyAcfJson() {
-	return copyFiles(acfJsonFiles, '', {
+	return copyFiles(acfJsonSourceFiles, '/acf-json', {
 		checkDir: './src/theme/acf-json',
-		customDestPath: './src/theme/acf-json',
 		extraMessage: 'ACF Json files',
 		isDev: false,
 		skipPlumber: true,
