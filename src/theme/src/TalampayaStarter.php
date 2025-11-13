@@ -83,7 +83,6 @@ class TalampayaStarter extends Site
 		$paths["macros"] = ["{$theme_dir}/views/macros"];
 		$paths["pages"] = ["{$theme_dir}/views/pages"];
 		$paths["layouts"] = ["{$theme_dir}/views/layouts"];
-		$paths["blocks"] = ["{$theme_dir}/views/blocks"];
 		$paths["components"] = ["{$theme_dir}/views/components"];
 
 		return $paths;
