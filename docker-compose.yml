@@ -148,17 +148,16 @@ services:
       DOMAIN: ${DOMAIN}
       PROTOCOL: ${PROTOCOL}
     volumes:
-      - './package.json:/usr/src/app/package.json'
-      - './package-lock.json:/usr/src/app/package-lock.json'
-      - './gulpfile.js:/usr/src/app/gulpfile.js'
-      - './webpack.config.js:/usr/src/app/webpack.config.js'
+      - './package.json:/usr/src/app/package.json:ro'
+      - './package-lock.json:/usr/src/app/package-lock.json:ro'
+      - './gulpfile.js:/usr/src/app/gulpfile.js:ro'
+      - './webpack.config.js:/usr/src/app/webpack.config.js:ro'
       - './src:/usr/src/app/src'
       - './dist:/usr/src/app/dist'
       - './build:/usr/src/app/build'
       - './backups:/usr/src/app/backups'
       - './patternlab:/usr/src/app/patternlab'
       - './certs:/var/www/ssl'
-      - './node_modules:/usr/src/app/node_modules'
     depends_on:
       - nginx
     command: npm run dev

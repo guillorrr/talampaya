@@ -108,7 +108,7 @@ npm run patternlab  # Starts on port 4000
 
 1. **Clone and configure**:
    ```bash
-   git clone https://github.com/yourusername/talampaya.git
+   git clone https://github.com/guillorrr/talampaya.git
    cd talampaya
    cp .env.example .env
    ```
@@ -136,22 +136,29 @@ npm run patternlab  # Starts on port 4000
    WPML_KEY=your-wpml-subscription-key
    ```
 
-3. **Start Docker environment**:
+3. **Install Node.js dependencies**:
+   ```bash
+   npm install
+   ```
+
+   > **Important**: This installs dependencies locally so you can run npm scripts (e.g., `npm run wp:backup`). Docker containers have their own separate `node_modules` managed independently.
+
+4. **Start Docker environment**:
    ```bash
    npm start
    ```
 
-4. **Initialize WordPress** (automatic on first run):
+5. **Initialize WordPress** (automatic on first run):
    ```bash
    npm run wp:setup
    ```
 
-5. **Start development build**:
+6. **Start development build**:
    ```bash
    npm run dev
    ```
 
-6. **Access your site**:
+7. **Access your site**:
    - Frontend: https://talampaya.local
    - Admin: https://talampaya.local/wp-admin
    - PhpMyAdmin: http://localhost:8082

@@ -6,18 +6,22 @@
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/talampaya.git
+git clone https://github.com/guillorrr/talampaya.git
 cd talampaya
 cp .env.example .env
 
 # Edit .env with your configuration
 
+# Install Node dependencies (required for local npm scripts)
+npm install
+
 # Start development environment
 npm start        # Start Docker services
-npm run dev      # Start build with hot reload
 ```
 
 Your site will be available at the domain configured in `.env` (default: https://talampaya.local)
+
+> **Note**: `npm install` installs dependencies locally so you can run npm scripts. Docker containers have their own separate `node_modules`.
 
 ## Key Features
 
@@ -146,16 +150,22 @@ If you're forking Talampaya for a new project:
    Theme Name: Your Project Name
    ```
 
-3. **Add upstream remote** (to sync with Talampaya updates):
+3. **Install dependencies**:
+   ```bash
+   npm install    # Install Node.js dependencies for local development
+   ```
+
+4. **Add upstream remote** (to sync with Talampaya updates):
    ```bash
    git remote add upstream https://github.com/guillorrr/talampaya.git
    git fetch upstream
    ```
 
-4. **Sync with upstream** (periodically):
+5. **Sync with upstream** (periodically):
    ```bash
    git fetch upstream
    git merge upstream/master
+   npm install    # Update dependencies after merge
    ```
 
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md#syncing-with-upstream) for detailed upstream synchronization workflow.
