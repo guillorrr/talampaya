@@ -52,6 +52,7 @@ Before answering technical questions, consult the appropriate documentation:
 | Topic | Document | Path |
 |-------|----------|------|
 | Architecture & Patterns | ARCHITECTURE.md | `/docs/ARCHITECTURE.md` |
+| Application Layer (Controllers, Services, Models, Traits, Helpers) | APPLICATION-LAYER.md | `/docs/APPLICATION-LAYER.md` |
 | Development Workflow | DEVELOPMENT.md | `/docs/DEVELOPMENT.md` |
 | Build System | BUILD-SYSTEM.md | `/docs/BUILD-SYSTEM.md` |
 | Docker Environment | DOCKER.md | `/docs/DOCKER.md` |
