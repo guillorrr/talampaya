@@ -72,8 +72,10 @@ The theme follows a structured initialization chain to ensure proper loading ord
 │   │   ├── Taxonomy/
 │   │   ├── Menu/
 │   │   └── Sidebar/
-│   ├── Inc/                  # Models, helpers, services
+│   ├── Inc/                  # Models, helpers, controllers, services
 │   │   ├── Models/           # Post models (extends Timber\Post)
+│   │   ├── Controllers/      # Context preparation for templates
+│   │   ├── Services/         # Business logic & data processing
 │   │   ├── Helpers/          # WordPress-specific utilities
 │   │   └── Utils/            # General utilities
 │   └── Hooks/                # WordPress hooks/filters
@@ -130,6 +132,30 @@ Core functionality is organized through manager classes:
 | **ContextManager** | Manages data passed to templates | `Core/ContextExtender/ContextManager.php` |
 | **ContentGeneratorManager** | Orchestrates demo content generation | `Features/ContentGenerator/ContentGeneratorManager.php` |
 | **AssetsManager** | Handles CSS/JS enqueuing | `Core/Setup/AssetsManager.php` |
+
+### Application Layer Pattern
+
+Talampaya separates concerns using five key patterns:
+
+- **Controllers** (`Inc/Controllers/`): Prepare context data for Twig templates
+- **Services** (`Inc/Services/`): Handle business logic (imports, API integrations, data processing)
+- **Models** (`Inc/Models/`): Extend Timber\Post with custom methods
+- **Traits** (`Inc/Traits/`): Reusable code across classes
+- **Helpers** (`Inc/Helpers/`): Static utility functions
+
+**Key principle**: WordPress template files (`single.php`, `archive.php`, etc.) should be **minimal** and only act as entry points. All logic should be in the Application Layer.
+
+**Example**:
+```php
+// single-product.php - Keep it simple
+use Timber\Timber;
+use App\Inc\Controllers\ProductController;
+
+$context = Timber::context();
+Timber::render('@pages/single-product.twig', ProductController::get_single_product_context($context));
+```
+
+See [APPLICATION-LAYER.md](APPLICATION-LAYER.md) for complete documentation.
 
 ### Data Flow
 
@@ -233,6 +259,7 @@ See [COMMON-TASKS.md](COMMON-TASKS.md#adding-a-new-post-type) for detailed steps
 ---
 
 For related documentation:
+- [APPLICATION-LAYER.md](APPLICATION-LAYER.md) - Controllers, Services, Models, Traits, and Helpers
 - [COMMON-TASKS.md](COMMON-TASKS.md) - Step-by-step implementation guides
 - [TIMBER-TWIG.md](TIMBER-TWIG.md) - Templating system details
 - [CONTENT-GENERATOR.md](CONTENT-GENERATOR.md) - Content generation system

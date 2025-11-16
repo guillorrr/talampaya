@@ -129,6 +129,7 @@ ACF Json
 -------------------------------------------------------------------------------------------------- */
 
 const acfJsonFiles = ['./build/wp-content/themes/' + themeName.toLowerCase() + '/acf-json/**'];
+const acfJsonSourceFiles = ['./src/theme/acf-json/**'];
 
 function devCopyAcfJson() {
 	return copyFiles(acfJsonFiles, '', {
@@ -139,9 +140,8 @@ function devCopyAcfJson() {
 }
 
 function prodCopyAcfJson() {
-	return copyFiles(acfJsonFiles, '', {
+	return copyFiles(acfJsonSourceFiles, '/acf-json', {
 		checkDir: './src/theme/acf-json',
-		customDestPath: './src/theme/acf-json',
 		extraMessage: 'ACF Json files',
 		isDev: false,
 		skipPlumber: true,
@@ -341,9 +341,9 @@ function wrapWithTemplate(content) {
 		// Si no tiene extends, aplicamos el wrapper
 		const template = `{% extends "@layouts/base.twig" %}
 
-{% block content %}
+{% block main_content %}
 ###CONTENT###
-{% endblock content %}
+{% endblock main_content %}
 `;
 		return template.replace('###CONTENT###', content);
 	}
@@ -651,14 +651,22 @@ function watchFiles() {
 		devCopyFonts();
 		Reload();
 	});
-	watch(themeFiles, {
+	const themeWatcher = watch(themeFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path) {
+	});
+
+	themeWatcher.on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		copyModifiedThemeFile(path);
 		devCopyStylesFront();
 		devCopyStylesBack();
+		Reload();
+	});
+
+	themeWatcher.on('add', function (path) {
+		console.log(`File ${path} was added`);
+		copyModifiedThemeFile(path);
 		Reload();
 	});
 	watch(pluginsFiles, {

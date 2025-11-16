@@ -46,6 +46,9 @@ class Bootstrap
 		// Registrar Custom Post Types, Taxonomías, etc.
 		self::registerCustomTypes();
 
+		// Inicializar features del tema
+		self::initializeFeatures();
+
 		// Cargar archivos adicionales
 		self::loadAdditionalFiles();
 	}
@@ -127,6 +130,17 @@ class Bootstrap
 	{
 		if (class_exists("App\\Register\\RegisterManager")) {
 			RegisterManager::registerAll();
+		}
+	}
+
+	/**
+	 * Inicializa features del tema
+	 */
+	private static function initializeFeatures(): void
+	{
+		// Inicializar permalinks personalizados
+		if (class_exists("App\\Features\\Permalinks\\CustomPermalinks")) {
+			new \App\Features\Permalinks\CustomPermalinks();
 		}
 	}
 

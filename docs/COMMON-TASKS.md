@@ -71,8 +71,37 @@ Step-by-step guides for common development tasks in Talampaya.
 
 **Next steps**:
 - Add ACF field group for product fields
-- Create custom archive template: `archive-product.php` → `views/pages/archive-product.twig`
-- Create single template: `single-product.php` → `views/pages/single-product.twig`
+- Create Controller for context preparation (recommended)
+- Create custom template files (keep them minimal)
+
+**Creating template files** (optional - only if you need custom logic):
+
+WordPress template files should be **minimal** and only act as entry points. All logic belongs in Controllers.
+
+**Good example** (`single-product.php`):
+```php
+<?php
+use Timber\Timber;
+use App\Inc\Controllers\ProductController;
+
+$context = Timber::context();
+$templates = ['@pages/single-product.twig', '@pages/single.twig'];
+
+Timber::render($templates, ProductController::get_single_product_context($context));
+```
+
+**Bad example** (too much logic):
+```php
+<?php
+// DON'T DO THIS - logic belongs in Controller
+$context = Timber::context();
+$context['featured'] = get_field('featured', $post->ID);
+$context['related'] = Timber::get_posts(['post_type' => 'product'...]);
+// ... more logic
+Timber::render('@pages/single-product.twig', $context);
+```
+
+See [APPLICATION-LAYER.md](APPLICATION-LAYER.md) for complete guide on Controllers, Services, Models, Traits, and Helpers.
 
 ## Adding a New Taxonomy
 
@@ -681,6 +710,7 @@ add_action('wp_dashboard_setup', function() {
 
 For related documentation:
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Architecture details
+- [APPLICATION-LAYER.md](APPLICATION-LAYER.md) - Controllers, Services, Models, Traits, and Helpers
 - [ACF-BLOCKS.md](ACF-BLOCKS.md) - ACF block system
 - [TIMBER-TWIG.md](TIMBER-TWIG.md) - Templating system
 - [CONTENT-GENERATOR.md](CONTENT-GENERATOR.md) - Content generation

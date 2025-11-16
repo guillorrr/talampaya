@@ -2,14 +2,14 @@
 # Script para inicializar WordPress automáticamente
 # Espera a que WordPress esté listo y ejecuta wp-setup.sh
 
-# Esperar a que WordPress esté disponible
-echo "Esperando a que WordPress esté disponible..."
-until $(wp core is-installed --allow-root); do
+# Esperar a que la base de datos esté disponible
+echo "Esperando a que la base de datos esté lista..."
+until mysql -h"${WORDPRESS_DB_HOST}" -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" --skip-ssl -e "SELECT 1" &>/dev/null; do
     sleep 5
-    echo "Esperando a que la base de datos esté lista..."
+    echo "Reintentando conexión a la base de datos..."
 done
 
-echo "WordPress está listo."
+echo "Base de datos disponible."
 
 # Verificar si la configuración ya se realizó
 if wp option get auto_setup_completed --allow-root &>/dev/null; then

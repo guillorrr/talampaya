@@ -2,7 +2,7 @@ version: '3.8'
 services:
   db:
     image: mariadb
-    container_name: ${DOCKER_APP_NAME}-db
+    container_name: ${APP_NAME}-db
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -11,13 +11,20 @@ services:
       - './docker/db/my.cnf:/etc/mysql/conf.d/my.cnf'
     ports:
       - '${FORWARD_DB_PORT:-3306}:3306'
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   wp:
     build:
       context: ./docker/wp/
       args:
         - WORDPRESS_VERSION=${WORDPRESS_VERSION:-php8.4-fpm-alpine}
-    container_name: ${DOCKER_APP_NAME}-wp
+    image: talampaya-wp:${WORDPRESS_VERSION:-php8.4-fpm-alpine}
+    container_name: ${APP_NAME}-wp
     expose:
       - '9003'
     environment:
@@ -27,8 +34,11 @@ services:
       WORDPRESS_DB_NAME: ${DB_NAME}
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
       WORDPRESS_TABLE_PREFIX: ${DB_TABLE_PREFIX}
+      WORDPRESS_ADMIN_USER: ${WORDPRESS_ADMIN_USER}
       WORDPRESS_ADMIN_PASS: ${WORDPRESS_ADMIN_PASS}
       APP_NAME: ${APP_NAME}
+      PROTOCOL: ${PROTOCOL}
+      DOMAIN: ${DOMAIN}
       WORDPRESS_CONFIG_EXTRA: |
         define( 'WP_HOME', '${PROTOCOL}://${DOMAIN}' );
         define( 'WP_SITEURL', '${PROTOCOL}://${DOMAIN}' );
@@ -37,7 +47,7 @@ services:
         define( 'WP_DEBUG_LOG', '/tmp/wordpress/wordpress.log' );
         define( 'FS_DIRECT', true );
         define( 'ALLOW_UNFILTERED_UPLOADS', true);
-        define( 'WP_REDIS_HOST', '${DOCKER_APP_NAME}-cache' );
+        define( 'WP_REDIS_HOST', '${APP_NAME}-cache' );
         define( 'WP_MEMORY_LIMIT', '512M' );
         define( 'MAXMIND_ACCOUNT_ID', '${MAXMIND_ACCOUNT_ID}' );
         define( 'MAXMIND_LICENSE_KEY', '${MAXMIND_LICENSE_KEY}' );
@@ -59,21 +69,17 @@ services:
       - './logs:/tmp/wordpress'
       - './composer.json:/var/www/html/composer.json'
     depends_on:
-      - db
-      - redis
-    command: >
-            bash -c "
-            chmod -R 755 /var/www/scripts &&
-            php-fpm &
-            if [ \"${WORDPRESS_AUTO_SETUP:-true}\" = \"true\" ] && [ \"${WP_ALLOW_MULTISITE:-false}\" = \"false\" ]; then
-                bash /var/www/scripts/wp-init.sh &
-            fi &&
-            wait
-            "
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      composer:
+        condition: service_completed_successfully
+    entrypoint: /var/www/scripts/entrypoint-wrapper.sh
 
   chmod:
     image: wordpress:${WORDPRESS_VERSION:-php8.4-fpm-alpine}
-    container_name: ${DOCKER_APP_NAME}-chmod
+    container_name: ${APP_NAME}-chmod
     restart: on-failure
     depends_on:
       - wp
@@ -90,7 +96,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: ${DOCKER_APP_NAME}-nginx
+    container_name: ${APP_NAME}-nginx
     ports:
       - '${FORWARD_HTTP_PORT:-80}:80'
       - '${FORWARD_HTTPS_PORT:-443}:${FORWARD_HTTPS_PORT:-443}'
@@ -128,7 +134,8 @@ services:
     build:
       context: ./
       dockerfile: ./docker/node/Dockerfile
-    container_name: ${DOCKER_APP_NAME}-node
+    image: talampaya-node:latest
+    container_name: ${APP_NAME}-node
     ports:
       - '${BROWSERSYNC_UI_PORT:-8081}:${BROWSERSYNC_UI_PORT:-8081}'
       - '${BROWSERSYNC_PROXY_PORT:-4443}:${BROWSERSYNC_PROXY_PORT:-4443}'
@@ -141,17 +148,16 @@ services:
       DOMAIN: ${DOMAIN}
       PROTOCOL: ${PROTOCOL}
     volumes:
-      - './package.json:/usr/src/app/package.json'
-      - './package-lock.json:/usr/src/app/package-lock.json'
-      - './gulpfile.js:/usr/src/app/gulpfile.js'
-      - './webpack.config.js:/usr/src/app/webpack.config.js'
+      - './package.json:/usr/src/app/package.json:ro'
+      - './package-lock.json:/usr/src/app/package-lock.json:ro'
+      - './gulpfile.js:/usr/src/app/gulpfile.js:ro'
+      - './webpack.config.js:/usr/src/app/webpack.config.js:ro'
       - './src:/usr/src/app/src'
       - './dist:/usr/src/app/dist'
       - './build:/usr/src/app/build'
       - './backups:/usr/src/app/backups'
       - './patternlab:/usr/src/app/patternlab'
       - './certs:/var/www/ssl'
-      - './node_modules:/usr/src/app/node_modules'
     depends_on:
       - nginx
     command: npm run dev
@@ -163,7 +169,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: ${DOCKER_APP_NAME}-phpmyadmin
+    container_name: ${APP_NAME}-phpmyadmin
     volumes:
       - ./docker/phpmyadmin/phpmyadmin.ini:/usr/local/etc/php/conf.d/phpmyadmin.ini
     environment:
@@ -177,21 +183,22 @@ services:
 
   mailhog:
     image: mailhog/mailhog
-    container_name: ${DOCKER_APP_NAME}-mailhog
+    container_name: ${APP_NAME}-mailhog
     ports:
       - '${FORWARD_MAILHOG_PORT:-1025}:1025'
       - '${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025'
 
   composer:
     image: composer:2.8
-    container_name: ${DOCKER_APP_NAME}-composer
+    container_name: ${APP_NAME}-composer
     working_dir: /var/www/html
     restart: 'no'
     volumes:
       - './build:/var/www/html'
-      - './composer.json:/var/www/html/composer.json'
+      - './composer.json:/var/www/html/composer.json.template'
       - '.env:/var/www/html/.env'
     environment:
+        APP_NAME: ${APP_NAME}
         COMPOSER_AUTH: >
             {
               "http-basic": {
@@ -201,10 +208,16 @@ services:
                 }
               }
             }
-    command: composer update --ignore-platform-reqs --no-scripts
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      sed \"s|wp-content/themes/talampaya/|wp-content/themes/$${APP_NAME}/|g\" composer.json.template > composer.json &&
+      composer update --ignore-platform-reqs --no-scripts
+      "
 
   mkcert:
     build: ./docker/mkcert/
+    image: talampaya-mkcert:latest
     volumes:
       - ./certs:/root/.local/share/mkcert
     command:
@@ -218,7 +231,7 @@ services:
   # Redis cache
   redis:
     image: redis:alpine
-    container_name: ${DOCKER_APP_NAME}-cache
+    container_name: ${APP_NAME}-cache
 
 networks:
   default:
