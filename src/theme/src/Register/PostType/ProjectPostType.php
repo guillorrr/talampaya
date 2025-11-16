@@ -30,10 +30,7 @@ class ProjectPostType extends AbstractPostType
 			"menu_position" => 20,
 			"capability_type" => "post",
 			"show_in_rest" => true,
-			"rewrite" => [
-				"slug" => "project",
-				"with_front" => false,
-			],
+			"rewrite" => false, // URLs handled by CustomPermalinks
 		];
 	}
 }
