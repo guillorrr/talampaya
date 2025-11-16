@@ -5,37 +5,37 @@ Guidelines and conventions for contributing to Talampaya.
 ## Table of Contents
 
 - [Contributing Guide](#contributing-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Code Style \& Standards](#code-style--standards)
-    - [PHP](#php)
-    - [JavaScript](#javascript)
-    - [CSS/SCSS](#cssscss)
-  - [Naming Conventions](#naming-conventions)
-    - [PHP Classes](#php-classes)
-    - [Files](#files)
-    - [Variables](#variables)
-  - [Class Architecture](#class-architecture)
-    - [Helper Classes (Static)](#helper-classes-static)
-    - [Service Classes (Instantiated)](#service-classes-instantiated)
-    - [When to Use Static Methods](#when-to-use-static-methods)
-  - [Git Workflow](#git-workflow)
-    - [Branching Strategy](#branching-strategy)
-    - [Commit Convention](#commit-convention)
-    - [Pre-commit Hooks](#pre-commit-hooks)
-  - [Code Quality](#code-quality)
-    - [Linting](#linting)
-    - [Formatting](#formatting)
-    - [Testing](#testing)
-  - [Documentation](#documentation)
-  - [Pull Request Process](#pull-request-process)
-  - [Syncing with Upstream](#syncing-with-upstream)
-    - [Initial Setup](#initial-setup)
-    - [Regular Sync Workflow](#regular-sync-workflow)
-    - [Selective Updates](#selective-updates)
-    - [Handling Conflicts](#handling-conflicts)
-    - [Best Practices for Fork Maintenance](#best-practices-for-fork-maintenance)
-    - [Automation](#automation)
-  - [Best Practices](#best-practices)
+    - [Table of Contents](#table-of-contents)
+    - [Code Style \& Standards](#code-style--standards)
+        - [PHP](#php)
+        - [JavaScript](#javascript)
+        - [CSS/SCSS](#cssscss)
+    - [Naming Conventions](#naming-conventions)
+        - [PHP Classes](#php-classes)
+        - [Files](#files)
+        - [Variables](#variables)
+    - [Class Architecture](#class-architecture)
+        - [Helper Classes (Static)](#helper-classes-static)
+        - [Service Classes (Instantiated)](#service-classes-instantiated)
+        - [When to Use Static Methods](#when-to-use-static-methods)
+    - [Git Workflow](#git-workflow)
+        - [Branching Strategy](#branching-strategy)
+        - [Commit Convention](#commit-convention)
+        - [Pre-commit Hooks](#pre-commit-hooks)
+    - [Code Quality](#code-quality)
+        - [Linting](#linting)
+        - [Formatting](#formatting)
+        - [Testing](#testing)
+    - [Documentation](#documentation)
+    - [Pull Request Process](#pull-request-process)
+    - [Syncing with Upstream](#syncing-with-upstream)
+        - [Initial Setup](#initial-setup)
+        - [Regular Sync Workflow](#regular-sync-workflow)
+        - [Selective Updates](#selective-updates)
+        - [Handling Conflicts](#handling-conflicts)
+        - [Best Practices for Fork Maintenance](#best-practices-for-fork-maintenance)
+        - [Automation](#automation)
+    - [Best Practices](#best-practices)
 
 ## Code Style & Standards
 
@@ -103,8 +103,8 @@ class PostHelper
  * @returns {string} Formatted price
  */
 const formatPrice = (price, currency = '$') => {
-  return `${currency}${price.toFixed(2)}`;
-};
+        return `${currency}${price.toFixed(2)}`;
+    };
 
 export default formatPrice;
 ```
@@ -120,25 +120,25 @@ export default formatPrice;
 **Example**:
 ```scss
 .card {
-  padding: 1rem;
-  border: 1px solid #ccc;
+    padding: 1rem;
+    border: 1px solid #ccc;
 
-  &__title {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
+    &__title {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
 
-  &__content {
-    margin-top: 1rem;
-  }
+    &__content {
+        margin-top: 1rem;
+    }
 
-  &--featured {
-    border-color: #007bff;
-  }
+    &--featured {
+        border-color: #007bff;
+    }
 
-  @media (min-width: 768px) {
-    padding: 2rem;
-  }
+    @media (min-width: 768px) {
+        padding: 2rem;
+    }
 }
 ```
 
@@ -153,21 +153,22 @@ export default formatPrice;
 | Managers | `*Manager` suffix | `PluginManager`, `TwigManager` |
 | Helpers | `*Helper` suffix | `PostHelper`, `ImageHelper` |
 | Utils | `*Utils` suffix | `FileUtils`, `StringUtils` |
+| Taxonomies | `*Taxonomy` suffix | `ProductSeriesTaxonomy`, `EpicTaxonomy` |
 | Models | Singular noun | `Product`, `Project` |
 
 ### Files
 
 - **Class files**: PascalCase matching class name (PSR-4)
-  - `PostHelper.php`
-  - `ProductPostType.php`
+    - `PostHelper.php`
+    - `ProductPostType.php`
 
 - **Skip auto-discovery**: Prefix with `_`
-  - `_example.php`
-  - `_template.php`
+    - `_example.php`
+    - `_template.php`
 
 - **Templates**: kebab-case
-  - `single-product.twig`
-  - `archive-post.twig`
+    - `single-product.twig`
+    - `archive-post.twig`
 
 ### Variables
 
@@ -188,6 +189,77 @@ export default formatPrice;
   $primary-color: #007bff;
   $font-size-base: 16px;
   ```
+
+### Custom Post Types
+
+**IMPORTANT**: All Custom Post Types MUST follow these naming conventions:
+
+**Slug naming**:
+- Must use `*_post` suffix
+- Maximum length: 20 characters (WordPress limit)
+- Examples: `product_post`, `sector_post`, `project_post`
+- For compound names, abbreviate if needed: `product_cat_post` (not `product_category_post`)
+
+**Class naming**:
+- Must use `*Post` suffix (NOT `*PostType`)
+- PascalCase format
+- Examples: `ProductPost`, `SectorPost`, `ProjectPost`, `ProductCategoryPost`
+
+**File naming**:
+- Class file: Match class name with `.php` extension
+    - `ProductPost.php`
+    - `SectorPost.php`
+    - `ProductCategoryPost.php`
+
+- Controller (single): `single-{cpt_slug}.php`
+    - `single-product_post.php`
+    - `single-sector_post.php`
+    - `single-product_cat_post.php`
+
+- Controller (archive): `archive-{cpt_slug}.php`
+    - `archive-product_post.php`
+    - `archive-sector_post.php`
+
+- View files: `{template}-{cpt_slug}.twig`
+    - `single-product_post.twig`
+    - `archive-product_post.twig`
+
+**Model naming**:
+- Singular noun without `_post` suffix
+- PascalCase format
+- Examples: `Product`, `Sector`, `Project`, `ProductCategory`
+
+**Complete example**:
+
+```php
+// File: src/Register/PostType/ProductPost.php
+class ProductPost extends AbstractPostType
+{
+    protected string $slug = "product_post"; // 12 characters ✅
+}
+
+// File: src/Inc/Models/Product.php
+class Product extends AbstractPost
+{
+    public function custom_id(): ?string
+    {
+        return $this->meta("post_type_product_post_custom_id");
+    }
+}
+
+// File: single-product_post.php (controller)
+$product = Timber::get_post(get_the_ID(), Product::class);
+$templates = ["@pages/single-product_post.twig"];
+Timber::render($templates, $context);
+```
+
+**Naming reference table**:
+
+| CPT Slug | Class Name | Model Name | Controller | View |
+|----------|------------|------------|------------|------|
+| `product_post` | `ProductPost` | `Product` | `single-product_post.php` | `single-product_post.twig` |
+| `sector_post` | `SectorPost` | `Sector` | `single-sector_post.php` | `single-sector_post.twig` |
+| `product_cat_post` | `ProductCategoryPost` | `ProductCategory` | `single-product_cat_post.php` | `single-product_cat_post.twig` |
 
 ## Class Architecture
 
@@ -305,10 +377,10 @@ NewsletterService::send($email); // Where does $mailer come from?
 
 **Supporting branches**:
 - `feature/*` - New features
-  - Example: `feature/product-catalog`
+    - Example: `feature/product-catalog`
 
 - `hotfix/*` - Emergency fixes for production
-  - Example: `hotfix/cart-bug`
+    - Example: `hotfix/cart-bug`
 
 **Workflow**:
 1. Create feature branch from `develop`:
@@ -456,15 +528,15 @@ public static function getPostsByTerm(
    ```
 
 2. **Ensure all checks pass**:
-   - Linting (ESLint, Stylelint, PHPCS)
-   - Tests (PHPUnit, Jest)
-   - Build succeeds
+    - Linting (ESLint, Stylelint, PHPCS)
+    - Tests (PHPUnit, Jest)
+    - Build succeeds
 
 3. **Create pull request**:
-   - Descriptive title
-   - Clear description of changes
-   - Reference related issues
-   - Screenshots (if UI changes)
+    - Descriptive title
+    - Clear description of changes
+    - Reference related issues
+    - Screenshots (if UI changes)
 
 4. **Address review feedback**
 
@@ -514,10 +586,10 @@ If you forked Talampaya for a custom project and want to receive updates from th
    ```
 
 4. **Resolve conflicts** (if any):
-   - Review conflicting files
-   - Manually merge changes
-   - Test thoroughly
-   - Commit resolved conflicts
+    - Review conflicting files
+    - Manually merge changes
+    - Test thoroughly
+    - Commit resolved conflicts
 
 5. **Push to your fork**:
    ```bash
@@ -613,42 +685,42 @@ chmod +x scripts/sync-upstream.sh
 ## Best Practices
 
 1. **Separation of concerns**:
-   - Keep business logic in PHP
-   - Use Twig for presentation only
+    - Keep business logic in PHP
+    - Use Twig for presentation only
 
 2. **DRY (Don't Repeat Yourself)**:
-   - Extract reusable functions to helpers
-   - Create reusable Twig components
+    - Extract reusable functions to helpers
+    - Create reusable Twig components
 
 3. **Single Responsibility**:
-   - Each class/method should have one clear purpose
-   - Small, focused functions
+    - Each class/method should have one clear purpose
+    - Small, focused functions
 
 4. **Type safety**:
-   - Always use type hints and return types
-   - Enable `strict_types`
+    - Always use type hints and return types
+    - Enable `strict_types`
 
 5. **Error handling**:
-   - Use try/catch for expected errors
-   - Validate input data
-   - Provide meaningful error messages
+    - Use try/catch for expected errors
+    - Validate input data
+    - Provide meaningful error messages
 
 6. **Performance**:
-   - Avoid N+1 queries (use `Timber::get_posts()` batch loading)
-   - Cache expensive operations
-   - Optimize images and assets
+    - Avoid N+1 queries (use `Timber::get_posts()` batch loading)
+    - Cache expensive operations
+    - Optimize images and assets
 
 7. **Security**:
-   - Escape output in templates: `{{ variable|e }}`
-   - Sanitize input: `sanitize_text_field()`
-   - Validate data before use
-   - Use nonces for forms
+    - Escape output in templates: `{{ variable|e }}`
+    - Sanitize input: `sanitize_text_field()`
+    - Validate data before use
+    - Use nonces for forms
 
 8. **Accessibility**:
-   - Semantic HTML
-   - ARIA labels where needed
-   - Keyboard navigation
-   - Color contrast
+    - Semantic HTML
+    - ARIA labels where needed
+    - Keyboard navigation
+    - Color contrast
 
 ---
 
