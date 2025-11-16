@@ -9,7 +9,8 @@ class DefaultMenus extends AbstractMenu
 	protected function configure(): array
 	{
 		return [
-			"menu-custom" => esc_html__("Custom", "talampaya"),
+			"main" => esc_html__("Principal", "talampaya"),
+			"projects" => esc_html__("Proyectos", "talampaya"),
 		];
 	}
 }
