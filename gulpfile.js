@@ -341,9 +341,9 @@ function wrapWithTemplate(content) {
 		// Si no tiene extends, aplicamos el wrapper
 		const template = `{% extends "@layouts/base.twig" %}
 
-{% block content %}
+{% block main_content %}
 ###CONTENT###
-{% endblock content %}
+{% endblock main_content %}
 `;
 		return template.replace('###CONTENT###', content);
 	}
@@ -651,14 +651,22 @@ function watchFiles() {
 		devCopyFonts();
 		Reload();
 	});
-	watch(themeFiles, {
+	const themeWatcher = watch(themeFiles, {
 		interval: 1000,
 		usePolling: true,
-	}).on('change', function (path) {
+	});
+
+	themeWatcher.on('change', function (path) {
 		console.log(`File ${path} was changed`);
 		copyModifiedThemeFile(path);
 		devCopyStylesFront();
 		devCopyStylesBack();
+		Reload();
+	});
+
+	themeWatcher.on('add', function (path) {
+		console.log(`File ${path} was added`);
+		copyModifiedThemeFile(path);
 		Reload();
 	});
 	watch(pluginsFiles, {
