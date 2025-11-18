@@ -338,6 +338,37 @@ class AcfHelper
 	}
 
 	/**
+	 * Normaliza nombres con acrónimos para evitar problemas con snake_case
+	 *
+	 * Cuando se usa Str::snake() con acrónimos (FAQs, CTA, API, etc.),
+	 * Laravel convierte cada letra mayúscula en un segmento separado.
+	 * Este método normaliza los acrónimos antes de aplicar snake_case.
+	 *
+	 * @param string $name Nombre del grupo o campo
+	 * @return string Nombre normalizado
+	 *
+	 * @example
+	 * normalizeAcronymsForSnakeCase("FAQs") -> "Faqs" -> snake_case -> "faqs"
+	 * normalizeAcronymsForSnakeCase("CTA") -> "Cta" -> snake_case -> "cta"
+	 * normalizeAcronymsForSnakeCase("XMLParser") -> "Xmlparser" -> snake_case -> "xmlparser"
+	 * normalizeAcronymsForSnakeCase("HubSpot") -> "HubSpot" -> snake_case -> "hub_spot"
+	 * normalizeAcronymsForSnakeCase("Banner Info") -> "Banner Info" -> snake_case -> "banner_info"
+	 */
+	public static function normalizeAcronymsForSnakeCase(string $name): string
+	{
+		// Detectar secuencias de 2+ mayúsculas consecutivas seguidas opcionalmente de minúsculas
+		// Esto captura acrónimos completos: FAQ, FAQs, CTA, API, APIs, XMLParser, etc.
+		// No afecta palabras normales en PascalCase: HubSpot, UserInfo, etc.
+		return preg_replace_callback(
+			"/\b[A-Z]{2,}[a-z]*\b/",
+			function ($matches) {
+				return ucfirst(strtolower($matches[0]));
+			},
+			$name
+		);
+	}
+
+	/**
 	 * Update the post_title and slug with a custom ACF field value.
 	 *
 	 * @param int $post_id The ID of the post being saved.
