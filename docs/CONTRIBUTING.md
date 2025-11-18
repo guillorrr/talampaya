@@ -232,14 +232,14 @@ export default formatPrice;
 **Complete example**:
 
 ```php
-// File: src/Register/PostType/ProductPost.php
-class ProductPost extends AbstractPostType
+// File: src/Register/PostType/ProductPostType.php
+class ProductPostType extends AbstractPostType
 {
     protected string $slug = "product_post"; // 12 characters ✅
 }
 
-// File: src/Inc/Models/Product.php
-class Product extends AbstractPost
+// File: src/Inc/Models/ProductPost.php
+class ProductPost extends AbstractPost
 {
     public function custom_id(): ?string
     {

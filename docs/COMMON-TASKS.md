@@ -5,18 +5,18 @@ Step-by-step guides for common development tasks in Talampaya.
 ## Table of Contents
 
 - [Common Tasks](#common-tasks)
-  - [Table of Contents](#table-of-contents)
-  - [Adding a New Post Type](#adding-a-new-post-type)
-  - [Adding a New Taxonomy](#adding-a-new-taxonomy)
-  - [Creating ACF Blocks](#creating-acf-blocks)
-  - [Adding Twig Extensions](#adding-twig-extensions)
-  - [Adding Context Data](#adding-context-data)
-  - [Adding a New Feature Module](#adding-a-new-feature-module)
-  - [Generating Demo Content](#generating-demo-content)
-  - [Creating a Custom Model](#creating-a-custom-model)
-  - [Adding a Menu Location](#adding-a-menu-location)
-  - [Adding a Sidebar](#adding-a-sidebar)
-  - [Customizing Admin](#customizing-admin)
+    - [Table of Contents](#table-of-contents)
+    - [Adding a New Post Type](#adding-a-new-post-type)
+    - [Adding a New Taxonomy](#adding-a-new-taxonomy)
+    - [Creating ACF Blocks](#creating-acf-blocks)
+    - [Adding Twig Extensions](#adding-twig-extensions)
+    - [Adding Context Data](#adding-context-data)
+    - [Adding a New Feature Module](#adding-a-new-feature-module)
+    - [Generating Demo Content](#generating-demo-content)
+    - [Creating a Custom Model](#creating-a-custom-model)
+    - [Adding a Menu Location](#adding-a-menu-location)
+    - [Adding a Sidebar](#adding-a-sidebar)
+    - [Customizing Admin](#customizing-admin)
 
 ## Adding a New Post Type
 
@@ -70,9 +70,159 @@ Step-by-step guides for common development tasks in Talampaya.
 4. **Verify** in WordPress admin → Products menu should appear
 
 **Next steps**:
-- Add ACF field group for product fields
+- Add ACF field group for product fields (see note below about multiple field groups)
+- Create Model for the post type (recommended)
+- Register Model in Timber classmap
 - Create Controller for context preparation (recommended)
 - Create custom template files (keep them minimal)
+
+### Creating a Model for the Post Type
+
+Models extend `Timber\Post` to add custom methods and functionality. They should follow the `*Post` naming convention.
+
+**IMPORTANT**: Model file names MUST end with `Post` (e.g., `ProductPost.php`, `ProductCategoryPost.php`).
+
+1. **Create model** in `/src/theme/src/Inc/Models/ProductPost.php`:
+
+```php
+<?php
+
+namespace App\Inc\Models;
+
+class ProductPost extends AbstractPost
+{
+    /**
+     * Get custom ID
+     */
+    public function custom_id(): ?string
+    {
+        return $this->meta('post_type_product_post_custom_id');
+    }
+
+    /**
+     * Get post title
+     */
+    public function title(): string
+    {
+        return $this->post_title;
+    }
+
+    /**
+     * Get main image
+     */
+    public function image(): ?array
+    {
+        return $this->meta("post_type_product_post_main_image");
+    }
+
+    /**
+     * Get product tag
+     */
+    public function tag(): ?string
+    {
+        return $this->meta("post_type_product_post_tag");
+    }
+
+    /**
+     * Get description
+     */
+    public function description(): ?string
+    {
+        return $this->meta("post_type_product_post_description");
+    }
+
+    /**
+     * Get card data (only data, no presentation properties)
+     * Controllers add presentation properties (type, btn, classes, etc.)
+     */
+    public function getCardData(): array
+    {
+        $image = $this->image();
+
+        return [
+            "image" => $image ? $image["url"] : null,
+            "tag" => $this->tag(),
+            "title" => $this->title(),
+            "description" => $this->description(),
+            "url" => $this->link(),
+        ];
+    }
+}
+```
+
+2. **Register in Timber classmap** in `/src/theme/src/TalampayaStarter.php`:
+
+Add filter hooks in constructor:
+```php
+add_filter("timber/post/classmap", [$this, "extendPostClassmap"]);
+add_filter("timber/term/classmap", [$this, "extendTermClassmap"]);
+```
+
+Add method for post classmap:
+```php
+public function extendPostClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        "product_post" => \App\Inc\Models\ProductPost::class,
+        // Add more post types here
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+```
+
+Add method for term classmap (if needed):
+```php
+public function extendTermClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        "product_series" => \App\Inc\Models\ProductSeries::class,
+        // Add more taxonomies here
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+```
+
+**Benefits of Timber classmap**:
+- Timber automatically uses your custom models when fetching posts
+- `Timber::get_post()` returns instance of your model class
+- All custom methods available without explicit class specification
+- Example: `$product = Timber::get_post($id); $product->image();`
+
+See [APPLICATION-LAYER.md#timber-classmap-integration](APPLICATION-LAYER.md#timber-classmap-integration) for complete details.
+
+**Important: Avoiding ACF Field Name Conflicts**
+
+When creating **multiple field groups** for the same post type, ensure each group uses a unique key to prevent field name conflicts:
+
+```php
+foreach ($groups as $group) {
+    $group_key = Str::snake($group[0]);           // e.g., "main", "products_related"
+    $unique_key = $this->post_type . "_" . $group_key;  // e.g., "product_cat_post_main"
+
+    $field_group = [
+        "key" => $group_key,
+        "title" => __($group[0], "talampaya"),
+        "fields" => $group[1],
+        // ... rest of configuration
+    ];
+
+    acf_add_local_field_group(
+        AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+            $field_group,
+            $unique_key,  // Use unique key, not just post_type
+            "post_type"
+        )
+    );
+}
+```
+
+**Why this matters**: If you have fields with the same name (e.g., "items", "title", "tag") in different field groups, using only `$this->post_type` as the key will cause conflicts. The helper function generates field names like:
+- Without unique key: `post_type_product_cat_post_items` (conflicts!)
+- With unique key: `post_type_product_cat_post_products_related_items` (unique ✓)
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#acf-field-name-conflicts) for more details.
 
 **Creating template files** (optional - only if you need custom logic):
 

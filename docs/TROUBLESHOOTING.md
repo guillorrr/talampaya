@@ -5,37 +5,37 @@ Common issues and solutions for Talampaya development.
 ## Table of Contents
 
 - [Troubleshooting](#troubleshooting)
-  - [Table of Contents](#table-of-contents)
-  - [Build Issues](#build-issues)
-    - [Gulp Not Watching Files](#gulp-not-watching-files)
-    - [Missing Dependencies](#missing-dependencies)
-    - [Permission Errors](#permission-errors)
-    - [Webpack Build Errors](#webpack-build-errors)
-  - [Database Issues](#database-issues)
-    - [Database Connection Errors](#database-connection-errors)
-    - [WordPress Installation Fails](#wordpress-installation-fails)
-    - [Lost Database Data](#lost-database-data)
-  - [Docker Issues](#docker-issues)
-    - [Services Won't Start](#services-wont-start)
-    - [Port Conflicts](#port-conflicts)
-    - [Container Exits Immediately](#container-exits-immediately)
-  - [WordPress Issues](#wordpress-issues)
-    - [White Screen of Death (WSOD)](#white-screen-of-death-wsod)
-    - [Fatal Error: Class Not Found](#fatal-error-class-not-found)
-    - [ACF Blocks Not Appearing](#acf-blocks-not-appearing)
-  - [Xdebug Issues](#xdebug-issues)
-    - [Xdebug Not Connecting](#xdebug-not-connecting)
-  - [Clear Caches](#clear-caches)
-    - [WordPress Object Cache](#wordpress-object-cache)
-    - [Browser Sync Cache](#browser-sync-cache)
-    - [Redis Cache](#redis-cache)
-    - [Timber Cache](#timber-cache)
-  - [Performance Issues](#performance-issues)
-    - [Slow Page Load](#slow-page-load)
-    - [Slow Docker Performance (Mac)](#slow-docker-performance-mac)
-  - [WPML Issues](#wpml-issues)
-    - [Missing Translations](#missing-translations)
-    - [Language Switcher Not Working](#language-switcher-not-working)
+    - [Table of Contents](#table-of-contents)
+    - [Build Issues](#build-issues)
+        - [Gulp Not Watching Files](#gulp-not-watching-files)
+        - [Missing Dependencies](#missing-dependencies)
+        - [Permission Errors](#permission-errors)
+        - [Webpack Build Errors](#webpack-build-errors)
+    - [Database Issues](#database-issues)
+        - [Database Connection Errors](#database-connection-errors)
+        - [WordPress Installation Fails](#wordpress-installation-fails)
+        - [Lost Database Data](#lost-database-data)
+    - [Docker Issues](#docker-issues)
+        - [Services Won't Start](#services-wont-start)
+        - [Port Conflicts](#port-conflicts)
+        - [Container Exits Immediately](#container-exits-immediately)
+    - [WordPress Issues](#wordpress-issues)
+        - [White Screen of Death (WSOD)](#white-screen-of-death-wsod)
+        - [Fatal Error: Class Not Found](#fatal-error-class-not-found)
+        - [ACF Blocks Not Appearing](#acf-blocks-not-appearing)
+    - [Xdebug Issues](#xdebug-issues)
+        - [Xdebug Not Connecting](#xdebug-not-connecting)
+    - [Clear Caches](#clear-caches)
+        - [WordPress Object Cache](#wordpress-object-cache)
+        - [Browser Sync Cache](#browser-sync-cache)
+        - [Redis Cache](#redis-cache)
+        - [Timber Cache](#timber-cache)
+    - [Performance Issues](#performance-issues)
+        - [Slow Page Load](#slow-page-load)
+        - [Slow Docker Performance (Mac)](#slow-docker-performance-mac)
+    - [WPML Issues](#wpml-issues)
+        - [Missing Translations](#missing-translations)
+        - [Language Switcher Not Working](#language-switcher-not-working)
 
 ## Build Issues
 
@@ -63,8 +63,8 @@ Common issues and solutions for Talampaya development.
    ```
 
 4. **Check gulpfile.js watch configuration**:
-   - Ensure polling is enabled for Docker compatibility
-   - Check file paths in watch tasks
+    - Ensure polling is enabled for Docker compatibility
+    - Check file paths in watch tasks
 
 5. **Clear build directory and rebuild**:
    ```bash
@@ -209,8 +209,8 @@ docker compose exec wp composer update
    ```
 
 4. **Check `wp-config.php`**:
-   - Verify database constants
-   - Check file permissions
+    - Verify database constants
+    - Check file permissions
 
 ### Lost Database Data
 
@@ -230,11 +230,11 @@ docker compose exec wp composer update
    ```
 
 3. **Prevent future data loss**:
-   - Always use named volumes in `docker-compose.yml`
-   - Regularly backup database:
-     ```bash
-     npm run wp:backup
-     ```
+    - Always use named volumes in `docker-compose.yml`
+    - Regularly backup database:
+      ```bash
+      npm run wp:backup
+      ```
 
 ## Docker Issues
 
@@ -303,9 +303,9 @@ docker compose exec wp composer update
    ```
 
 2. **Common issues**:
-   - Missing environment variables in `.env`
-   - Syntax errors in `docker-compose.yml`
-   - Missing or corrupted Dockerfile
+    - Missing environment variables in `.env`
+    - Syntax errors in `docker-compose.yml`
+    - Missing or corrupted Dockerfile
 
 3. **Rebuild from scratch**:
    ```bash
@@ -335,9 +335,9 @@ docker compose exec wp composer update
    ```
 
 3. **Common causes**:
-   - PHP fatal error
-   - Memory limit exceeded
-   - Plugin conflict
+    - PHP fatal error
+    - Memory limit exceeded
+    - Plugin conflict
 
 4. **Increase PHP memory**:
    ```php
@@ -382,8 +382,8 @@ docker compose exec wp composer update
 2. **Check block registration** in ACF settings
 
 3. **Sync ACF field groups**:
-   - Go to WP Admin → Custom Fields → Tools → Sync
-   - Import from `/acf-json/`
+    - Go to WP Admin → Custom Fields → Tools → Sync
+    - Import from `/acf-json/`
 
 4. **Clear Gutenberg cache**:
    ```bash
@@ -391,6 +391,83 @@ docker compose exec wp composer update
    ```
 
 5. **Verify BlockRenderer** is properly configured
+
+### ACF Field Name Conflicts
+
+**Symptoms**:
+- Multiple field groups showing the same field type/data
+- Fields with the same name (e.g., "items", "title", "tag") in different groups display incorrect field types
+- A relationship field appears where a repeater should be, or vice versa
+
+**Example**:
+You have three field groups for `product_cat_post`:
+- **Products Related**: field "items" (relationship to `product_post`)
+- **Success Stories**: field "items" (relationship to `success_story_post`)
+- **FAQs**: field "items" (repeater with title/content)
+
+All three show the same relationship field instead of their respective types.
+
+**Cause**:
+
+When using `AcfHelper::talampaya_replace_keys_from_acf_register_fields()` with only the post type as the key, fields with identical names across different groups generate the same internal field names, causing conflicts:
+
+```php
+// ❌ BAD: Same key for all groups
+acf_add_local_field_group(
+    AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+        $field_group,
+        $this->post_type,  // "product_cat_post" for ALL groups
+        "post_type"
+    )
+);
+// Results in: post_type_product_cat_post_items (conflicts!)
+```
+
+**Solution**:
+
+Use a **unique key** for each field group by combining the post type with the group name:
+
+```php
+// ✅ GOOD: Unique key per group
+foreach ($groups as $group) {
+    $group_key = Str::snake($group[0]);                    // "products_related", "success_stories", "faqs"
+    $unique_key = $this->post_type . "_" . $group_key;     // "product_cat_post_products_related"
+
+    $field_group = [
+        "key" => $group_key,
+        "title" => __($group[0], "talampaya"),
+        "fields" => $group[1],
+        "location" => [
+            [
+                [
+                    "param" => "post_type",
+                    "operator" => "==",
+                    "value" => $this->post_type,
+                ],
+            ],
+        ],
+        "show_in_rest" => true,
+        "menu_order" => $group[2],
+    ];
+
+    acf_add_local_field_group(
+        AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+            $field_group,
+            $unique_key,  // ✓ Unique key
+            "post_type"
+        )
+    );
+}
+```
+
+**Result**: Each field gets a unique internal name:
+- `post_type_product_cat_post_products_related_items` (relationship to products)
+- `post_type_product_cat_post_success_stories_items` (relationship to success stories)
+- `post_type_product_cat_post_faqs_items` (repeater)
+
+**After fixing**: Reload WordPress admin to register the new field groups with correct unique keys.
+
+**Reference**: `src/theme/src/Features/Acf/Fields/ProductCategoryPost/ProductCategoryPostFields.php:241-269`
 
 ## Xdebug Issues
 
@@ -411,9 +488,9 @@ docker compose exec wp composer update
    ```
 
 3. **Check IDE configuration**:
-   - Port: 9003
-   - IDE key: PHPSTORM
-   - Path mappings: `/var/www/html` → `/path/to/talampaya/build`
+    - Port: 9003
+    - IDE key: PHPSTORM
+    - Path mappings: `/var/www/html` → `/path/to/talampaya/build`
 
 4. **Test Xdebug**:
    ```bash
@@ -473,12 +550,12 @@ docker compose exec wp wp transient delete --all --allow-root
    ```
 
 3. **Enable Redis object cache**:
-   - Install Redis Object Cache plugin
-   - Configure in `wp-config.php`:
-     ```php
-     define('WP_REDIS_HOST', 'cache');
-     define('WP_REDIS_PORT', 6379);
-     ```
+    - Install Redis Object Cache plugin
+    - Configure in `wp-config.php`:
+      ```php
+      define('WP_REDIS_HOST', 'cache');
+      define('WP_REDIS_PORT', 6379);
+      ```
 
 4. **Minify assets** (production build):
    ```bash
@@ -508,8 +585,8 @@ docker compose exec wp wp transient delete --all --allow-root
 **Solutions**:
 
 1. **Scan theme for strings**:
-   - WPML → Theme and Plugin Localization
-   - Scan theme files
+    - WPML → Theme and Plugin Localization
+    - Scan theme files
 
 2. **Check string registration**:
    ```php
@@ -517,15 +594,15 @@ docker compose exec wp wp transient delete --all --allow-root
    ```
 
 3. **Verify language is active**:
-   - WPML → Languages
-   - Check language status
+    - WPML → Languages
+    - Check language status
 
 ### Language Switcher Not Working
 
 **Solutions**:
 
 1. **Check WPML configuration**:
-   - WPML → Languages → Language switcher
+    - WPML → Languages → Language switcher
 
 2. **Verify template code**:
    ```php

@@ -5,30 +5,37 @@ Complete guide to the Timber/Twig templating system used in Talampaya.
 ## Table of Contents
 
 - [Timber \& Twig](#timber--twig)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Template Structure](#template-structure)
-    - [Directory Organization](#directory-organization)
-  - [Context Data](#context-data)
-    - [Base Context](#base-context)
-    - [Extending Context](#extending-context)
-  - [Custom Twig Extensions](#custom-twig-extensions)
-    - [Creating a Twig Extension](#creating-a-twig-extension)
-  - [Template Paths (Namespaces)](#template-paths-namespaces)
-  - [Common Template Patterns](#common-template-patterns)
-    - [Base Layout](#base-layout)
-    - [Page Template](#page-template)
-    - [Component Inclusion](#component-inclusion)
-  - [Twig Filters \& Functions](#twig-filters--functions)
-    - [Built-in Timber Filters](#built-in-timber-filters)
-    - [Custom Filters](#custom-filters)
-  - [Working with Posts](#working-with-posts)
-    - [Single Post](#single-post)
-    - [Post Loop](#post-loop)
-    - [Custom Query](#custom-query)
-  - [Working with Menus](#working-with-menus)
-  - [Working with Images](#working-with-images)
-  - [Best Practices](#best-practices)
+    - [Table of Contents](#table-of-contents)
+    - [Overview](#overview)
+    - [Template Structure](#template-structure)
+        - [Directory Organization](#directory-organization)
+    - [Context Data](#context-data)
+        - [Base Context](#base-context)
+        - [Extending Context](#extending-context)
+    - [Custom Twig Extensions](#custom-twig-extensions)
+        - [Creating a Twig Extension](#creating-a-twig-extension)
+    - [Template Paths (Namespaces)](#template-paths-namespaces)
+    - [Common Template Patterns](#common-template-patterns)
+        - [Base Layout](#base-layout)
+        - [Page Template](#page-template)
+        - [Component Inclusion](#component-inclusion)
+    - [Twig Filters \& Functions](#twig-filters--functions)
+        - [Built-in Timber Filters](#built-in-timber-filters)
+        - [Custom Filters](#custom-filters)
+    - [Working with Posts](#working-with-posts)
+        - [Single Post](#single-post)
+        - [Post Loop](#post-loop)
+        - [Custom Query](#custom-query)
+    - [Timber 2.0 Class Maps (Custom Models)](#timber-20-class-maps-custom-models)
+        - [Overview](#overview-1)
+        - [How Class Maps Work](#how-class-maps-work)
+        - [Usage Examples](#usage-examples)
+        - [Common Error and Fix](#common-error-and-fix)
+        - [Adding New Models to Class Maps](#adding-new-models-to-class-maps)
+        - [Benefits](#benefits)
+    - [Working with Menus](#working-with-menus)
+    - [Working with Images](#working-with-images)
+    - [Best Practices](#best-practices)
 
 ## Overview
 
@@ -363,6 +370,178 @@ $context['recent_posts'] = Timber::get_posts([
 {% endfor %}
 ```
 
+## Timber 2.0 Class Maps (Custom Models)
+
+### Overview
+
+**Timber 2.0** replaced the `$PostClass` parameter with **Class Maps** for custom model instantiation.
+
+**Old way** (deprecated in Timber 2.0):
+```php
+// ❌ DEPRECATED - Do not use
+$post = Timber::get_post($id, ProductPost::class);
+$posts = Timber::get_posts($args, ProductPost::class);
+```
+
+**New way** (Timber 2.0+):
+```php
+// ✅ CORRECT - Use Class Maps
+$post = Timber::get_post($id);
+$posts = Timber::get_posts($args);
+```
+
+### How Class Maps Work
+
+Class Maps automatically map post types and taxonomies to custom model classes.
+
+**Configuration** (in `TalampayaStarter.php`):
+```php
+// Register Class Maps in constructor
+add_filter('timber/post/classmap', [$this, 'extendPostClassmap']);
+add_filter('timber/term/classmap', [$this, 'extendTermClassmap']);
+
+// Map post types to model classes
+public function extendPostClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        'product_post' => \App\Inc\Models\ProductPost::class,
+        'product_cat_post' => \App\Inc\Models\ProductCategoryPost::class,
+        'success_story_post' => \App\Inc\Models\SuccessStoryPost::class,
+        'project_post' => \App\Inc\Models\ProjectPost::class,
+        'testimonial_post' => \App\Inc\Models\Testimonial::class,
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+
+// Map taxonomies to model classes
+public function extendTermClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        'product_category' => \App\Inc\Models\ProductCategory::class,
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+```
+
+When you call `Timber::get_post($id)`, Timber:
+1. Checks the post type (e.g., `product_post`)
+2. Looks up the Class Map
+3. Instantiates `ProductPost` class automatically
+4. Returns typed object with custom methods
+
+### Usage Examples
+
+**Single post**:
+```php
+// Timber automatically uses ProductPost model
+$post = Timber::get_post($product_id);
+
+// Type checking
+if ($post instanceof ProductPost) {
+    echo $post->custom_id();  // Custom method from ProductPost model
+    echo $post->image();      // Custom method from ProductPost model
+}
+```
+
+**Query posts**:
+```php
+// All returned posts will be ProductPost instances
+$products = Timber::get_posts([
+    'post_type' => 'product_post',
+    'posts_per_page' => 10,
+]);
+
+foreach ($products as $product) {
+    if ($product instanceof ProductPost) {
+        $card_data = $product->getCardData();
+    }
+}
+```
+
+**Relationship fields**:
+```php
+// When fetching related posts, Class Maps still work
+$category_id = get_field('post_type_product_post_product_category', $post->ID);
+
+// Returns ProductCategoryPost instance automatically
+$category = Timber::get_post($category_id);
+
+if ($category instanceof ProductCategoryPost) {
+    echo $category->title();
+}
+```
+
+### Common Error and Fix
+
+**Error message**:
+```
+Timber::get_post() was called incorrectly. The $PostClass parameter for passing
+in the post class to use in Timber::get_posts() was replaced with an $options
+array in Timber 2.0. To customize which class to instantiate for your post,
+use Class Maps instead.
+```
+
+**Cause**: Using deprecated second parameter
+
+**Fix**:
+```php
+// ❌ OLD (causes deprecation warning)
+$post = Timber::get_post($id, ProductPost::class);
+$posts = Timber::get_posts($args, ProductPost::class);
+
+// ✅ NEW (correct)
+$post = Timber::get_post($id);
+$posts = Timber::get_posts($args);
+```
+
+**Why it works**:
+- Class Maps are registered in `TalampayaStarter.php`
+- Timber automatically uses the correct model class based on post type
+- No need to specify class in every call
+
+### Adding New Models to Class Maps
+
+When creating a new model, register it in `TalampayaStarter.php`:
+
+1. **Create model** following `*Post` naming convention:
+   ```php
+   // /src/Inc/Models/EventPost.php
+   class EventPost extends AbstractPost {
+       // Custom methods...
+   }
+   ```
+
+2. **Register in Class Map**:
+   ```php
+   public function extendPostClassmap(array $classmap): array
+   {
+       $custom_classmap = [
+           // ... existing mappings ...
+           'event_post' => \App\Inc\Models\EventPost::class,  // Add new mapping
+       ];
+
+       return array_merge($classmap, $custom_classmap);
+   }
+   ```
+
+3. **Use without specifying class**:
+   ```php
+   // Timber automatically uses EventPost class
+   $event = Timber::get_post($event_id);
+   ```
+
+**See also**: [APPLICATION-LAYER.md](APPLICATION-LAYER.md#model-naming-convention) for model creation details.
+
+### Benefits
+
+1. **Cleaner code**: No need to pass class parameter every time
+2. **Centralized mapping**: All model mappings in one place
+3. **Automatic type resolution**: Timber handles instantiation
+4. **Better maintainability**: Easy to see all model mappings
+5. **Timber 2.0 compliance**: No deprecation warnings
+
 ## Working with Menus
 
 **Controller**:
@@ -417,8 +596,8 @@ $context['menu'] = Timber::get_menu('primary');
 ## Best Practices
 
 1. **Keep logic in PHP, presentation in Twig**:
-   - Process data in controllers or context extenders
-   - Use Twig for display only
+    - Process data in controllers or context extenders
+    - Use Twig for display only
 
 2. **Use template inheritance**:
    ```twig
