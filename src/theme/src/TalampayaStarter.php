@@ -65,6 +65,8 @@ class TalampayaStarter extends Site
 		add_filter("timber/twig", [$this, "addToTwig"]);
 		add_filter("timber/twig/environment/options", [$this, "updateTwigEnvironmentOptions"]);
 		add_filter("timber/locations", [$this, "addLocations"]);
+		add_filter("timber/post/classmap", [$this, "extendPostClassmap"]);
+		add_filter("timber/term/classmap", [$this, "extendTermClassmap"]);
 
 		parent::__construct();
 	}
@@ -130,5 +132,35 @@ class TalampayaStarter extends Site
 	public function getContentGeneratorManager(): ?ContentGeneratorManager
 	{
 		return $this->contentGeneratorManager ?? null;
+	}
+
+	/**
+	 * Extiende el mapa de clases para Posts personalizados
+	 *
+	 * @param array $classmap Mapa de clases actual
+	 * @return array Mapa de clases extendido
+	 */
+	public function extendPostClassmap(array $classmap): array
+	{
+		$custom_classmap = [
+			"project_post" => \App\Inc\Models\ProjectPost::class,
+		];
+
+		return array_merge($classmap, $custom_classmap);
+	}
+
+	/**
+	 * Extiende el mapa de clases para Taxonomías personalizadas
+	 *
+	 * @param array $classmap Mapa de clases actual
+	 * @return array Mapa de clases extendido
+	 */
+	public function extendTermClassmap(array $classmap): array
+	{
+		$custom_classmap = [
+			"epic" => \App\Inc\Models\EpicTaxonomy::class,
+		];
+
+		return array_merge($classmap, $custom_classmap);
 	}
 }
