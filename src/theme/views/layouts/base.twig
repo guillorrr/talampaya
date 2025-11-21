@@ -44,9 +44,9 @@
 	<body id="{{ page.name }}-page" class="{{ body_class }} {{ layout_class }}">
 		{{ function("wp_body_open") }}
 
-		{% block main_content %}
+		{% block layout_base_content %}
 			Sorry, no content
-		{% endblock main_content %}
+		{% endblock layout_base_content %}
 
 		{% block scripts %}
 
