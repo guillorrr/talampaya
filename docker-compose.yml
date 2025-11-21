@@ -196,6 +196,7 @@ services:
     volumes:
       - './build:/var/www/html'
       - './composer.json:/var/www/html/composer.json.template'
+      - './docker/scripts:/var/www/scripts:ro'
       - '.env:/var/www/html/.env'
     environment:
         APP_NAME: ${APP_NAME}
@@ -211,22 +212,47 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "
+      echo 'Composer service starting...' &&
       sed \"s|wp-content/themes/talampaya/|wp-content/themes/$${APP_NAME}/|g\" composer.json.template > composer.json &&
-      composer update --ignore-platform-reqs --no-scripts
+      if . /var/www/scripts/check-connectivity.sh; then
+        echo 'Running composer update...' &&
+        composer update --ignore-platform-reqs --no-scripts
+      else
+        echo '⚠️  Skipping composer update (no internet connection)' &&
+        echo '   Dependencies will use existing vendor/ directory' &&
+        echo '   Run \"docker compose restart composer\" when online to update'
+      fi &&
+      exit 0
       "
 
   mkcert:
     build: ./docker/mkcert/
     image: talampaya-mkcert:latest
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
     volumes:
       - ./certs:/root/.local/share/mkcert
+      - ./docker/scripts:/var/www/scripts:ro
     command:
       - sh
       - -c
       - |
-        mkcert -cert-file "${DOMAIN:-localhost}.crt" \
-        -key-file "${DOMAIN:-localhost}.key" "${DOMAIN:-localhost}" "*.${DOMAIN:-localhost}" \
-        && mkcert -install ${DOMAIN:-localhost}
+        echo "mkcert service starting..."
+
+        if . /var/www/scripts/check-connectivity.sh; then
+          echo "Generating SSL certificates..."
+          mkcert -cert-file "${DOMAIN:-localhost}.crt" \
+          -key-file "${DOMAIN:-localhost}.key" "${DOMAIN:-localhost}" "*.${DOMAIN:-localhost}" \
+          && mkcert -install ${DOMAIN:-localhost}
+        else
+          echo "⚠️  Skipping mkcert install (no internet connection)"
+          echo "   Generating self-signed certificates only..."
+          mkcert -cert-file "${DOMAIN:-localhost}.crt" \
+          -key-file "${DOMAIN:-localhost}.key" "${DOMAIN:-localhost}" "*.${DOMAIN:-localhost}" || true
+          echo "   Run 'docker compose restart mkcert' when online to install CA"
+        fi
+
+        exit 0
 
   # Redis cache
   redis:

@@ -27,6 +27,7 @@ Complete guide to the Docker-based development environment for Talampaya.
     - [Viewing Logs](#viewing-logs)
     - [Accessing Containers](#accessing-containers)
   - [Troubleshooting](#troubleshooting)
+    - [Offline Mode](#offline-mode)
 
 ## Overview
 
@@ -320,6 +321,31 @@ docker compose restart db
 
 **Port conflicts**:
 If ports 80, 443, 3306, 8082, 8025 are already in use, edit `docker-compose.yml` to use different ports.
+
+### Offline Mode
+
+**No internet connection**:
+The stack can start without internet, but some services will skip their initialization:
+
+| Service | Behavior without Internet | Workaround |
+|---------|---------------------------|------------|
+| `composer` | Skips `composer update`, uses existing `vendor/` | Run `docker compose restart composer` when online |
+| `mkcert` | Skips CA install, generates certificates only | Run `docker compose restart mkcert` when online |
+| All others | Work normally | - |
+
+If you see these messages during startup:
+```
+✗ No internet connection detected
+⚠️  Skipping composer update (no internet connection)
+⚠️  Skipping mkcert install (no internet connection)
+```
+
+The stack will continue starting. Update dependencies later:
+```bash
+# When internet is restored
+docker compose restart composer
+docker compose restart mkcert
+```
 
 ---
 
