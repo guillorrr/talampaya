@@ -341,9 +341,9 @@ function wrapWithTemplate(content) {
 		// Si no tiene extends, aplicamos el wrapper
 		const template = `{% extends "@layouts/base.twig" %}
 
-{% block main_content %}
+{% block layout_base_content %}
 ###CONTENT###
-{% endblock main_content %}
+{% endblock layout_base_content %}
 `;
 		return template.replace('###CONTENT###', content);
 	}

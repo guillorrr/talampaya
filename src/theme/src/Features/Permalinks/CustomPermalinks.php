@@ -24,8 +24,8 @@ class CustomPermalinks
 		// Parsear la query
 		add_filter("request", [$this, "parseRequest"]);
 
-		// Modificar permalink de productos
-		add_filter("post_type_link", [$this, "productPermalink"], 10, 2);
+		// Modificar permalink de posts personalizados
+		add_filter("post_type_link", [$this, "customPostTypePermalink"], 10, 2);
 	}
 
 	/**
@@ -80,5 +80,21 @@ class CustomPermalinks
 		}
 
 		return $query_vars;
+	}
+
+	/**
+	 * Modifica el permalink de los custom post types
+	 *
+	 * @param string $post_link El permalink original
+	 * @param \WP_Post $post El objeto post
+	 * @return string El permalink modificado
+	 */
+	public function customPostTypePermalink(string $post_link, \WP_Post $post): string
+	{
+		if ($post->post_type !== "project_post") {
+			return $post_link;
+		} else {
+			return home_url("/" . $post->post_name . "/");
+		}
 	}
 }

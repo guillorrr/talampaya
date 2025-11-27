@@ -5,50 +5,50 @@ Complete guide to the Application Layer patterns in Talampaya: Controllers, Serv
 ## Table of Contents
 
 - [Application Layer](#application-layer)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Controllers](#controllers)
-    - [What are Controllers?](#what-are-controllers)
-    - [Controller Responsibilities](#controller-responsibilities)
-    - [DefaultController Example](#defaultcontroller-example)
-    - [Creating Custom Controllers](#creating-custom-controllers)
-    - [Best Practices for Controllers](#best-practices-for-controllers)
-  - [Services](#services)
-    - [What are Services?](#what-are-services)
-    - [Service Responsibilities](#service-responsibilities)
-    - [AbstractImportService Example](#abstractimportservice-example)
-    - [Creating Custom Services](#creating-custom-services)
-    - [Best Practices for Services](#best-practices-for-services)
-  - [Models](#models)
-    - [What are Models?](#what-are-models)
-    - [AbstractPost Pattern](#abstractpost-pattern)
-    - [ProjectPost Example](#projectpost-example)
-    - [Creating Custom Models](#creating-custom-models)
-    - [Best Practices for Models](#best-practices-for-models)
-  - [Traits](#traits)
-    - [What are Traits?](#what-are-traits)
-    - [ImportDataTrait Example](#importdatatrait-example)
-    - [CsvProcessorTrait Example](#csvprocessortrait-example)
-    - [Creating Custom Traits](#creating-custom-traits)
-    - [Traits vs Inheritance](#traits-vs-inheritance)
-    - [Best Practices for Traits](#best-practices-for-traits)
-  - [Helpers](#helpers)
-    - [What are Helpers?](#what-are-helpers)
-    - [Existing Helpers](#existing-helpers)
-    - [AcfHelper Example](#acfhelper-example)
-    - [Creating Custom Helpers](#creating-custom-helpers)
-    - [Helpers vs Services](#helpers-vs-services)
-    - [Best Practices for Helpers](#best-practices-for-helpers)
-  - [Template Files](#template-files)
-    - [Keep Template Files Simple](#keep-template-files-simple)
-    - [Single Post Templates](#single-post-templates)
-    - [Archive Templates](#archive-templates)
-    - [Custom Post Type Templates](#custom-post-type-templates)
-  - [Decision Matrix](#decision-matrix)
-  - [Integration Patterns](#integration-patterns)
-  - [Complete Examples](#complete-examples)
-    - [Example 1: Product Feature](#example-1-product-feature)
-    - [Example 2: Import System](#example-2-import-system)
+    - [Table of Contents](#table-of-contents)
+    - [Overview](#overview)
+    - [Controllers](#controllers)
+        - [What are Controllers?](#what-are-controllers)
+        - [Controller Responsibilities](#controller-responsibilities)
+        - [DefaultController Example](#defaultcontroller-example)
+        - [Creating Custom Controllers](#creating-custom-controllers)
+        - [Best Practices for Controllers](#best-practices-for-controllers)
+    - [Services](#services)
+        - [What are Services?](#what-are-services)
+        - [Service Responsibilities](#service-responsibilities)
+        - [AbstractImportService Example](#abstractimportservice-example)
+        - [Creating Custom Services](#creating-custom-services)
+        - [Best Practices for Services](#best-practices-for-services)
+    - [Models](#models)
+        - [What are Models?](#what-are-models)
+        - [AbstractPost Pattern](#abstractpost-pattern)
+        - [ProjectPost Example](#projectpost-example)
+        - [Creating Custom Models](#creating-custom-models)
+        - [Best Practices for Models](#best-practices-for-models)
+    - [Traits](#traits)
+        - [What are Traits?](#what-are-traits)
+        - [ImportDataTrait Example](#importdatatrait-example)
+        - [CsvProcessorTrait Example](#csvprocessortrait-example)
+        - [Creating Custom Traits](#creating-custom-traits)
+        - [Traits vs Inheritance](#traits-vs-inheritance)
+        - [Best Practices for Traits](#best-practices-for-traits)
+    - [Helpers](#helpers)
+        - [What are Helpers?](#what-are-helpers)
+        - [Existing Helpers](#existing-helpers)
+        - [AcfHelper Example](#acfhelper-example)
+        - [Creating Custom Helpers](#creating-custom-helpers)
+        - [Helpers vs Services](#helpers-vs-services)
+        - [Best Practices for Helpers](#best-practices-for-helpers)
+    - [Template Files](#template-files)
+        - [Keep Template Files Simple](#keep-template-files-simple)
+        - [Single Post Templates](#single-post-templates)
+        - [Archive Templates](#archive-templates)
+        - [Custom Post Type Templates](#custom-post-type-templates)
+    - [Decision Matrix](#decision-matrix)
+    - [Integration Patterns](#integration-patterns)
+    - [Complete Examples](#complete-examples)
+        - [Example 1: Product Feature](#example-1-product-feature)
+        - [Example 2: Import System](#example-2-import-system)
 
 ## Overview
 
@@ -615,11 +615,223 @@ class ProjectPost extends AbstractPost
 }
 ```
 
+### Model Naming Convention
+
+**IMPORTANT**: All model classes MUST follow the `*Post` naming convention:
+
+| Post Type | Model Class Name | File Name |
+|-----------|------------------|-----------|
+| `product_post` | `ProductPost` | `ProductPost.php` |
+| `product_cat_post` | `ProductCategoryPost` | `ProductCategoryPost.php` |
+| `success_story_post` | `SuccessStoryPost` | `SuccessStoryPost.php` |
+| `testimonial_post` | `TestimonialPost` | `TestimonialPost.php` |
+| `project_post` | `ProjectPost` | `ProjectPost.php` |
+
+**Why?**
+- Consistency across the codebase
+- Clear distinction between models and other classes
+- Easier to identify post type models at a glance
+
+### Timber Classmap Integration
+
+To use custom models with Timber, you MUST register them in the Timber classmap filters. This allows Timber to automatically instantiate your custom model classes instead of the default `Timber\Post`.
+
+**Location**: `src/TalampayaStarter.php:68-172`
+
+#### Post Classmap
+
+Register custom post type models:
+
+```php
+add_filter("timber/post/classmap", [$this, "extendPostClassmap"]);
+
+public function extendPostClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        "product_post" => \App\Inc\Models\ProductPost::class,
+        "product_cat_post" => \App\Inc\Models\ProductCategoryPost::class,
+        "success_story_post" => \App\Inc\Models\SuccessStoryPost::class,
+        "testimonial_post" => \App\Inc\Models\TestimonialPost::class,
+        "project_post" => \App\Inc\Models\ProjectPost::class,
+        "sector_post" => \App\Inc\Models\SectorPost::class,
+        "service_post" => \App\Inc\Models\ServicePost::class,
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+```
+
+#### Term Classmap
+
+Register custom taxonomy term models:
+
+```php
+add_filter("timber/term/classmap", [$this, "extendTermClassmap"]);
+
+public function extendTermClassmap(array $classmap): array
+{
+    $custom_classmap = [
+        "product_series" => \App\Inc\Models\ProductSeries::class,
+        "epic" => \App\Inc\Models\Epic::class,
+    ];
+
+    return array_merge($classmap, $custom_classmap);
+}
+```
+
+**Benefits**:
+- Timber automatically uses your custom models when fetching posts
+- `Timber::get_post()` returns instance of your model class
+- `Timber::get_posts()` returns collection of your model instances
+- All custom methods available without explicit class specification
+
+**Example**:
+
+```php
+$product = Timber::get_post($product_id); // Returns ProductPost instance
+$product->image(); // Custom method available
+$product->tag();   // Custom method available
+```
+
+### Custom Field Getter Methods
+
+Models should include getter methods for all custom fields following this pattern:
+
+```php
+/**
+ * Get post title
+ */
+public function title(): string
+{
+    return $this->post_title;
+}
+
+/**
+ * Get main image
+ */
+public function image(): ?array
+{
+    return $this->meta("post_type_product_post_main_image");
+}
+
+/**
+ * Get product tag
+ */
+public function tag(): ?string
+{
+    return $this->meta("post_type_product_post_tag");
+}
+
+/**
+ * Get tags as formatted array
+ */
+public function tags(): array
+{
+    $raw = $this->meta("post_type_product_post_tags");
+    if (!is_array($raw)) {
+        return [];
+    }
+
+    return array_map(function ($item) {
+        return [
+            "text" => $item["tag_text"] ?? "",
+        ];
+    }, $raw);
+}
+```
+
+**Benefits**:
+- Controllers can use `$product->image()` instead of `get_field()`
+- Consistent API across all models
+- Easier to refactor field names
+- Type safety with return type hints
+- Transformations centralized in one place
+
+### Card Data Methods - Separation of Concerns
+
+Models should provide a `getCardData()` method that returns **only data**, without presentation properties. Controllers are responsible for adding presentation properties (types, buttons, classes, etc.).
+
+**IMPORTANT**: Models return data, Controllers add presentation.
+
+**Model example** (`ProductPost.php`):
+
+```php
+/**
+ * Get card data (only data, no presentation properties)
+ */
+public function getCardData(): array
+{
+    $image = $this->image();
+
+    return [
+        "image" => $image ? $image["url"] : null,
+        "tag" => $this->tag(),
+        "title" => $this->title(),
+        "description" => $this->description(),
+        "url" => $this->link(),
+    ];
+}
+```
+
+**Controller example** (`ProductController.php`):
+
+```php
+$cards = [];
+foreach ($products as $product) {
+    $card_data = $product->getCardData();
+
+    // Controller adds presentation properties
+    $card = [
+        "type" => "product",              // Presentation
+        "orientation" => "horizontal",     // Presentation
+        "image" => $card_data["image"],
+        "tag" => $card_data["tag"] ? ["label" => $card_data["tag"]] : null,
+        "title" => $card_data["title"],
+        "description" => $card_data["description"],
+        "btn" => [                         // Presentation
+            "label" => __("View product", "talampaya"),
+            "type" => "ghost",
+            "color" => "primary",
+            "icon" => "arrow-right",
+            "href" => $card_data["url"],
+        ],
+        "href" => $card_data["url"],
+        "classes" => "custom-class",       // Presentation (optional)
+    ];
+
+    $cards[] = $card;
+}
+```
+
+**Why separate data from presentation?**
+
+1. **Reusability**: Same card data can be used in different contexts with different styles
+2. **Flexibility**: Controllers can customize presentation per module/section
+3. **Single Responsibility**: Models handle data, Controllers handle presentation
+4. **Testability**: Easier to test data without presentation logic
+
+**Example with different presentations**:
+
+```php
+// Homepage - Vertical cards
+$card = $product->getCardData();
+$card["type"] = "product";
+$card["orientation"] = "vertical";
+$card["btn"]["color"] = "primary";
+
+// Sidebar - Horizontal cards
+$card = $product->getCardData();
+$card["type"] = "product";
+$card["orientation"] = "horizontal";
+$card["btn"]["color"] = "secondary";
+$card["classes"] = "sidebar-card";
+```
+
 ### Creating Custom Models
 
 **Steps**:
 
-1. **Create model** in `/src/theme/src/Inc/Models/`:
+1. **Create model** in `/src/theme/src/Inc/Models/` (with `*Post` suffix):
 
 ```php
 <?php
