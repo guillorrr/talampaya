@@ -99,6 +99,19 @@ show_help() {
     echo "  - Templates y pages de ejemplo de PatternLab"
     echo "  - Estilos SCSS asociados a componentes"
     echo "  - Actualiza views/pages para usar templates mínimos locales"
+    echo "  - Theme scaffolding:"
+    echo "      - ProjectPostType, EpicTaxonomy"
+    echo "      - Models (ProjectPost, EpicTaxonomy)"
+    echo "      - ACF Fields para ProjectPost"
+    echo "      - Import system (ProjectImport, ImportPagesSettings)"
+    echo "      - CustomPermalinks (project_post)"
+    echo "      - LegalPagesGenerator y contenido HTML"
+    echo "      - Example endpoint y modifier"
+    echo "      - Geolocation integration"
+    echo "  - Limpia referencias en:"
+    echo "      - TalampayaStarter.php (classmaps)"
+    echo "      - DefaultMenus.php (projects menu)"
+    echo "      - MenuContext.php (projects_menu context)"
     echo ""
 }
 
@@ -233,11 +246,29 @@ analyze_project() {
 
     # Archivos individuales de scaffolding
     local scaffolding_files=(
+        # PostType y Taxonomy de ejemplo
         "$theme_src/Register/PostType/ProjectPostType.php"
         "$theme_src/Register/Taxonomy/EpicTaxonomy.php"
+        # Models de ejemplo
         "$theme_src/Inc/Models/ProjectPost.php"
         "$theme_src/Inc/Models/EpicTaxonomy.php"
+        # ContentGenerator de ejemplo
         "$theme_src/Features/ContentGenerator/Generators/ProjectPostGenerator.php"
+        "$theme_src/Features/ContentGenerator/Generators/LegalPagesGenerator.php"
+        # ACF Fields de ejemplo
+        "$theme_src/Features/Acf/Fields/ProjectPost/ProjectPostFields.php"
+        "$theme_src/Features/Acf/Fields/ProjectPost/project_post_admin_columns.php"
+        # Import de ejemplo
+        "$theme_src/Features/Import/ProjectImport.php"
+        "$theme_src/Inc/Services/ProjectImportService.php"
+        "$theme_src/Features/Admin/Pages/ImportPagesSettings.php"
+        "$theme_src/Mockups/projects.csv"
+        # Permalinks de ejemplo (100% para project_post)
+        "$theme_src/Features/Permalinks/CustomPermalinks.php"
+        # Endpoints y modifiers de ejemplo
+        "$theme_src/Core/Endpoints/Custom/example-endpoint.php"
+        "$theme_src/Features/Acf/Blocks/Modifiers/example-modifier.php"
+        # Geolocation
         "$theme_src/Features/Admin/Pages/GeolocationSettings.php"
         "$theme_src/Features/Acf/Blocks/Modifiers/geolocation-modifier.php"
         "$theme_src/Core/Endpoints/GeolocationEndpoint.php"
@@ -259,6 +290,8 @@ analyze_project() {
     local scaffolding_dirs=(
         "$theme_blocks/example"
         "$theme_src/Integrations/Geolocation"
+        "$theme_src/Features/Acf/Fields/ProjectPost"
+        "$theme_src/Features/DefaultContent"
     )
 
     for dir in "${scaffolding_dirs[@]}"; do
@@ -320,7 +353,7 @@ show_analysis_summary() {
         echo -e "  Total:       $total_scaffolding elementos"
         echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_THEME_SCAFFOLDING[@]}${NC}"
         echo -e "  ${YELLOW}Modificados: ${#MODIFIED_THEME_SCAFFOLDING[@]}${NC}"
-        echo -e "  ${DIM}(ProjectPostType, EpicTaxonomy, example block, Geolocation)${NC}"
+        echo -e "  ${DIM}(PostType, Taxonomy, Models, ACF Fields, Import, Permalinks, Legales, Examples, Geolocation)${NC}"
         echo ""
     fi
 
@@ -1055,8 +1088,8 @@ process_theme_scaffolding() {
     echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
     echo ""
 
-    echo -e "${DIM}Incluye: ProjectPostType, EpicTaxonomy, ProjectPost model,${NC}"
-    echo -e "${DIM}         EpicTaxonomy model, example block, Geolocation${NC}"
+    echo -e "${DIM}Incluye: ProjectPostType, EpicTaxonomy, models, ACF Fields,${NC}"
+    echo -e "${DIM}         Import, Permalinks, LegalPages, examples, Geolocation${NC}"
     echo ""
 
     local total_modified=${#MODIFIED_THEME_SCAFFOLDING[@]}
@@ -1078,8 +1111,9 @@ process_theme_scaffolding() {
             for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
                 [[ -d "$dir" ]] && delete_item "$dir"
             done
-            # Limpiar referencias a geolocation
+            # Limpiar referencias en archivos que no se eliminan
             clean_geolocation_references
+            clean_project_references
         else
             echo -e "${BLUE}→${NC} Theme scaffolding mantenido"
         fi
@@ -1118,8 +1152,9 @@ process_theme_scaffolding() {
                 for item in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
                     [[ -e "$item" ]] && process_single_item "$item" "true"
                 done
-                # Limpiar referencias a geolocation
+                # Limpiar referencias en archivos que no se eliminan
                 clean_geolocation_references
+                clean_project_references
                 ;;
             2)
                 # Revisar todos
@@ -1150,8 +1185,9 @@ process_theme_scaffolding() {
                 for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
                     [[ -d "$dir" ]] && delete_item "$dir"
                 done
-                # Limpiar referencias a geolocation
+                # Limpiar referencias en archivos que no se eliminan
                 clean_geolocation_references
+                clean_project_references
                 ;;
             *)
                 echo -e "${BLUE}→${NC} Theme scaffolding mantenido"
@@ -1165,7 +1201,9 @@ process_theme_scaffolding() {
 #######################################
 clean_geolocation_references() {
     local backend_js="$PROJECT_ROOT/src/theme/assets/scripts/backend.js"
+    local endpoints_manager="$PROJECT_ROOT/src/theme/src/Core/Endpoints/EndpointsManager.php"
 
+    # Limpiar backend.js
     if [[ -f "$backend_js" ]] && grep -q "geolocation" "$backend_js" 2>/dev/null; then
         echo -e "${BOLD}Limpiando referencias a geolocation...${NC}"
 
@@ -1192,6 +1230,207 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 EOF
             echo -e "${GREEN}✓${NC} Limpiado: src/theme/assets/scripts/backend.js"
+        fi
+    fi
+
+    # Limpiar EndpointsManager.php - quitar referencia a GeolocationEndpoint
+    if [[ -f "$endpoints_manager" ]] && grep -q "GeolocationEndpoint" "$endpoints_manager" 2>/dev/null; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            echo -e "${YELLOW}[DRY-RUN]${NC} Se limpiaría: src/theme/src/Core/Endpoints/EndpointsManager.php"
+        else
+            cat > "$endpoints_manager" << 'EOF'
+<?php
+
+namespace App\Core\Endpoints;
+
+use App\Utils\FileUtils;
+
+/**
+ * Gestor centralizado para todos los endpoints de la API
+ */
+class EndpointsManager
+{
+	/**
+	 * Endpoints registrados
+	 *
+	 * @var EndpointInterface[]
+	 */
+	private array $endpoints = [];
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->registerCoreEndpoints();
+		$this->registerCustomEndpoints();
+	}
+
+	/**
+	 * Registra los endpoints principales
+	 */
+	private function registerCoreEndpoints(): void
+	{
+		// Registrar endpoints básicos aquí
+		// $this->addEndpoint(new MiEndpoint());
+	}
+
+	/**
+	 * Registra endpoints personalizados desde archivos
+	 */
+	private function registerCustomEndpoints(): void
+	{
+		if (defined("API_ENDPOINTS_PATH") && is_dir(API_ENDPOINTS_PATH)) {
+			$files = FileUtils::talampaya_directory_iterator(API_ENDPOINTS_PATH);
+
+			foreach ($files as $file) {
+				require_once $file;
+
+				$className = pathinfo($file, PATHINFO_FILENAME);
+				$fullyQualifiedClassName = "\\App\\Core\\Endpoints\\Custom\\$className";
+
+				if (
+					class_exists($fullyQualifiedClassName) &&
+					is_subclass_of($fullyQualifiedClassName, EndpointInterface::class)
+				) {
+					$this->addEndpoint(new $fullyQualifiedClassName());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Añade un endpoint
+	 *
+	 * @param EndpointInterface $endpoint Endpoint a añadir
+	 */
+	public function addEndpoint(EndpointInterface $endpoint): void
+	{
+		$this->endpoints[] = $endpoint;
+	}
+
+	/**
+	 * Registra todos los endpoints en WordPress
+	 */
+	public function registerAllEndpoints(): void
+	{
+		// Inicializar los endpoints cuando se inicialice la API REST
+		add_action("rest_api_init", function () {
+			foreach ($this->endpoints as $endpoint) {
+				$endpoint->register();
+			}
+		});
+	}
+}
+EOF
+            echo -e "${GREEN}✓${NC} Limpiado: src/theme/src/Core/Endpoints/EndpointsManager.php"
+        fi
+    fi
+}
+
+clean_project_references() {
+    echo ""
+    echo -e "${BOLD}Limpiando referencias a project/epic en archivos del theme...${NC}"
+
+    local theme_src="$PROJECT_ROOT/src/theme/src"
+
+    # Limpiar TalampayaStarter.php - extendPostClassmap y extendTermClassmap
+    local starter_file="$theme_src/TalampayaStarter.php"
+    if [[ -f "$starter_file" ]] && grep -q "project_post\|ProjectPost\|epic\|EpicTaxonomy" "$starter_file" 2>/dev/null; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            echo -e "${YELLOW}[DRY-RUN]${NC} Se limpiaría: src/theme/src/TalampayaStarter.php"
+        else
+            # Usar php para modificar el archivo de forma segura
+            php -r '
+            $file = $argv[1];
+            $content = file_get_contents($file);
+
+            // Limpiar extendPostClassmap
+            $content = preg_replace(
+                "/public function extendPostClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
+                "public function extendPostClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de post types personalizados aquí\n\t\t\t// \"mi_post_type\" => \\App\\Inc\\Models\\MiPostType::class,\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
+                $content
+            );
+
+            // Limpiar extendTermClassmap
+            $content = preg_replace(
+                "/public function extendTermClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
+                "public function extendTermClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de taxonomías personalizadas aquí\n\t\t\t// \"mi_taxonomy\" => \\App\\Inc\\Models\\MiTaxonomy::class,\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
+                $content
+            );
+
+            file_put_contents($file, $content);
+            ' "$starter_file"
+
+            echo -e "${GREEN}✓${NC} Limpiado: src/theme/src/TalampayaStarter.php (classmaps)"
+        fi
+    fi
+
+    # Limpiar DefaultMenus.php - quitar "projects" menu
+    local menus_file="$theme_src/Register/Menu/DefaultMenus.php"
+    if [[ -f "$menus_file" ]]; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            echo -e "${YELLOW}[DRY-RUN]${NC} Se limpiaría: src/theme/src/Register/Menu/DefaultMenus.php"
+        else
+            cat > "$menus_file" << 'EOF'
+<?php
+
+namespace App\Register\Menu;
+
+use App\Register\Menu\AbstractMenu;
+
+class DefaultMenus extends AbstractMenu
+{
+	protected function configure(): array
+	{
+		return [
+			"main" => esc_html__("Principal", "talampaya"),
+			// Agregar más menús aquí
+			// "footer" => esc_html__("Footer", "talampaya"),
+		];
+	}
+}
+EOF
+            echo -e "${GREEN}✓${NC} Limpiado: src/theme/src/Register/Menu/DefaultMenus.php"
+        fi
+    fi
+
+    # Limpiar MenuContext.php - quitar projects_menu
+    local menu_context_file="$theme_src/Core/ContextExtender/Custom/MenuContext.php"
+    if [[ -f "$menu_context_file" ]]; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            echo -e "${YELLOW}[DRY-RUN]${NC} Se limpiaría: src/theme/src/Core/ContextExtender/Custom/MenuContext.php"
+        else
+            cat > "$menu_context_file" << 'EOF'
+<?php
+
+namespace App\Core\ContextExtender\Custom;
+
+use App\Core\ContextExtender\ContextExtenderInterface;
+use App\Inc\Controllers\MenuController;
+
+/**
+ * Clase que agrega los menús al contexto global de Timber
+ */
+class MenuContext implements ContextExtenderInterface
+{
+	/**
+	 * Extiende el contexto de Timber
+	 *
+	 * @param array $context El contexto actual de Timber
+	 * @return array El contexto modificado
+	 */
+	public function extendContext(array $context): array
+	{
+		$context["main_menu"] = MenuController::getPatternLabMenu("main");
+		// Agregar más menús al contexto aquí
+		// $context["footer_menu"] = MenuController::getPatternLabMenu("footer");
+
+		return $context;
+	}
+}
+EOF
+            echo -e "${GREEN}✓${NC} Limpiado: src/theme/src/Core/ContextExtender/Custom/MenuContext.php"
         fi
     fi
 }
@@ -1360,6 +1599,7 @@ main() {
             [[ -d "$dir" ]] && delete_item "$dir"
         done
         clean_geolocation_references
+        clean_project_references
         show_summary
         exit 0
     fi
