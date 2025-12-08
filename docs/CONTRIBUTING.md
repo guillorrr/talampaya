@@ -14,6 +14,8 @@ Guidelines and conventions for contributing to Talampaya.
         - [PHP Classes](#php-classes)
         - [Files](#files)
         - [Variables](#variables)
+        - [Custom Post Types](#custom-post-types)
+        - [ACF Custom Fields](#acf-custom-fields)
     - [Class Architecture](#class-architecture)
         - [Helper Classes (Static)](#helper-classes-static)
         - [Service Classes (Instantiated)](#service-classes-instantiated)
@@ -260,6 +262,113 @@ Timber::render($templates, $context);
 | `product_post` | `ProductPost` | `Product` | `single-product_post.php` | `single-product_post.twig` |
 | `sector_post` | `SectorPost` | `Sector` | `single-sector_post.php` | `single-sector_post.twig` |
 | `product_cat_post` | `ProductCategoryPost` | `ProductCategory` | `single-product_cat_post.php` | `single-product_cat_post.twig` |
+
+### ACF Custom Fields
+
+**IMPORTANT**: All ACF custom fields for Custom Post Types MUST follow these naming conventions:
+
+**Meta key prefix**:
+- Format: `post_type_{cpt_slug}_*`
+- Examples:
+  - `post_type_product_post_price`
+  - `post_type_vendor_post_email`
+  - `post_type_project_post_client_name`
+
+**Why this convention?**:
+- Avoids conflicts between different post types
+- Clear identification of field ownership
+- Consistent across all custom post types
+- Enables automatic field name transformation via `AcfHelper`
+
+**Model implementation**:
+
+Each model MUST implement a static `getMetaPrefix()` method:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Inc\Models;
+
+use Timber\Post;
+
+class VendorPost extends Post
+{
+    /**
+     * Returns the meta key prefix for this post type
+     */
+    public static function getMetaPrefix(): string
+    {
+        return "post_type_vendor_post_";
+    }
+
+    /**
+     * Example getter using the prefix
+     */
+    public function getEmail(): string
+    {
+        return $this->meta(self::getMetaPrefix() . "email") ?: "";
+    }
+
+    public function getPhone(): string
+    {
+        return $this->meta(self::getMetaPrefix() . "phone") ?: "";
+    }
+}
+```
+
+**ACF field registration**:
+
+When registering ACF fields, use the `AcfHelper::talampaya_replace_keys_from_acf_register_fields()` function which automatically adds the prefix:
+
+```php
+<?php
+// File: src/Features/Acf/Fields/Vendor/VendorFields.php
+
+use App\Inc\Helpers\AcfHelper;
+
+class VendorFields
+{
+    private string $post_type = "vendor_post";
+
+    private function registerContactGroup(): void
+    {
+        // Field names WITHOUT prefix - helper adds it automatically
+        $fields = [
+            ["email", "email", 50, __("Email", "flavor"), 1],
+            ["phone", "text", 50, __("Teléfono", "flavor"), 0],
+            ["whatsapp", "text", 50, __("WhatsApp", "flavor"), 0],
+        ];
+
+        // Helper transforms "email" → "post_type_vendor_post_email"
+        acf_add_local_field_group(
+            AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+                $this->post_type,
+                "group_vendor_post_contact",
+                __("Contacto", "flavor"),
+                $fields,
+                [["param" => "post_type", "operator" => "==", "value" => $this->post_type]],
+                20
+            )
+        );
+    }
+}
+```
+
+**Field naming reference table**:
+
+| Field Name (in code) | Meta Key (in database) | Access in Model |
+|---------------------|------------------------|-----------------|
+| `email` | `post_type_vendor_post_email` | `$this->meta(self::getMetaPrefix() . "email")` |
+| `phone` | `post_type_vendor_post_phone` | `$this->meta(self::getMetaPrefix() . "phone")` |
+| `social_instagram` | `post_type_vendor_post_social_instagram` | `$this->meta(self::getMetaPrefix() . "social_instagram")` |
+
+**Best practices**:
+1. Always use `getMetaPrefix()` when accessing meta in models
+2. Never hardcode meta keys like `"vendor_email"` - always use the prefix
+3. Group related fields with sub-prefixes: `social_facebook`, `social_instagram`
+4. Use the ACF helper for field registration to ensure consistent naming
 
 ## Class Architecture
 
