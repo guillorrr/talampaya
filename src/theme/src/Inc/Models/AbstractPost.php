@@ -36,6 +36,19 @@ abstract class AbstractPost extends \Timber\Post
 	}
 
 	/**
+	 * Obtiene el prefijo para las meta keys de este post type
+	 *
+	 * Convención: post_type_{post_type_slug}_
+	 * Ejemplo: post_type_vendor_post_ para VendorPost
+	 *
+	 * @return string
+	 */
+	public static function getMetaPrefix(): string
+	{
+		return "post_type_" . static::getPostType() . "_";
+	}
+
+	/**
 	 * Obtiene el tipo de post predeterminado basado en el nombre de la clase
 	 *
 	 * @return string
@@ -259,7 +272,7 @@ abstract class AbstractPost extends \Timber\Post
 	 * @param string|null $post_type Tipo de post
 	 * @return static|null
 	 */
-	public function findByCustomId(string $custom_id, string $post_type = null): ?self
+	public function findByCustomId(string $custom_id, ?string $post_type = null): ?self
 	{
 		if (!is_null($post_type)) {
 			$post_type = sanitize_text_field($post_type);

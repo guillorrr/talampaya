@@ -6,6 +6,7 @@ Step-by-step guides for common development tasks in Talampaya.
 
 - [Common Tasks](#common-tasks)
     - [Table of Contents](#table-of-contents)
+    - [Cleaning Scaffolding (For Forks)](#cleaning-scaffolding-for-forks)
     - [Adding a New Post Type](#adding-a-new-post-type)
     - [Adding a New Taxonomy](#adding-a-new-taxonomy)
     - [Creating ACF Blocks](#creating-acf-blocks)
@@ -17,6 +18,91 @@ Step-by-step guides for common development tasks in Talampaya.
     - [Adding a Menu Location](#adding-a-menu-location)
     - [Adding a Sidebar](#adding-a-sidebar)
     - [Customizing Admin](#customizing-admin)
+
+## Cleaning Scaffolding (For Forks)
+
+When creating a new WordPress theme from a Talampaya fork, you'll want to remove the example/scaffolding content from PatternLab while keeping the project structure intact.
+
+**Use case**: Start a fresh theme without example atoms, molecules, organisms, templates, or pages from PatternLab.
+
+### Running the Script
+
+```bash
+# Interactive mode (recommended)
+npm run clean:scaffolding
+
+# With options
+npm run clean:scaffolding -- --help      # Show help
+npm run clean:scaffolding -- --dry-run   # Preview changes without making them
+npm run clean:scaffolding -- --yes       # Non-interactive mode (delete all)
+npm run clean:scaffolding -- --verbose   # Show detailed output
+```
+
+### What the Script Does
+
+1. **Processes PatternLab patterns** in `/patternlab/source/_patterns/`:
+   - `atoms/` - Basic building blocks (buttons, forms, images, etc.)
+   - `molecules/` - Component combinations (navigation, blocks, etc.)
+   - `organisms/` - Complex sections (header, footer, etc.)
+   - `templates/` - Page layouts
+   - `pages/` - Example pages with demo data
+   - `macros/` - Twig macros
+
+2. **Processes SCSS styles** in `/patternlab/source/css/scss/`:
+   - `objects/` - Component-specific styles
+   - `base/` - Element base styles
+
+3. **Updates theme views** in `/src/theme/views/pages/`:
+   - Replaces PatternLab includes (`@templates/*`) with minimal local templates
+   - Templates become self-contained without PatternLab dependencies
+
+### Interactive Options
+
+For each file/directory, you can choose:
+- `[e]` **Eliminar** - Delete the file/directory
+- `[m]` **Mantener** - Keep the file/directory
+- `[v]` **Ver** - View file contents before deciding
+- `[s]` **Saltar** - Skip all similar items
+- `[q]` **Salir** - Exit and show summary
+
+### Modified Files Detection
+
+The script detects if files have been modified from the original (via git). Modified files are marked with `[modificado]` to help you decide whether to keep customizations or delete.
+
+### Minimal Templates
+
+When updating `views/pages/*.twig`, the script replaces PatternLab includes with minimal, self-contained templates that:
+- Extend `layouts/base.twig`
+- Include basic header/footer structure
+- Support WordPress functions (`wp_nav_menu`, `dynamic_sidebar`, etc.)
+- Are ready for customization
+
+### Post-Cleanup Steps
+
+After running the script:
+
+```bash
+# 1. Review changes
+git diff
+
+# 2. If satisfied, commit
+git add -A
+git commit -m "chore: clean scaffolding for new project"
+
+# 3. Rebuild assets
+npm run build
+
+# 4. Test in browser
+npm run start
+```
+
+### What's Preserved
+
+The script keeps:
+- Directory structure (empty directories for your new patterns)
+- PatternLab configuration (`patternlab-config.json`, `alter-twig.php`)
+- SCSS variables and mixins (`generic/_variables.scss`, `generic/_mixins.scss`)
+- Core theme files (`src/theme/src/Core/`, etc.)
 
 ## Adding a New Post Type
 

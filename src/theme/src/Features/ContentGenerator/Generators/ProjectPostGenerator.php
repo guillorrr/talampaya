@@ -118,7 +118,7 @@ class ProjectPostGenerator extends AbstractContentGenerator
 								"field_block_example_background_color" => "#f5f5f5",
 								"field_block_example_image" => [
 									"id" => 123, // ID de la imagen (debe existir en la biblioteca de medios)
-									"url" => "https://via.placeholder.com/800x600",
+									"url" => "https://picsum.photos/800/600",
 									"alt" => "Imagen del proyecto",
 								],
 								"field_block_example_list" => [
@@ -143,15 +143,15 @@ class ProjectPostGenerator extends AbstractContentGenerator
 						"attributes" => [
 							"images" => [
 								[
-									"url" => "https://via.placeholder.com/800x600/FF5733/FFFFFF",
+									"url" => "https://picsum.photos/seed/red/800/600",
 									"alt" => "Imagen 1 del proyecto",
 								],
 								[
-									"url" => "https://via.placeholder.com/800x600/33FF57/FFFFFF",
+									"url" => "https://picsum.photos/seed/green/800/600",
 									"alt" => "Imagen 2 del proyecto",
 								],
 								[
-									"url" => "https://via.placeholder.com/800x600/3357FF/FFFFFF",
+									"url" => "https://picsum.photos/seed/blue/800/600",
 									"alt" => "Imagen 3 del proyecto",
 								],
 							],
@@ -199,7 +199,7 @@ class ProjectPostGenerator extends AbstractContentGenerator
 								"background_color" => "#e0f7fa",
 								"image" => [
 									"id" => 124,
-									"url" => "https://via.placeholder.com/800x600/CCCCCC/000000",
+									"url" => "https://picsum.photos/seed/gray/800/600",
 									"alt" => "Imagen del proyecto secundario",
 								],
 								"list" => [

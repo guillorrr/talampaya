@@ -214,6 +214,42 @@ const patternsTwig = [
 	'!./patternlab/source/_patterns/pages/**',
 ];
 
+// Directorios requeridos por Timber/Twig para namespaces
+const requiredViewsDirs = [
+	'atoms',
+	'molecules',
+	'organisms',
+	'templates',
+	'macros',
+	'pages',
+	'layouts',
+	'components',
+];
+
+/**
+ * Asegura que existan los directorios de views requeridos por Timber/Twig
+ * Esto es necesario porque TalampayaStarter.php registra estos namespaces
+ * y Twig falla si los directorios no existen
+ */
+function createEnsureViewsDirs(basePath) {
+	return function ensureViewsDirs(done) {
+		const viewsPath = `${basePath}/${themeName}/views`;
+
+		requiredViewsDirs.forEach(dir => {
+			const dirPath = path.join(viewsPath, dir);
+			if (!fs.existsSync(dirPath)) {
+				fs.mkdirSync(dirPath, { recursive: true });
+				log(`Created directory: ${dirPath}`);
+			}
+		});
+
+		done();
+	};
+}
+
+const devEnsureViewsDirs = createEnsureViewsDirs('./build/wp-content/themes');
+const prodEnsureViewsDirs = createEnsureViewsDirs('./dist/themes');
+
 function devCopyPatterns() {
 	return copyFiles(patternsTwig, '/views', './patternlab/source/_patterns');
 }
@@ -357,8 +393,14 @@ function transformTemplates() {
 			// Detectar si ya tiene una directiva extends
 			const hasExtends = fileContent.trim().startsWith('{% extends');
 
-			// Solo aplicamos la transformación si es necesario
-			const transformedContent = hasExtends ? fileContent : wrapWithTemplate(fileContent);
+			// Detectar si es un template embebible (tiene {# @embeddable #} o define bloques para embed)
+			const isEmbeddable =
+				fileContent.includes('{# @embeddable #}') ||
+				(fileContent.includes('{% block') && fileContent.includes('{% embed'));
+
+			// Solo aplicamos la transformación si es necesario y no es embebible
+			const transformedContent =
+				hasExtends || isEmbeddable ? fileContent : wrapWithTemplate(fileContent);
 
 			// Actualizar el contenido del archivo
 			file.contents = Buffer.from(transformedContent);
@@ -513,7 +555,12 @@ function processStyles(files, outputFile, subDir = '', isDev = true) {
 
 	// Configuración común
 	pipeline = pipeline
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(
+			sass({ includePaths: ['node_modules', 'patternlab/node_modules'] }).on(
+				'error',
+				sass.logError
+			)
+		)
 		.pipe(concat(outputFile))
 		.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
 
@@ -717,6 +764,7 @@ const dev = series(
 	devCopyPatterns,
 	devCopyJson,
 	devCopyPatternsTemplates,
+	devEnsureViewsDirs,
 	devServer
 );
 dev.displayName = 'dev';
@@ -753,6 +801,7 @@ const prod = series(
 	prodCopyPatterns,
 	prodCopyJson,
 	prodCopyPatternsTemplates,
+	prodEnsureViewsDirs,
 	zipProd
 );
 prod.displayName = 'prod';

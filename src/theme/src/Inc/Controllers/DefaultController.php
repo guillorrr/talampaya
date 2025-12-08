@@ -10,6 +10,19 @@ class DefaultController
 	{
 		$data = self::load_json_data("data", []);
 
+		// Si hay una página estática configurada como front page, asegurar que el post esté en el contexto
+		// Timber::context() ya debería incluir el post, pero lo verificamos por si acaso
+		if (is_front_page() && get_option("page_on_front")) {
+			$front_page_id = get_option("page_on_front");
+			// Si no está en el contexto, obtenerlo
+			if (!isset($context["post"]) || !$context["post"]) {
+				$post = Timber::get_post($front_page_id);
+				if ($post) {
+					$context["post"] = $post;
+				}
+			}
+		}
+
 		$data["touts"] = [];
 		$data["latest_posts"] = [];
 

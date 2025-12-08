@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Core\Cli\CliManager;
 use App\Core\Plugins\PluginManager;
 use App\Core\Setup;
 use App\Core\Setup\WordPressOptimizer;
@@ -51,6 +52,9 @@ class Bootstrap
 
 		// Cargar archivos adicionales
 		self::loadAdditionalFiles();
+
+		// Registrar comandos WP-CLI
+		self::initializeCliManager();
 	}
 
 	/**
@@ -130,6 +134,13 @@ class Bootstrap
 	{
 		if (class_exists("App\\Register\\RegisterManager")) {
 			RegisterManager::registerAll();
+		}
+	}
+
+	private static function initializeCliManager(): void
+	{
+		if (class_exists("App\\Core\\Cli\\CliManager")) {
+			CliManager::registerAll();
 		}
 	}
 
