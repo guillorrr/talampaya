@@ -57,7 +57,8 @@
 		"clean:build": "rm -rf build/*",
 		"clean:themes": "rm -rf build/wp-content/themes/*",
 		"clean:node": "rm -rf node_modules && rm package-lock.json",
-		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log"
+		"clean:logs": "rm -rf ./logs/* && touch ./logs/access.log && touch ./logs/error.log && touch ./logs/wordpress.log && touch ./logs/xdebug.log",
+		"clean:scaffolding": "bash ./dev/scripts/clean-scaffolding.sh"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx}": [
