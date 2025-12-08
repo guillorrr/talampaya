@@ -56,6 +56,12 @@ declare -a ALL_COMPONENT_FILES=()
 declare -a MODIFIED_COMPONENTS=()
 declare -a UNMODIFIED_COMPONENTS=()
 
+# Theme scaffolding files
+declare -a THEME_SCAFFOLDING_FILES=()
+declare -a THEME_SCAFFOLDING_DIRS=()
+declare -a MODIFIED_THEME_SCAFFOLDING=()
+declare -a UNMODIFIED_THEME_SCAFFOLDING=()
+
 # Flags
 AUTO_YES=false
 DRY_RUN=false
@@ -219,6 +225,52 @@ analyze_project() {
             fi
         done
     fi
+
+    # Analizar theme scaffolding (archivos de ejemplo del theme)
+    local theme_src="$PROJECT_ROOT/src/theme/src"
+    local theme_assets="$PROJECT_ROOT/src/theme/assets"
+    local theme_blocks="$PROJECT_ROOT/src/theme/blocks"
+
+    # Archivos individuales de scaffolding
+    local scaffolding_files=(
+        "$theme_src/Register/PostType/ProjectPostType.php"
+        "$theme_src/Register/Taxonomy/EpicTaxonomy.php"
+        "$theme_src/Inc/Models/ProjectPost.php"
+        "$theme_src/Inc/Models/EpicTaxonomy.php"
+        "$theme_src/Features/ContentGenerator/Generators/ProjectPostGenerator.php"
+        "$theme_src/Features/Admin/Pages/GeolocationSettings.php"
+        "$theme_src/Features/Acf/Blocks/Modifiers/geolocation-modifier.php"
+        "$theme_src/Core/Endpoints/GeolocationEndpoint.php"
+        "$theme_assets/scripts/modules/geolocation.js"
+    )
+
+    for file in "${scaffolding_files[@]}"; do
+        if [[ -f "$file" ]]; then
+            THEME_SCAFFOLDING_FILES+=("$file")
+            if is_modified "$file"; then
+                MODIFIED_THEME_SCAFFOLDING+=("$file")
+            else
+                UNMODIFIED_THEME_SCAFFOLDING+=("$file")
+            fi
+        fi
+    done
+
+    # Directorios de scaffolding
+    local scaffolding_dirs=(
+        "$theme_blocks/example"
+        "$theme_src/Integrations/Geolocation"
+    )
+
+    for dir in "${scaffolding_dirs[@]}"; do
+        if [[ -d "$dir" ]]; then
+            THEME_SCAFFOLDING_DIRS+=("$dir")
+            if is_modified "$dir"; then
+                MODIFIED_THEME_SCAFFOLDING+=("$dir")
+            else
+                UNMODIFIED_THEME_SCAFFOLDING+=("$dir")
+            fi
+        fi
+    done
 }
 
 #######################################
@@ -261,6 +313,17 @@ show_analysis_summary() {
     echo -e "  ${YELLOW}Modificados: ${#MODIFIED_COMPONENTS[@]}${NC}"
     echo ""
 
+    # Theme Scaffolding
+    local total_scaffolding=$((${#THEME_SCAFFOLDING_FILES[@]} + ${#THEME_SCAFFOLDING_DIRS[@]}))
+    if [[ $total_scaffolding -gt 0 ]]; then
+        echo -e "${BOLD}Theme Scaffolding (ejemplos):${NC}"
+        echo -e "  Total:       $total_scaffolding elementos"
+        echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_THEME_SCAFFOLDING[@]}${NC}"
+        echo -e "  ${YELLOW}Modificados: ${#MODIFIED_THEME_SCAFFOLDING[@]}${NC}"
+        echo -e "  ${DIM}(ProjectPostType, EpicTaxonomy, example block, Geolocation)${NC}"
+        echo ""
+    fi
+
     # Mostrar lista de modificados si hay
     if [[ ${#MODIFIED_DIRS[@]} -gt 0 ]]; then
         echo -e "${YELLOW}Elementos modificados en PatternLab:${NC}"
@@ -293,6 +356,14 @@ show_analysis_summary() {
         done
         echo ""
     fi
+
+    if [[ ${#MODIFIED_THEME_SCAFFOLDING[@]} -gt 0 ]]; then
+        echo -e "${YELLOW}Theme scaffolding modificado:${NC}"
+        for item in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+            echo -e "  ${YELLOW}→${NC} ${item#$PROJECT_ROOT/}"
+        done
+        echo ""
+    fi
 }
 
 #######################################
@@ -300,8 +371,8 @@ show_analysis_summary() {
 # Setea MAIN_ACTION: "cancel", "delete_all", "review_all", "delete_unmodified"
 #######################################
 ask_main_action() {
-    local total_modified=$((${#MODIFIED_DIRS[@]} + ${#MODIFIED_SCSS[@]} + ${#MODIFIED_VIEWS[@]} + ${#MODIFIED_COMPONENTS[@]}))
-    local total_items=$((${#ALL_DIRS_TO_PROCESS[@]} + ${#ALL_SCSS_FILES[@]} + ${#ALL_VIEW_FILES[@]} + ${#ALL_COMPONENT_FILES[@]}))
+    local total_modified=$((${#MODIFIED_DIRS[@]} + ${#MODIFIED_SCSS[@]} + ${#MODIFIED_VIEWS[@]} + ${#MODIFIED_COMPONENTS[@]} + ${#MODIFIED_THEME_SCAFFOLDING[@]}))
+    local total_items=$((${#ALL_DIRS_TO_PROCESS[@]} + ${#ALL_SCSS_FILES[@]} + ${#ALL_VIEW_FILES[@]} + ${#ALL_COMPONENT_FILES[@]} + ${#THEME_SCAFFOLDING_FILES[@]} + ${#THEME_SCAFFOLDING_DIRS[@]}))
 
     echo -e "${CYAN}══════════════════════════════════════════${NC}"
 
@@ -971,6 +1042,160 @@ process_components() {
     fi
 }
 
+#######################################
+# Procesa y elimina el theme scaffolding
+#######################################
+process_theme_scaffolding() {
+    local total_scaffolding=$((${#THEME_SCAFFOLDING_FILES[@]} + ${#THEME_SCAFFOLDING_DIRS[@]}))
+    [[ $total_scaffolding -eq 0 ]] && return
+
+    echo ""
+    echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
+    echo -e "${BOLD}${BLUE}  Procesando: Theme Scaffolding${NC}"
+    echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
+    echo ""
+
+    echo -e "${DIM}Incluye: ProjectPostType, EpicTaxonomy, ProjectPost model,${NC}"
+    echo -e "${DIM}         EpicTaxonomy model, example block, Geolocation${NC}"
+    echo ""
+
+    local total_modified=${#MODIFIED_THEME_SCAFFOLDING[@]}
+
+    if [[ $total_modified -eq 0 ]]; then
+        echo -e "${GREEN}Ningún archivo de scaffolding fue modificado.${NC}"
+        echo -e "${BOLD}¿Eliminar todo el theme scaffolding?${NC}"
+        echo -e "  ${GREEN}[s]${NC} Sí, eliminar todo"
+        echo -e "  ${BLUE}[n]${NC} No, mantener"
+        echo -n "> "
+        read -r response </dev/tty
+
+        if [[ "$response" == "s" || "$response" == "S" ]]; then
+            # Eliminar archivos
+            for file in "${THEME_SCAFFOLDING_FILES[@]}"; do
+                [[ -f "$file" ]] && delete_item "$file"
+            done
+            # Eliminar directorios
+            for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
+                [[ -d "$dir" ]] && delete_item "$dir"
+            done
+            # Limpiar referencias a geolocation
+            clean_geolocation_references
+        else
+            echo -e "${BLUE}→${NC} Theme scaffolding mantenido"
+        fi
+    else
+        echo -e "${YELLOW}Hay $total_modified elementos de scaffolding modificados.${NC}"
+        echo -e "${BOLD}¿Qué deseas hacer?${NC}"
+        echo -e "  ${GREEN}[1]${NC} Eliminar NO modificados, revisar modificados"
+        echo -e "  ${BLUE}[2]${NC} Revisar todos"
+        echo -e "  ${YELLOW}[3]${NC} Eliminar todos"
+        echo -e "  ${RED}[4]${NC} No eliminar ninguno"
+        echo -n "> "
+        read -r response </dev/tty
+
+        case "$response" in
+            1)
+                # Eliminar no modificados
+                for file in "${THEME_SCAFFOLDING_FILES[@]}"; do
+                    local is_mod="false"
+                    for mod in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+                        [[ "$mod" == "$file" ]] && is_mod="true" && break
+                    done
+                    if [[ "$is_mod" == "false" && -f "$file" ]]; then
+                        delete_item "$file"
+                    fi
+                done
+                for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
+                    local is_mod="false"
+                    for mod in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+                        [[ "$mod" == "$dir" ]] && is_mod="true" && break
+                    done
+                    if [[ "$is_mod" == "false" && -d "$dir" ]]; then
+                        delete_item "$dir"
+                    fi
+                done
+                # Revisar modificados
+                for item in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+                    [[ -e "$item" ]] && process_single_item "$item" "true"
+                done
+                # Limpiar referencias a geolocation
+                clean_geolocation_references
+                ;;
+            2)
+                # Revisar todos
+                for file in "${THEME_SCAFFOLDING_FILES[@]}"; do
+                    if [[ -f "$file" ]]; then
+                        local is_mod="false"
+                        for mod in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+                            [[ "$mod" == "$file" ]] && is_mod="true" && break
+                        done
+                        process_single_item "$file" "$is_mod"
+                    fi
+                done
+                for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
+                    if [[ -d "$dir" ]]; then
+                        local is_mod="false"
+                        for mod in "${MODIFIED_THEME_SCAFFOLDING[@]}"; do
+                            [[ "$mod" == "$dir" ]] && is_mod="true" && break
+                        done
+                        process_single_item "$dir" "$is_mod"
+                    fi
+                done
+                ;;
+            3)
+                # Eliminar todos
+                for file in "${THEME_SCAFFOLDING_FILES[@]}"; do
+                    [[ -f "$file" ]] && delete_item "$file"
+                done
+                for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
+                    [[ -d "$dir" ]] && delete_item "$dir"
+                done
+                # Limpiar referencias a geolocation
+                clean_geolocation_references
+                ;;
+            *)
+                echo -e "${BLUE}→${NC} Theme scaffolding mantenido"
+                ;;
+        esac
+    fi
+}
+
+#######################################
+# Limpia referencias a geolocation en archivos que no se eliminan
+#######################################
+clean_geolocation_references() {
+    local backend_js="$PROJECT_ROOT/src/theme/assets/scripts/backend.js"
+
+    if [[ -f "$backend_js" ]] && grep -q "geolocation" "$backend_js" 2>/dev/null; then
+        echo -e "${BOLD}Limpiando referencias a geolocation...${NC}"
+
+        if [[ "$DRY_RUN" == "true" ]]; then
+            echo -e "${YELLOW}[DRY-RUN]${NC} Se limpiaría: src/theme/assets/scripts/backend.js"
+        else
+            cat > "$backend_js" << 'EOF'
+/**
+ * Script principal para el panel de administración
+ *
+ * Este archivo importa y inicializa todos los módulos JavaScript
+ * necesarios para el funcionamiento del panel de administración.
+ */
+
+// Importar módulos
+// import myModule from './modules/my-module';
+
+// Inicializar módulos cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', () => {
+	// Inicializar módulos aquí
+	// myModule.init();
+
+	console.log('Backend scripts inicializados');
+});
+EOF
+            echo -e "${GREEN}✓${NC} Limpiado: src/theme/assets/scripts/backend.js"
+        fi
+    fi
+}
+
 clean_patternlab_data() {
     echo ""
     echo -e "${BOLD}Limpiando datos de PatternLab...${NC}"
@@ -1127,6 +1352,14 @@ main() {
         for comp_file in "${ALL_COMPONENT_FILES[@]}"; do
             delete_item "$comp_file"
         done
+        # Theme scaffolding
+        for file in "${THEME_SCAFFOLDING_FILES[@]}"; do
+            [[ -f "$file" ]] && delete_item "$file"
+        done
+        for dir in "${THEME_SCAFFOLDING_DIRS[@]}"; do
+            [[ -d "$dir" ]] && delete_item "$dir"
+        done
+        clean_geolocation_references
         show_summary
         exit 0
     fi
@@ -1165,6 +1398,9 @@ main() {
 
     # Procesar components
     process_components
+
+    # Procesar theme scaffolding
+    process_theme_scaffolding
 
     # Mostrar resumen
     show_summary
