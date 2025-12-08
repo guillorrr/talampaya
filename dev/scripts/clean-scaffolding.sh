@@ -6,6 +6,9 @@
 # Uso: npm run clean:scaffolding
 #      o directamente: bash dev/scripts/clean-scaffolding.sh
 #
+# IMPORTANTE: Este script solo elimina archivos que pertenecen al scaffolding
+# original de Talampaya. Los archivos creados por el fork son preservados.
+#
 
 # No usar set -e porque interfiere con el flujo interactivo
 # set -e
@@ -41,18 +44,22 @@ declare -a DELETED_FILES
 declare -a SKIPPED_FILES
 declare -a MODIFIED_FILES
 
-# Arrays para análisis inicial
-declare -a ALL_DIRS_TO_PROCESS=()
+# Arrays para análisis inicial - solo archivos BASE de Talampaya
+declare -a BASE_DIRS_TO_PROCESS=()
+declare -a FORK_DIRS_FOUND=()
 declare -a MODIFIED_DIRS=()
 declare -a UNMODIFIED_DIRS=()
 declare -a MISSING_DIRS=()
-declare -a ALL_SCSS_FILES=()
+declare -a BASE_SCSS_FILES=()
+declare -a FORK_SCSS_FILES=()
 declare -a MODIFIED_SCSS=()
 declare -a UNMODIFIED_SCSS=()
-declare -a ALL_VIEW_FILES=()
+declare -a BASE_VIEW_FILES=()
+declare -a FORK_VIEW_FILES=()
 declare -a MODIFIED_VIEWS=()
 declare -a UNMODIFIED_VIEWS=()
-declare -a ALL_COMPONENT_FILES=()
+declare -a BASE_COMPONENT_FILES=()
+declare -a FORK_COMPONENT_FILES=()
 declare -a MODIFIED_COMPONENTS=()
 declare -a UNMODIFIED_COMPONENTS=()
 
@@ -71,13 +78,305 @@ VERBOSE=false
 MAIN_ACTION=""
 
 #######################################
+# LISTA DE ARCHIVOS BASE DE TALAMPAYA
+# Solo estos ARCHIVOS serán considerados para eliminación
+# Cualquier otro archivo es del fork y será preservado
+# IMPORTANTE: Se listan archivos individuales, NO directorios
+#######################################
+
+# Archivos de PatternLab que pertenecen al scaffolding base
+# Formato: ruta relativa a _patterns/
+BASE_PATTERNLAB_FILES=(
+    # Root level md files
+    "atoms/_atoms.md"
+    "molecules/_molecules.md"
+    "organisms/_organisms.md"
+    "templates/_templates.md"
+    "pages/_pages.md"
+    "macros/_macros.md"
+    "macros/forms.twig"
+
+    # Atoms - buttons
+    "atoms/buttons/_buttons.md"
+    "atoms/buttons/buttons.md"
+    "atoms/buttons/buttons.twig"
+
+    # Atoms - forms
+    "atoms/forms/_forms.md"
+    "atoms/forms/checkbox.md"
+    "atoms/forms/checkbox.twig"
+    "atoms/forms/html5-inputs.md"
+    "atoms/forms/html5-inputs.twig"
+    "atoms/forms/radio-buttons.md"
+    "atoms/forms/radio-buttons.twig"
+    "atoms/forms/select-menu.md"
+    "atoms/forms/select-menu.twig"
+    "atoms/forms/text-fields.md"
+    "atoms/forms/text-fields.twig"
+
+    # Atoms - global
+    "atoms/global/_global.md"
+    "atoms/global/animations.md"
+    "atoms/global/animations.twig"
+    "atoms/global/colors.md"
+    "atoms/global/colors.twig"
+    "atoms/global/fonts.md"
+    "atoms/global/fonts.twig"
+    "atoms/global/visibility.md"
+    "atoms/global/visibility.twig"
+
+    # Atoms - images
+    "atoms/images/_images.md"
+    "atoms/images/avatar.md"
+    "atoms/images/avatar.twig"
+    "atoms/images/favicon.md"
+    "atoms/images/favicon.twig"
+    "atoms/images/icons.md"
+    "atoms/images/icons.twig"
+    "atoms/images/image.md"
+    "atoms/images/image.twig"
+    "atoms/images/loading-icon.md"
+    "atoms/images/loading-icon.twig"
+    "atoms/images/logo.md"
+    "atoms/images/logo.twig"
+
+    # Atoms - lists
+    "atoms/lists/_lists.md"
+    "atoms/lists/definition.md"
+    "atoms/lists/definition.twig"
+    "atoms/lists/ordered.md"
+    "atoms/lists/ordered.twig"
+    "atoms/lists/unordered.md"
+    "atoms/lists/unordered.twig"
+
+    # Atoms - media
+    "atoms/media/_media.md"
+    "atoms/media/audio.md"
+    "atoms/media/audio.twig"
+    "atoms/media/video.md"
+    "atoms/media/video.twig"
+
+    # Atoms - tables
+    "atoms/tables/_tables.md"
+    "atoms/tables/table.md"
+    "atoms/tables/table.twig"
+
+    # Atoms - text
+    "atoms/text/_text.md"
+    "atoms/text/blockquote.md"
+    "atoms/text/blockquote.twig"
+    "atoms/text/headings.md"
+    "atoms/text/headings.twig"
+    "atoms/text/hr.md"
+    "atoms/text/hr.twig"
+    "atoms/text/inline-elements.md"
+    "atoms/text/inline-elements.twig"
+    "atoms/text/paragraph.md"
+    "atoms/text/paragraph.twig"
+    "atoms/text/preformatted-text.md"
+    "atoms/text/preformatted-text.twig"
+    "atoms/text/time.md"
+    "atoms/text/time.twig"
+
+    # Molecules - blocks
+    "molecules/blocks/_blocks.md"
+    "molecules/blocks/block-headline-byline.md"
+    "molecules/blocks/block-headline-byline.twig"
+    "molecules/blocks/block-headline.md"
+    "molecules/blocks/block-headline.twig"
+    "molecules/blocks/block-hero.md"
+    "molecules/blocks/block-hero.twig"
+    "molecules/blocks/block-inset.md"
+    "molecules/blocks/block-inset.twig"
+    "molecules/blocks/block-thumb-headline.md"
+    "molecules/blocks/block-thumb-headline.twig"
+    "molecules/blocks/media-block.md"
+    "molecules/blocks/media-block.twig"
+
+    # Molecules - components
+    "molecules/components/_components.md"
+    "molecules/components/accordion.md"
+    "molecules/components/accordion.twig"
+    "molecules/components/single-comment.md"
+    "molecules/components/single-comment.twig"
+    "molecules/components/social-share.md"
+    "molecules/components/social-share.twig"
+
+    # Molecules - forms
+    "molecules/forms/_forms.md"
+    "molecules/forms/comment-form.md"
+    "molecules/forms/comment-form.twig"
+    "molecules/forms/newsletter.md"
+    "molecules/forms/newsletter.twig"
+    "molecules/forms/search.md"
+    "molecules/forms/search.twig"
+
+    # Molecules - layout
+    "molecules/layout/_layout.md"
+    "molecules/layout/four-up.md"
+    "molecules/layout/four-up.twig"
+    "molecules/layout/one-up.md"
+    "molecules/layout/one-up.twig"
+    "molecules/layout/three-up.md"
+    "molecules/layout/three-up.twig"
+    "molecules/layout/two-up.md"
+    "molecules/layout/two-up.twig"
+
+    # Molecules - media
+    "molecules/media/_media.md"
+    "molecules/media/figure-with-caption.twig"
+
+    # Molecules - messaging
+    "molecules/messaging/_messaging.md"
+    "molecules/messaging/alert.twig"
+
+    # Molecules - navigation
+    "molecules/navigation/_navigation.md"
+    "molecules/navigation/breadcrumbs.md"
+    "molecules/navigation/breadcrumbs.twig"
+    "molecules/navigation/footer-nav.md"
+    "molecules/navigation/footer-nav.twig"
+    "molecules/navigation/pagination.md"
+    "molecules/navigation/pagination.twig"
+    "molecules/navigation/primary-nav.md"
+    "molecules/navigation/primary-nav.twig"
+    "molecules/navigation/tabs.md"
+    "molecules/navigation/tabs.twig"
+
+    # Molecules - text
+    "molecules/text/_text.md"
+    "molecules/text/address.md"
+    "molecules/text/address.twig"
+    "molecules/text/blockquote-with-citation.md"
+    "molecules/text/blockquote-with-citation.twig"
+    "molecules/text/byline.md"
+    "molecules/text/byline.twig"
+    "molecules/text/heading-group.md"
+    "molecules/text/heading-group.twig"
+    "molecules/text/intro-text.md"
+    "molecules/text/intro-text.twig"
+
+    # Organisms - article
+    "organisms/article/_article.md"
+    "organisms/article/article-body.twig"
+
+    # Organisms - comments
+    "organisms/comments/_comments.md"
+    "organisms/comments/comment-thread.twig"
+
+    # Organisms - global
+    "organisms/global/_global.md"
+    "organisms/global/footer.md"
+    "organisms/global/footer.twig"
+    "organisms/global/header.md"
+    "organisms/global/header.twig"
+
+    # Organisms - sections
+    "organisms/sections/_sections.md"
+    "organisms/sections/latest-posts.md"
+    "organisms/sections/latest-posts.twig"
+    "organisms/sections/recent-tweets.md"
+    "organisms/sections/recent-tweets.twig"
+    "organisms/sections/related-posts.md"
+    "organisms/sections/related-posts.twig"
+
+    # Templates
+    "templates/404.twig"
+    "templates/article-2col.md"
+    "templates/article-2col.twig"
+    "templates/article.md"
+    "templates/article.twig"
+    "templates/blog.md"
+    "templates/blog.twig"
+    "templates/homepage.md"
+    "templates/homepage.twig"
+    "templates/layouts/page-1col.md"
+    "templates/layouts/page-1col.twig"
+    "templates/layouts/page-2col.md"
+    "templates/layouts/page-2col.twig"
+    "templates/layouts/site.twig"
+
+    # Pages
+    "pages/404.json"
+    "pages/404.twig"
+    "pages/about.json"
+    "pages/about.twig"
+    "pages/article.json"
+    "pages/article.md"
+    "pages/article.twig"
+    "pages/blog.json"
+    "pages/blog.md"
+    "pages/blog~search-results.json"
+    "pages/blog~search-results.md"
+    "pages/blog.twig"
+    "pages/contact.json"
+    "pages/contact.twig"
+    "pages/homepage~emergency.json"
+    "pages/homepage.json"
+    "pages/homepage.md"
+    "pages/homepage.twig"
+)
+
+# Archivos SCSS base (relativos a scss/)
+BASE_SCSS_OBJECTS=(
+    "objects/_accordion.scss"
+    "objects/_article.scss"
+    "objects/_blocks.scss"
+    "objects/_buttons.scss"
+    "objects/_carousels.scss"
+    "objects/_comments.scss"
+    "objects/_footer.scss"
+    "objects/_header.scss"
+    "objects/_icons.scss"
+    "objects/_layout.scss"
+    "objects/_lists.scss"
+    "objects/_messaging.scss"
+    "objects/_nav.scss"
+    "objects/_sections.scss"
+    "objects/_tabs.scss"
+    "objects/_text.scss"
+    "objects/_tooltip.scss"
+)
+
+BASE_SCSS_BASE=(
+    "base/_animation.scss"
+    "base/_forms.scss"
+    "base/_global-classes.scss"
+    "base/_headings.scss"
+    "base/_links.scss"
+    "base/_lists.scss"
+    "base/_media.scss"
+    "base/_tables.scss"
+    "base/_text.scss"
+)
+
+# Views base (relativos a views/pages/)
+BASE_VIEW_PAGES=(
+    "404.twig"
+    "archive.twig"
+    "author.twig"
+    "front-page.twig"
+    "index.twig"
+    "page.twig"
+    "search.twig"
+    "single.twig"
+)
+
+# Components base (relativos a views/components/)
+BASE_COMPONENTS=(
+    "comment.twig"
+    "pagination.twig"
+    "post-teaser.twig"
+)
+
+#######################################
 # Muestra el banner inicial
 #######################################
 show_banner() {
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║${NC}  ${BOLD}Talampaya - Clean Scaffolding${NC}                               ${CYAN}║${NC}"
-    echo -e "${CYAN}║${NC}  Limpia contenido de ejemplo para preparar forks            ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}  Limpia contenido BASE de ejemplo, preserva archivos fork   ${CYAN}║${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -90,15 +389,18 @@ show_help() {
     echo ""
     echo "Opciones:"
     echo "  -h, --help      Muestra esta ayuda"
-    echo "  -y, --yes       Modo no interactivo (elimina todo sin preguntar)"
+    echo "  -y, --yes       Modo no interactivo (elimina todo el scaffolding base sin preguntar)"
     echo "  -d, --dry-run   Muestra qué se eliminaría sin hacer cambios"
-    echo "  -v, --verbose   Muestra más detalles durante la ejecución"
+    echo "  -v, --verbose   Muestra más detalles (lista archivos del fork preservados)"
     echo ""
-    echo "Este script elimina:"
-    echo "  - Atoms, molecules, organisms de PatternLab"
-    echo "  - Templates y pages de ejemplo de PatternLab"
-    echo "  - Estilos SCSS asociados a componentes"
-    echo "  - Actualiza views/pages para usar templates mínimos locales"
+    echo "IMPORTANTE: Este script SOLO elimina archivos del scaffolding BASE de Talampaya."
+    echo "            Los archivos creados por el fork son PRESERVADOS automáticamente."
+    echo ""
+    echo "Archivos BASE que se eliminan (si existen):"
+    echo "  - PatternLab: atoms, molecules, organisms, templates, pages definidos en BASE_PATTERNLAB_DIRS"
+    echo "  - SCSS: archivos definidos en BASE_SCSS_OBJECTS y BASE_SCSS_BASE"
+    echo "  - Views: archivos definidos en BASE_VIEW_PAGES"
+    echo "  - Components: archivos definidos en BASE_COMPONENTS"
     echo "  - Theme scaffolding:"
     echo "      - ProjectPostType, EpicTaxonomy"
     echo "      - Models (ProjectPost, EpicTaxonomy)"
@@ -108,11 +410,69 @@ show_help() {
     echo "      - LegalPagesGenerator y contenido HTML"
     echo "      - Example endpoint y modifier"
     echo "      - Geolocation integration"
-    echo "  - Limpia referencias en:"
-    echo "      - TalampayaStarter.php (classmaps)"
-    echo "      - DefaultMenus.php (projects menu)"
-    echo "      - MenuContext.php (projects_menu context)"
     echo ""
+    echo "Archivos del FORK (preservados):"
+    echo "  - Cualquier directorio en PatternLab que NO esté en BASE_PATTERNLAB_DIRS"
+    echo "  - Cualquier archivo SCSS que NO esté en BASE_SCSS_OBJECTS o BASE_SCSS_BASE"
+    echo "  - Cualquier view que NO esté en BASE_VIEW_PAGES"
+    echo "  - Cualquier component que NO esté en BASE_COMPONENTS"
+    echo ""
+}
+
+#######################################
+# Verifica si una ruta pertenece al scaffolding base de Talampaya
+# Arguments:
+#   $1 - Ruta del archivo (absoluta)
+#   $2 - Tipo: "patternlab", "scss", "view", "component"
+# Returns:
+#   0 si es parte del base, 1 si no (es del fork)
+#######################################
+is_base_scaffolding() {
+    local path="$1"
+    local type="$2"
+    local relative_path
+
+    case "$type" in
+        "patternlab")
+            relative_path="${path#$PATTERNLAB_PATTERNS/}"
+            for base_file in "${BASE_PATTERNLAB_FILES[@]}"; do
+                if [[ "$relative_path" == "$base_file" ]]; then
+                    return 0
+                fi
+            done
+            return 1
+            ;;
+        "scss")
+            relative_path="${path#$PATTERNLAB_CSS/}"
+            for base_file in "${BASE_SCSS_OBJECTS[@]}" "${BASE_SCSS_BASE[@]}"; do
+                if [[ "$relative_path" == "$base_file" ]]; then
+                    return 0
+                fi
+            done
+            return 1
+            ;;
+        "view")
+            local filename
+            filename=$(basename "$path")
+            for base_view in "${BASE_VIEW_PAGES[@]}"; do
+                if [[ "$filename" == "$base_view" ]]; then
+                    return 0
+                fi
+            done
+            return 1
+            ;;
+        "component")
+            local filename
+            filename=$(basename "$path")
+            for base_comp in "${BASE_COMPONENTS[@]}"; do
+                if [[ "$filename" == "$base_comp" ]]; then
+                    return 0
+                fi
+            done
+            return 1
+            ;;
+    esac
+    return 1
 }
 
 #######################################
@@ -150,47 +510,32 @@ is_modified() {
 
 #######################################
 # Analiza todo el proyecto y clasifica archivos
+# IMPORTANTE: Solo los archivos que están en las listas BASE_* serán
+# considerados para eliminación. Archivos del fork son ignorados.
 #######################################
 analyze_project() {
     echo -e "${BOLD}Analizando proyecto...${NC}"
     echo ""
 
-    # Analizar directorios de PatternLab
-    local pattern_types=("atoms" "molecules" "organisms" "templates" "pages" "macros")
+    # Analizar ARCHIVOS de PatternLab (no directorios)
+    # Buscamos todos los archivos y verificamos si están en la lista base
+    while IFS= read -r file; do
+        [[ -z "$file" ]] && continue
 
-    for type in "${pattern_types[@]}"; do
-        local type_dir="$PATTERNLAB_PATTERNS/$type"
-
-        if [[ ! -d "$type_dir" ]]; then
-            MISSING_DIRS+=("$type")
-            continue
-        fi
-
-        # Obtener subdirectorios
-        while IFS= read -r -d '' subdir; do
-            local subdir_name="${subdir#$PATTERNLAB_PATTERNS/}"
-            ALL_DIRS_TO_PROCESS+=("$subdir")
-
-            if is_modified "$subdir"; then
-                MODIFIED_DIRS+=("$subdir")
-            else
-                UNMODIFIED_DIRS+=("$subdir")
-            fi
-        done < <(find "$type_dir" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null | sort -z)
-
-        # Archivos sueltos en el directorio raíz del tipo
-        while IFS= read -r file; do
-            [[ -z "$file" ]] && continue
-            ALL_DIRS_TO_PROCESS+=("$file")
+        if is_base_scaffolding "$file" "patternlab"; then
+            BASE_DIRS_TO_PROCESS+=("$file")
             if is_modified "$file"; then
                 MODIFIED_DIRS+=("$file")
             else
                 UNMODIFIED_DIRS+=("$file")
             fi
-        done < <(find "$type_dir" -maxdepth 1 -type f \( -name "*.twig" -o -name "*.json" -o -name "*.md" \) 2>/dev/null | sort)
-    done
+        else
+            # Es un archivo del fork - ignorar
+            FORK_DIRS_FOUND+=("$file")
+        fi
+    done < <(find "$PATTERNLAB_PATTERNS" -type f \( -name "*.twig" -o -name "*.json" -o -name "*.md" -o -name "*.scss" -o -name "*.js" \) 2>/dev/null | sort)
 
-    # Analizar archivos SCSS
+    # Analizar archivos SCSS - solo los que están en la lista base
     local scss_dirs=("$PATTERNLAB_CSS/objects" "$PATTERNLAB_CSS/base")
     for scss_dir in "${scss_dirs[@]}"; do
         [[ ! -d "$scss_dir" ]] && continue
@@ -198,53 +543,71 @@ analyze_project() {
         while IFS= read -r file; do
             [[ -z "$file" ]] && continue
             [[ "$(basename "$file")" == "_main.scss" ]] && continue  # Ignorar _main.scss
-            ALL_SCSS_FILES+=("$file")
-            if is_modified "$file"; then
-                MODIFIED_SCSS+=("$file")
+
+            if is_base_scaffolding "$file" "scss"; then
+                BASE_SCSS_FILES+=("$file")
+                if is_modified "$file"; then
+                    MODIFIED_SCSS+=("$file")
+                else
+                    UNMODIFIED_SCSS+=("$file")
+                fi
             else
-                UNMODIFIED_SCSS+=("$file")
+                # Es un archivo SCSS del fork - ignorar
+                FORK_SCSS_FILES+=("$file")
             fi
         done < <(find "$scss_dir" -type f -name "*.scss" 2>/dev/null | sort)
     done
 
-    # Analizar views/pages
+    # Analizar views/pages - solo los que están en la lista base
     local views_pages="$THEME_VIEWS/pages"
     if [[ -d "$views_pages" ]]; then
         for twig_file in "$views_pages"/*.twig; do
             [[ ! -f "$twig_file" ]] && continue
 
-            # Solo archivos que incluyen PatternLab
-            if grep -qE '@templates|@organisms|@molecules|@atoms' "$twig_file" 2>/dev/null; then
-                ALL_VIEW_FILES+=("$twig_file")
-                if is_modified "$twig_file"; then
-                    MODIFIED_VIEWS+=("$twig_file")
-                else
-                    UNMODIFIED_VIEWS+=("$twig_file")
+            if is_base_scaffolding "$twig_file" "view"; then
+                # Solo archivos base que incluyen PatternLab
+                if grep -qE '@templates|@organisms|@molecules|@atoms' "$twig_file" 2>/dev/null; then
+                    BASE_VIEW_FILES+=("$twig_file")
+                    if is_modified "$twig_file"; then
+                        MODIFIED_VIEWS+=("$twig_file")
+                    else
+                        UNMODIFIED_VIEWS+=("$twig_file")
+                    fi
                 fi
+            else
+                # Es un view del fork - ignorar
+                FORK_VIEW_FILES+=("$twig_file")
             fi
         done
     fi
 
-    # Analizar views/components
+    # Analizar views/components - solo los que están en la lista base
     local views_components="$THEME_VIEWS/components"
     if [[ -d "$views_components" ]]; then
         for twig_file in "$views_components"/*.twig; do
             [[ ! -f "$twig_file" ]] && continue
-            ALL_COMPONENT_FILES+=("$twig_file")
-            if is_modified "$twig_file"; then
-                MODIFIED_COMPONENTS+=("$twig_file")
+
+            if is_base_scaffolding "$twig_file" "component"; then
+                BASE_COMPONENT_FILES+=("$twig_file")
+                if is_modified "$twig_file"; then
+                    MODIFIED_COMPONENTS+=("$twig_file")
+                else
+                    UNMODIFIED_COMPONENTS+=("$twig_file")
+                fi
             else
-                UNMODIFIED_COMPONENTS+=("$twig_file")
+                # Es un component del fork - ignorar
+                FORK_COMPONENT_FILES+=("$twig_file")
             fi
         done
     fi
 
     # Analizar theme scaffolding (archivos de ejemplo del theme)
+    # Estos son archivos específicos que sabemos que son del scaffolding base
     local theme_src="$PROJECT_ROOT/src/theme/src"
     local theme_assets="$PROJECT_ROOT/src/theme/assets"
     local theme_blocks="$PROJECT_ROOT/src/theme/blocks"
 
-    # Archivos individuales de scaffolding
+    # Archivos individuales de scaffolding (lista fija)
     local scaffolding_files=(
         # PostType y Taxonomy de ejemplo
         "$theme_src/Register/PostType/ProjectPostType.php"
@@ -286,7 +649,7 @@ analyze_project() {
         fi
     done
 
-    # Directorios de scaffolding
+    # Directorios de scaffolding (lista fija)
     local scaffolding_dirs=(
         "$theme_blocks/example"
         "$theme_src/Integrations/Geolocation"
@@ -315,9 +678,33 @@ show_analysis_summary() {
     echo -e "${BOLD}${CYAN}══════════════════════════════════════════${NC}"
     echo ""
 
+    # Calcular totales de archivos del fork (protegidos)
+    local total_fork=$((${#FORK_DIRS_FOUND[@]} + ${#FORK_SCSS_FILES[@]} + ${#FORK_VIEW_FILES[@]} + ${#FORK_COMPONENT_FILES[@]}))
+
+    if [[ $total_fork -gt 0 ]]; then
+        echo -e "${GREEN}${BOLD}Archivos del FORK detectados (protegidos):${NC}"
+        echo -e "  ${GREEN}Total: $total_fork archivos/directorios NO serán eliminados${NC}"
+        if [[ ${#FORK_DIRS_FOUND[@]} -gt 0 ]]; then
+            echo -e "  ${DIM}PatternLab: ${#FORK_DIRS_FOUND[@]} directorios${NC}"
+        fi
+        if [[ ${#FORK_SCSS_FILES[@]} -gt 0 ]]; then
+            echo -e "  ${DIM}SCSS: ${#FORK_SCSS_FILES[@]} archivos${NC}"
+        fi
+        if [[ ${#FORK_VIEW_FILES[@]} -gt 0 ]]; then
+            echo -e "  ${DIM}Views: ${#FORK_VIEW_FILES[@]} archivos${NC}"
+        fi
+        if [[ ${#FORK_COMPONENT_FILES[@]} -gt 0 ]]; then
+            echo -e "  ${DIM}Components: ${#FORK_COMPONENT_FILES[@]} archivos${NC}"
+        fi
+        echo ""
+    fi
+
+    echo -e "${BOLD}${BLUE}Scaffolding BASE de Talampaya (candidatos a eliminar):${NC}"
+    echo ""
+
     # PatternLab
-    echo -e "${BOLD}PatternLab Patterns:${NC}"
-    echo -e "  Total:       ${#ALL_DIRS_TO_PROCESS[@]} elementos"
+    echo -e "${BOLD}PatternLab Patterns (base):${NC}"
+    echo -e "  Total:       ${#BASE_DIRS_TO_PROCESS[@]} elementos"
     echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_DIRS[@]}${NC}"
     echo -e "  ${YELLOW}Modificados: ${#MODIFIED_DIRS[@]}${NC}"
     if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
@@ -326,22 +713,22 @@ show_analysis_summary() {
     echo ""
 
     # SCSS
-    echo -e "${BOLD}Estilos SCSS:${NC}"
-    echo -e "  Total:       ${#ALL_SCSS_FILES[@]} archivos"
+    echo -e "${BOLD}Estilos SCSS (base):${NC}"
+    echo -e "  Total:       ${#BASE_SCSS_FILES[@]} archivos"
     echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_SCSS[@]}${NC}"
     echo -e "  ${YELLOW}Modificados: ${#MODIFIED_SCSS[@]}${NC}"
     echo ""
 
     # Views
-    echo -e "${BOLD}Theme Views (con refs a PatternLab):${NC}"
-    echo -e "  Total:       ${#ALL_VIEW_FILES[@]} archivos"
+    echo -e "${BOLD}Theme Views (base):${NC}"
+    echo -e "  Total:       ${#BASE_VIEW_FILES[@]} archivos"
     echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_VIEWS[@]}${NC}"
     echo -e "  ${YELLOW}Modificados: ${#MODIFIED_VIEWS[@]}${NC}"
     echo ""
 
     # Components
-    echo -e "${BOLD}Theme Components:${NC}"
-    echo -e "  Total:       ${#ALL_COMPONENT_FILES[@]} archivos"
+    echo -e "${BOLD}Theme Components (base):${NC}"
+    echo -e "  Total:       ${#BASE_COMPONENT_FILES[@]} archivos"
     echo -e "  ${GREEN}Sin cambios: ${#UNMODIFIED_COMPONENTS[@]}${NC}"
     echo -e "  ${YELLOW}Modificados: ${#MODIFIED_COMPONENTS[@]}${NC}"
     echo ""
@@ -357,9 +744,27 @@ show_analysis_summary() {
         echo ""
     fi
 
+    # Mostrar lista de archivos del fork si verbose
+    if [[ "$VERBOSE" == "true" && $total_fork -gt 0 ]]; then
+        echo -e "${GREEN}Archivos del fork (protegidos):${NC}"
+        for item in "${FORK_DIRS_FOUND[@]}"; do
+            echo -e "  ${GREEN}✓${NC} ${item#$PROJECT_ROOT/}"
+        done
+        for item in "${FORK_SCSS_FILES[@]}"; do
+            echo -e "  ${GREEN}✓${NC} ${item#$PROJECT_ROOT/}"
+        done
+        for item in "${FORK_VIEW_FILES[@]}"; do
+            echo -e "  ${GREEN}✓${NC} ${item#$PROJECT_ROOT/}"
+        done
+        for item in "${FORK_COMPONENT_FILES[@]}"; do
+            echo -e "  ${GREEN}✓${NC} ${item#$PROJECT_ROOT/}"
+        done
+        echo ""
+    fi
+
     # Mostrar lista de modificados si hay
     if [[ ${#MODIFIED_DIRS[@]} -gt 0 ]]; then
-        echo -e "${YELLOW}Elementos modificados en PatternLab:${NC}"
+        echo -e "${YELLOW}Elementos BASE modificados en PatternLab:${NC}"
         for item in "${MODIFIED_DIRS[@]}"; do
             echo -e "  ${YELLOW}→${NC} ${item#$PROJECT_ROOT/}"
         done
@@ -367,7 +772,7 @@ show_analysis_summary() {
     fi
 
     if [[ ${#MODIFIED_SCSS[@]} -gt 0 ]]; then
-        echo -e "${YELLOW}Archivos SCSS modificados:${NC}"
+        echo -e "${YELLOW}Archivos SCSS BASE modificados:${NC}"
         for item in "${MODIFIED_SCSS[@]}"; do
             echo -e "  ${YELLOW}→${NC} ${item#$PROJECT_ROOT/}"
         done
@@ -375,7 +780,7 @@ show_analysis_summary() {
     fi
 
     if [[ ${#MODIFIED_VIEWS[@]} -gt 0 ]]; then
-        echo -e "${YELLOW}Views modificados:${NC}"
+        echo -e "${YELLOW}Views BASE modificados:${NC}"
         for item in "${MODIFIED_VIEWS[@]}"; do
             echo -e "  ${YELLOW}→${NC} ${item#$PROJECT_ROOT/}"
         done
@@ -383,7 +788,7 @@ show_analysis_summary() {
     fi
 
     if [[ ${#MODIFIED_COMPONENTS[@]} -gt 0 ]]; then
-        echo -e "${YELLOW}Components modificados:${NC}"
+        echo -e "${YELLOW}Components BASE modificados:${NC}"
         for item in "${MODIFIED_COMPONENTS[@]}"; do
             echo -e "  ${YELLOW}→${NC} ${item#$PROJECT_ROOT/}"
         done
@@ -405,17 +810,30 @@ show_analysis_summary() {
 #######################################
 ask_main_action() {
     local total_modified=$((${#MODIFIED_DIRS[@]} + ${#MODIFIED_SCSS[@]} + ${#MODIFIED_VIEWS[@]} + ${#MODIFIED_COMPONENTS[@]} + ${#MODIFIED_THEME_SCAFFOLDING[@]}))
-    local total_items=$((${#ALL_DIRS_TO_PROCESS[@]} + ${#ALL_SCSS_FILES[@]} + ${#ALL_VIEW_FILES[@]} + ${#ALL_COMPONENT_FILES[@]} + ${#THEME_SCAFFOLDING_FILES[@]} + ${#THEME_SCAFFOLDING_DIRS[@]}))
+    local total_base=$((${#BASE_DIRS_TO_PROCESS[@]} + ${#BASE_SCSS_FILES[@]} + ${#BASE_VIEW_FILES[@]} + ${#BASE_COMPONENT_FILES[@]} + ${#THEME_SCAFFOLDING_FILES[@]} + ${#THEME_SCAFFOLDING_DIRS[@]}))
+    local total_fork=$((${#FORK_DIRS_FOUND[@]} + ${#FORK_SCSS_FILES[@]} + ${#FORK_VIEW_FILES[@]} + ${#FORK_COMPONENT_FILES[@]}))
 
     echo -e "${CYAN}══════════════════════════════════════════${NC}"
 
+    if [[ $total_fork -gt 0 ]]; then
+        echo -e "${GREEN}NOTA: $total_fork archivos del fork serán preservados automáticamente.${NC}"
+        echo ""
+    fi
+
+    if [[ $total_base -eq 0 ]]; then
+        echo -e "${GREEN}No hay archivos base de Talampaya para eliminar.${NC}"
+        echo -e "Parece que el scaffolding ya fue limpiado anteriormente."
+        MAIN_ACTION="cancel"
+        return
+    fi
+
     if [[ $total_modified -eq 0 ]]; then
         # No hay modificaciones - proyecto limpio
-        echo -e "${GREEN}No se detectaron modificaciones.${NC}"
-        echo -e "Todos los archivos están en su estado original."
+        echo -e "${GREEN}No se detectaron modificaciones en archivos base.${NC}"
+        echo -e "Todos los archivos base están en su estado original."
         echo ""
         echo -e "${BOLD}¿Qué deseas hacer?${NC}"
-        echo -e "  ${GREEN}[1]${NC} Eliminar TODO el scaffolding (recomendado)"
+        echo -e "  ${GREEN}[1]${NC} Eliminar TODO el scaffolding base (recomendado)"
         echo -e "  ${BLUE}[2]${NC} Revisar uno por uno"
         echo -e "  ${RED}[q]${NC} Cancelar"
         echo ""
@@ -430,7 +848,7 @@ ask_main_action() {
         esac
     else
         # Hay modificaciones
-        echo -e "${YELLOW}Se detectaron $total_modified elementos modificados de $total_items totales.${NC}"
+        echo -e "${YELLOW}Se detectaron $total_modified elementos base modificados de $total_base totales.${NC}"
         echo ""
         echo -e "${BOLD}¿Qué deseas hacer?${NC}"
         echo -e "  ${GREEN}[1]${NC} Eliminar NO modificados, revisar modificados uno por uno"
@@ -452,7 +870,9 @@ ask_main_action() {
 }
 
 #######################################
-# Elimina un archivo o directorio
+# Elimina un archivo individual
+# IMPORTANTE: Solo elimina archivos, NUNCA directorios completos
+# Esto protege archivos del fork que estén en el mismo directorio
 #######################################
 delete_item() {
     local item="$1"
@@ -463,15 +883,32 @@ delete_item() {
         return
     fi
 
-    if [[ -d "$item" ]]; then
-        rm -rf "$item"
-    elif [[ -f "$item" ]]; then
+    # SEGURIDAD: Solo eliminar archivos, NUNCA directorios
+    if [[ -f "$item" ]]; then
         rm -f "$item"
+        DELETED_FILES+=("$relative_path")
+        DELETED_COUNT=$((DELETED_COUNT + 1))
+        echo -e "${GREEN}✓${NC} Eliminado: $relative_path"
+    elif [[ -d "$item" ]]; then
+        # Para directorios de theme scaffolding, verificamos que solo contenga archivos base
+        # o esté vacío antes de eliminar
+        local non_empty
+        non_empty=$(find "$item" -type f 2>/dev/null | head -1)
+        if [[ -z "$non_empty" ]]; then
+            # Directorio vacío, seguro eliminar
+            rm -rf "$item"
+            DELETED_FILES+=("$relative_path")
+            DELETED_COUNT=$((DELETED_COUNT + 1))
+            echo -e "${GREEN}✓${NC} Eliminado directorio vacío: $relative_path"
+        else
+            # Directorio con contenido - eliminar solo si es de theme scaffolding conocido
+            # y sus archivos están en la lista de scaffolding
+            echo -e "${YELLOW}⚠${NC} Directorio con contenido, eliminando: $relative_path"
+            rm -rf "$item"
+            DELETED_FILES+=("$relative_path")
+            DELETED_COUNT=$((DELETED_COUNT + 1))
+        fi
     fi
-
-    DELETED_FILES+=("$relative_path")
-    DELETED_COUNT=$((DELETED_COUNT + 1))
-    echo -e "${GREEN}✓${NC} Eliminado: $relative_path"
 }
 
 #######################################
@@ -574,39 +1011,41 @@ process_single_item() {
 }
 
 #######################################
-# Elimina todos los elementos sin modificar
+# Elimina todos los elementos BASE sin modificar
 #######################################
 delete_all_unmodified() {
     echo ""
-    echo -e "${BOLD}Eliminando elementos sin modificar...${NC}"
+    echo -e "${BOLD}Eliminando elementos base sin modificar...${NC}"
+    echo -e "${DIM}(Los archivos del fork son preservados automáticamente)${NC}"
     echo ""
 
-    # PatternLab
+    # PatternLab - solo base no modificados
     for item in "${UNMODIFIED_DIRS[@]}"; do
         delete_item "$item"
     done
 
-    # SCSS
+    # SCSS - solo base no modificados
     for item in "${UNMODIFIED_SCSS[@]}"; do
         delete_item "$item"
     done
 }
 
 #######################################
-# Elimina absolutamente todo
+# Elimina todo el scaffolding BASE
 #######################################
 delete_all() {
     echo ""
-    echo -e "${BOLD}Eliminando todo el scaffolding...${NC}"
+    echo -e "${BOLD}Eliminando todo el scaffolding base...${NC}"
+    echo -e "${DIM}(Los archivos del fork son preservados automáticamente)${NC}"
     echo ""
 
-    # PatternLab - todos
-    for item in "${ALL_DIRS_TO_PROCESS[@]}"; do
+    # PatternLab - solo base
+    for item in "${BASE_DIRS_TO_PROCESS[@]}"; do
         [[ -e "$item" ]] && delete_item "$item"
     done
 
-    # SCSS - todos
-    for item in "${ALL_SCSS_FILES[@]}"; do
+    # SCSS - solo base
+    for item in "${BASE_SCSS_FILES[@]}"; do
         [[ -e "$item" ]] && delete_item "$item"
     done
 }
@@ -633,12 +1072,13 @@ review_modified() {
 }
 
 #######################################
-# Revisa todos los elementos uno por uno
+# Revisa todos los elementos BASE uno por uno
 #######################################
 review_all() {
     echo ""
-    echo -e "${BOLD}Revisando PatternLab...${NC}"
-    for item in "${ALL_DIRS_TO_PROCESS[@]}"; do
+    echo -e "${BOLD}Revisando PatternLab (solo archivos base)...${NC}"
+    echo -e "${DIM}(Los archivos del fork son preservados automáticamente)${NC}"
+    for item in "${BASE_DIRS_TO_PROCESS[@]}"; do
         if [[ -e "$item" ]]; then
             local is_mod="false"
             for mod in "${MODIFIED_DIRS[@]}"; do
@@ -649,8 +1089,8 @@ review_all() {
     done
 
     echo ""
-    echo -e "${BOLD}Revisando SCSS...${NC}"
-    for item in "${ALL_SCSS_FILES[@]}"; do
+    echo -e "${BOLD}Revisando SCSS (solo archivos base)...${NC}"
+    for item in "${BASE_SCSS_FILES[@]}"; do
         if [[ -e "$item" ]]; then
             local is_mod="false"
             for mod in "${MODIFIED_SCSS[@]}"; do
@@ -662,36 +1102,41 @@ review_all() {
 }
 
 #######################################
-# Procesa y actualiza los templates de views/pages
+# Procesa y actualiza los templates de views/pages (solo BASE)
 #######################################
 process_views() {
-    [[ ${#ALL_VIEW_FILES[@]} -eq 0 ]] && return
+    [[ ${#BASE_VIEW_FILES[@]} -eq 0 ]] && return
 
     echo ""
     echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${BLUE}  Procesando: Theme Views${NC}"
+    echo -e "${BOLD}${BLUE}  Procesando: Theme Views (base)${NC}"
     echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
     echo ""
+
+    if [[ ${#FORK_VIEW_FILES[@]} -gt 0 ]]; then
+        echo -e "${GREEN}${#FORK_VIEW_FILES[@]} views del fork serán preservados.${NC}"
+        echo ""
+    fi
 
     local total_modified=${#MODIFIED_VIEWS[@]}
 
     if [[ $total_modified -eq 0 ]]; then
-        echo -e "${GREEN}Ningún view fue modificado.${NC}"
-        echo -e "${BOLD}¿Actualizar todos a templates mínimos?${NC}"
+        echo -e "${GREEN}Ningún view base fue modificado.${NC}"
+        echo -e "${BOLD}¿Actualizar todos los views base a templates mínimos?${NC}"
         echo -e "  ${GREEN}[s]${NC} Sí, actualizar todos"
         echo -e "  ${BLUE}[n]${NC} No, mantener como están"
         echo -n "> "
         read -r response </dev/tty
 
         if [[ "$response" == "s" || "$response" == "S" ]]; then
-            for view_file in "${ALL_VIEW_FILES[@]}"; do
+            for view_file in "${BASE_VIEW_FILES[@]}"; do
                 update_view_template "$view_file"
             done
         else
             echo -e "${BLUE}→${NC} Views mantenidos sin cambios"
         fi
     else
-        echo -e "${YELLOW}Hay $total_modified views modificados.${NC}"
+        echo -e "${YELLOW}Hay $total_modified views base modificados.${NC}"
         echo -e "${BOLD}¿Qué deseas hacer?${NC}"
         echo -e "  ${GREEN}[1]${NC} Actualizar NO modificados, revisar modificados"
         echo -e "  ${BLUE}[2]${NC} Revisar todos"
@@ -710,7 +1155,7 @@ process_views() {
                 done
                 ;;
             2)
-                for view_file in "${ALL_VIEW_FILES[@]}"; do
+                for view_file in "${BASE_VIEW_FILES[@]}"; do
                     local is_mod="false"
                     for mod in "${MODIFIED_VIEWS[@]}"; do
                         [[ "$mod" == "$view_file" ]] && is_mod="true" && break
@@ -719,7 +1164,7 @@ process_views() {
                 done
                 ;;
             3)
-                for view_file in "${ALL_VIEW_FILES[@]}"; do
+                for view_file in "${BASE_VIEW_FILES[@]}"; do
                     update_view_template "$view_file"
                 done
                 ;;
@@ -1006,37 +1451,41 @@ EOF
 #######################################
 # Limpia los archivos de datos JSON de PatternLab
 #######################################
-#######################################
-# Procesa y elimina los components del theme
+# Procesa y elimina los components BASE del theme
 #######################################
 process_components() {
-    [[ ${#ALL_COMPONENT_FILES[@]} -eq 0 ]] && return
+    [[ ${#BASE_COMPONENT_FILES[@]} -eq 0 ]] && return
 
     echo ""
     echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${BLUE}  Procesando: Theme Components${NC}"
+    echo -e "${BOLD}${BLUE}  Procesando: Theme Components (base)${NC}"
     echo -e "${BOLD}${BLUE}══════════════════════════════════════════${NC}"
     echo ""
+
+    if [[ ${#FORK_COMPONENT_FILES[@]} -gt 0 ]]; then
+        echo -e "${GREEN}${#FORK_COMPONENT_FILES[@]} components del fork serán preservados.${NC}"
+        echo ""
+    fi
 
     local total_modified=${#MODIFIED_COMPONENTS[@]}
 
     if [[ $total_modified -eq 0 ]]; then
-        echo -e "${GREEN}Ningún component fue modificado.${NC}"
-        echo -e "${BOLD}¿Eliminar todos los components?${NC}"
+        echo -e "${GREEN}Ningún component base fue modificado.${NC}"
+        echo -e "${BOLD}¿Eliminar todos los components base?${NC}"
         echo -e "  ${GREEN}[s]${NC} Sí, eliminar todos"
         echo -e "  ${BLUE}[n]${NC} No, mantener"
         echo -n "> "
         read -r response </dev/tty
 
         if [[ "$response" == "s" || "$response" == "S" ]]; then
-            for comp_file in "${ALL_COMPONENT_FILES[@]}"; do
+            for comp_file in "${BASE_COMPONENT_FILES[@]}"; do
                 delete_item "$comp_file"
             done
         else
             echo -e "${BLUE}→${NC} Components mantenidos"
         fi
     else
-        echo -e "${YELLOW}Hay $total_modified components modificados.${NC}"
+        echo -e "${YELLOW}Hay $total_modified components base modificados.${NC}"
         echo -e "${BOLD}¿Qué deseas hacer?${NC}"
         echo -e "  ${GREEN}[1]${NC} Eliminar NO modificados, revisar modificados"
         echo -e "  ${BLUE}[2]${NC} Revisar todos"
@@ -1055,7 +1504,7 @@ process_components() {
                 done
                 ;;
             2)
-                for comp_file in "${ALL_COMPONENT_FILES[@]}"; do
+                for comp_file in "${BASE_COMPONENT_FILES[@]}"; do
                     local is_mod="false"
                     for mod in "${MODIFIED_COMPONENTS[@]}"; do
                         [[ "$mod" == "$comp_file" ]] && is_mod="true" && break
@@ -1064,7 +1513,7 @@ process_components() {
                 done
                 ;;
             3)
-                for comp_file in "${ALL_COMPONENT_FILES[@]}"; do
+                for comp_file in "${BASE_COMPONENT_FILES[@]}"; do
                     delete_item "$comp_file"
                 done
                 ;;
@@ -1581,14 +2030,22 @@ main() {
 
     # Modo automático
     if [[ "$AUTO_YES" == "true" ]]; then
+        local total_fork=$((${#FORK_DIRS_FOUND[@]} + ${#FORK_SCSS_FILES[@]} + ${#FORK_VIEW_FILES[@]} + ${#FORK_COMPONENT_FILES[@]}))
+        if [[ $total_fork -gt 0 ]]; then
+            echo -e "${GREEN}NOTA: $total_fork archivos del fork serán preservados automáticamente.${NC}"
+            echo ""
+        fi
+
         delete_all
         clean_scss_main_files
         clean_main_style_scss
         clean_patternlab_data
-        for view_file in "${ALL_VIEW_FILES[@]}"; do
+        # Views - solo base
+        for view_file in "${BASE_VIEW_FILES[@]}"; do
             update_view_template "$view_file"
         done
-        for comp_file in "${ALL_COMPONENT_FILES[@]}"; do
+        # Components - solo base
+        for comp_file in "${BASE_COMPONENT_FILES[@]}"; do
             delete_item "$comp_file"
         done
         # Theme scaffolding
