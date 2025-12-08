@@ -415,15 +415,24 @@ class AcfHelper
 		string $post_type = "post",
 		string $thumbnail_field = "thumbnail"
 	): void {
+		// Skip revisions and autosaves
+		if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
+			return;
+		}
+
 		if (get_post_type($post_id) == $post_type) {
-			remove_action("save_post", "talampaya_save_custom_thumbnail_as_featured_image");
 			$custom_thumbnail_id = get_field($thumbnail_field, $post_id);
 			if ($custom_thumbnail_id) {
-				set_post_thumbnail($post_id, $custom_thumbnail_id["ID"]);
+				// Handle both array and scalar return formats
+				$image_id = is_array($custom_thumbnail_id)
+					? $custom_thumbnail_id["ID"] ?? ($custom_thumbnail_id["id"] ?? null)
+					: $custom_thumbnail_id;
+				if ($image_id) {
+					set_post_thumbnail($post_id, $image_id);
+				}
 			} else {
 				delete_post_thumbnail($post_id);
 			}
-			add_action("save_post", "talampaya_save_custom_thumbnail_as_featured_image");
 		}
 	}
 
