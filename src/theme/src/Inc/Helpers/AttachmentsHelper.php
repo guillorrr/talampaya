@@ -47,50 +47,112 @@ class AttachmentsHelper
 	}
 
 	/**
-	 * Set the post thumbnail if the image exists, otherwise sideload it.
+	 * Descarga una imagen desde una URL y la sube a la biblioteca de medios
+	 * Si la imagen ya existe (por URL o nombre de archivo), retorna el ID existente
+	 *
+	 * Este es el método base para descargar imágenes desde URLs externas.
+	 * Otros métodos como set_post_thumbnail_if_exists() usan este internamente.
+	 *
+	 * @param string $image_url URL de la imagen a descargar
+	 * @param int $post_id ID del post al que se asociará (0 para no asociar)
+	 * @param string|null $title Título opcional para la imagen
+	 * @return int|null ID de la imagen o null si falla
+	 *
+	 * @example
+	 * $image_id = AttachmentsHelper::download_image_from_url('https://example.com/image.jpg', 123, 'My Image');
+	 */
+	public static function download_image_from_url(
+		string $image_url,
+		int $post_id = 0,
+		?string $title = null
+	): ?int {
+		if (empty($image_url)) {
+			return null;
+		}
+
+		// Cargar archivos necesarios
+		if (!function_exists("media_sideload_image")) {
+			require_once ABSPATH . "wp-admin/includes/media.php";
+			require_once ABSPATH . "wp-admin/includes/file.php";
+			require_once ABSPATH . "wp-admin/includes/image.php";
+		}
+
+		// Verificar si la imagen ya existe por URL
+		global $wpdb;
+		$existing_by_url = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts} WHERE guid = %s AND post_type = 'attachment' LIMIT 1",
+				$image_url
+			)
+		);
+
+		if ($existing_by_url) {
+			return (int) $existing_by_url;
+		}
+
+		// Verificar si existe por nombre de archivo
+		$filename = basename(parse_url($image_url, PHP_URL_PATH));
+		$existing_by_filename = self::get_image_id_by_filename($filename);
+
+		if ($existing_by_filename) {
+			return $existing_by_filename;
+		}
+
+		// Descargar imagen desde URL
+		$image_id = media_sideload_image($image_url, $post_id, $title ?: "", "id");
+
+		if (is_wp_error($image_id)) {
+			error_log(
+				"AttachmentsHelper::download_image_from_url - Error al descargar {$image_url}: " .
+					$image_id->get_error_message()
+			);
+			return null;
+		}
+
+		return $image_id;
+	}
+
+	/**
+	 * Descarga una imagen y la establece como featured image del post
+	 * Wrapper conveniente de download_image_from_url() + set_post_thumbnail()
 	 *
 	 * @param int $post_id The post ID to set the thumbnail for.
 	 * @param string $image_url The URL of the image to use as the thumbnail.
 	 * @param string $title The title to use for the image if sideloaded.
 	 * @param bool $debug Whether to output debug information.
-	 * @return void
+	 * @return int|null ID de la imagen si se estableció correctamente, null si falló
 	 */
 	public static function set_post_thumbnail_if_exists(
 		int $post_id,
 		string $image_url,
 		string $title,
 		bool $debug = false
-	): void {
-		if (!empty($image_url)) {
-			if ($debug) {
-				echo "Image URL: " . $image_url . "\n";
-				echo PHP_EOL;
-			}
-
-			$filename = basename($image_url);
-
-			if ($debug) {
-				echo "Filename: " . $filename . "\n";
-				echo PHP_EOL;
-			}
-
-			$image_id = self::get_image_id_by_filename($filename);
-
-			if ($image_id) {
-				set_post_thumbnail($post_id, $image_id);
-			} else {
-				$image_id = media_sideload_image($image_url, $post_id, $title, "id");
-
-				if ($debug) {
-					echo "Image ID: " . $image_id . "\n";
-					echo PHP_EOL;
-				}
-
-				if (!is_wp_error($image_id)) {
-					set_post_thumbnail($post_id, $image_id);
-				}
-			}
+	): ?int {
+		if (empty($image_url)) {
+			return null;
 		}
+
+		if ($debug) {
+			echo "Image URL: " . $image_url . "\n";
+			echo "Filename: " . basename($image_url) . "\n";
+			echo PHP_EOL;
+		}
+
+		// Usar el método centralizado para descargar la imagen
+		$image_id = self::download_image_from_url($image_url, $post_id, $title);
+
+		if ($debug && $image_id) {
+			echo "Image ID: " . $image_id . "\n";
+			echo PHP_EOL;
+		}
+
+		// Establecer como thumbnail si se descargó correctamente
+		if ($image_id) {
+			set_post_thumbnail($post_id, $image_id);
+			return $image_id;
+		}
+
+		return null;
 	}
 
 	/**
@@ -184,35 +246,21 @@ class AttachmentsHelper
 	}
 
 	/**
-	 * Configura imágenes de galería buscando primero localmente antes de descargar
+	 * Descarga múltiples imágenes y las asigna a un campo ACF gallery
+	 * Usa download_image_from_url() internamente para cada imagen
 	 *
 	 * @param int $post_id ID del post
 	 * @param array $image_urls Array con URLs de imágenes
 	 * @param string $custom_field Nombre del campo personalizado (ACF)
 	 * @return bool Éxito de la operación
 	 *
-	 * @note
-	 * La función intenta encontrar cada imagen en la biblioteca de medios local primero.
-	 * Si no se encuentra, intenta descargarla desde la URL proporcionada.
-	 * Si ninguna imagen especificada, la función retorna false.
-	 * Si ocurre algún error durante la descarga o asignación, se registra en el log de errores y la función continúa con la siguiente imagen.
-	 * Al final, si al menos una imagen se asigna correctamente, retorna true; de lo contrario, false.
 	 * @example
 	 * set_gallery_images(123, ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'], 'my_gallery_field');
-	 * @see https://developer.wordpress.org/reference/functions/media_sideload_image/
-	 * @see https://www.advancedcustomfields.com/resources/update_field/
-	 * @see https://developer.wordpress.org/reference/functions/is_wp_error/
 	 */
 	public static function set_gallery_images($post_id, array $image_urls, $custom_field): bool
 	{
 		if (empty($image_urls)) {
 			return false;
-		}
-
-		if (!function_exists("media_sideload_image")) {
-			require_once ABSPATH . "wp-admin/includes/media.php";
-			require_once ABSPATH . "wp-admin/includes/file.php";
-			require_once ABSPATH . "wp-admin/includes/image.php";
 		}
 
 		$gallery_ids = [];
@@ -222,24 +270,11 @@ class AttachmentsHelper
 				continue;
 			}
 
-			// Primero intentar encontrar la imagen por nombre de archivo
-			$filename = basename($image_url);
-			$image_id = self::get_image_id_by_filename($filename);
+			// Usar el método base centralizado
+			$image_id = self::download_image_from_url($image_url, $post_id);
 
 			if ($image_id) {
-				// Si la imagen ya existe en la biblioteca de medios, usarla
 				$gallery_ids[] = $image_id;
-			} else {
-				// Si no existe localmente, intentar descargarla
-				$image_id = media_sideload_image($image_url, $post_id, "", "id");
-
-				if (!is_wp_error($image_id)) {
-					$gallery_ids[] = $image_id;
-				} else {
-					error_log(
-						"Error al descargar imagen para galería: " . $image_id->get_error_message()
-					);
-				}
 			}
 		}
 
@@ -248,5 +283,108 @@ class AttachmentsHelper
 		}
 
 		return false;
+	}
+
+	/**
+	 * Procesa una imagen de WordPress y genera un array con tamaños responsive
+	 *
+	 * @param int|array|null $image ID de imagen, array de ACF, o null
+	 * @param string|array|null $sizes String (mismo tamaño para todos), array con tamaños específicos, o null (valores por defecto)
+	 * @return array|null Array con src, smallSrc, mediumSrc, largeSrc, xlargeSrc, alt. Retorna null si no hay imagen válida
+	 *
+	 * @example
+	 * // Valores por defecto
+	 * $image_data = AttachmentsHelper::processWordPressImage($image_id);
+	 *
+	 * // Tamaño único para todos
+	 * $image_data = AttachmentsHelper::processWordPressImage($image_id, 'large');
+	 *
+	 * // Tamaños personalizados
+	 * $image_data = AttachmentsHelper::processWordPressImage($image_id, [
+	 *   'small' => 'medium_large',
+	 *   'medium' => 'medium_large',
+	 *   'large' => 'large',
+	 *   'xlarge' => 'large',
+	 *   'src' => 'full'
+	 * ]);
+	 */
+	public static function processWordPressImage($image, $sizes = null): ?array
+	{
+		// Extraer ID de imagen
+		$image_id = null;
+		$alt = "";
+
+		if (is_numeric($image)) {
+			$image_id = (int) $image;
+		} elseif (is_array($image)) {
+			$image_id = $image["ID"] ?? ($image["id"] ?? null);
+			$alt = $image["alt"] ?? "";
+		}
+
+		if (!$image_id) {
+			return null;
+		}
+
+		// Obtener alt si no está en el array
+		if (empty($alt)) {
+			$alt = get_post_meta($image_id, "_wp_attachment_image_alt", true) ?: "";
+		}
+
+		// Determinar los tamaños a usar
+		$size_config = [];
+
+		if (is_string($sizes)) {
+			// Si es un string, usar el mismo tamaño para todos
+			$size_config = [
+				"small" => $sizes,
+				"medium" => $sizes,
+				"large" => $sizes,
+				"xlarge" => $sizes,
+				"src" => $sizes,
+			];
+		} elseif (is_array($sizes)) {
+			// Si es un array, usar los tamaños especificados con valores por defecto
+			$size_config = [
+				"small" => $sizes["small"] ?? "medium_large",
+				"medium" => $sizes["medium"] ?? "medium_large",
+				"large" => $sizes["large"] ?? "large",
+				"xlarge" => $sizes["xlarge"] ?? "full",
+				"src" => $sizes["src"] ?? "full",
+			];
+		} else {
+			// Valores por defecto (comportamiento original)
+			$size_config = [
+				"small" => "medium_large",
+				"medium" => "medium_large",
+				"large" => "large",
+				"xlarge" => "full",
+				"src" => "full",
+			];
+		}
+
+		// Obtener URL del tamaño full (siempre existe) como fallback final
+		$full_url = wp_get_attachment_image_url($image_id, "full");
+		if (!$full_url) {
+			return null;
+		}
+
+		// Obtener URL del tamaño por defecto (src) para el atributo src
+		$default_url = wp_get_attachment_image_url($image_id, $size_config["src"]) ?: $full_url;
+
+		// Obtener URLs de todos los tamaños, usando full como fallback si el tamaño no existe
+		$small_url = wp_get_attachment_image_url($image_id, $size_config["small"]) ?: $full_url;
+		$medium_url = wp_get_attachment_image_url($image_id, $size_config["medium"]) ?: $full_url;
+		$large_url = wp_get_attachment_image_url($image_id, $size_config["large"]) ?: $full_url;
+		$xlarge_url = wp_get_attachment_image_url($image_id, $size_config["xlarge"]) ?: $full_url;
+
+		// Construir array compatible con image.twig
+		return [
+			"src" => $default_url,
+			"alt" => $alt,
+			"smallSrc" => $small_url,
+			"mediumSrc" => $medium_url,
+			"largeSrc" => $large_url,
+			"xlargeSrc" => $xlarge_url,
+		];
 	}
 }
