@@ -117,8 +117,15 @@ gulp.task('sass', function () {
 		gulp
 			.src(filesStyles, { allowEmpty: true })
 			//.pipe(print(filepath => `SCSS File: ${filepath}`))
-			.pipe(sass({ includePaths: ['./source/css'] }).on('error', sass.logError))
+			.pipe(
+				sass({ includePaths: ['./source/css', './node_modules'] }).on(
+					'error',
+					sass.logError
+				)
+			)
 			.pipe(concat('style.css'))
+			// Fix font path (from ./fonts/ to ../fonts/)
+			.pipe(replace(/url\("\.\/fonts\//g, 'url("../fonts/'))
 			.pipe(gulpIf(production(), replace('../../', '../')))
 			.pipe(gulp.dest('./public/css'))
 			.pipe(browserSync.stream())
@@ -170,5 +177,14 @@ gulp.task('serve', function () {
 	});
 });
 
-gulp.task('default', gulp.series('sass', 'js', 'serve'));
-gulp.task('build', gulp.series('sass', 'js', 'process-html'));
+gulp.task('fonts', function () {
+	return gulp
+		.src(['./source/fonts/**/*'], {
+			allowEmpty: true,
+			encoding: false,
+		})
+		.pipe(gulp.dest('./public/fonts'));
+});
+
+gulp.task('default', gulp.series('fonts', 'sass', 'js', 'serve'));
+gulp.task('build', gulp.series('fonts', 'sass', 'js', 'process-html'));

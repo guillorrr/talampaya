@@ -393,8 +393,14 @@ function transformTemplates() {
 			// Detectar si ya tiene una directiva extends
 			const hasExtends = fileContent.trim().startsWith('{% extends');
 
-			// Solo aplicamos la transformación si es necesario
-			const transformedContent = hasExtends ? fileContent : wrapWithTemplate(fileContent);
+			// Detectar si es un template embebible (tiene {# @embeddable #} o define bloques para embed)
+			const isEmbeddable =
+				fileContent.includes('{# @embeddable #}') ||
+				(fileContent.includes('{% block') && fileContent.includes('{% embed'));
+
+			// Solo aplicamos la transformación si es necesario y no es embebible
+			const transformedContent =
+				hasExtends || isEmbeddable ? fileContent : wrapWithTemplate(fileContent);
 
 			// Actualizar el contenido del archivo
 			file.contents = Buffer.from(transformedContent);
@@ -549,7 +555,12 @@ function processStyles(files, outputFile, subDir = '', isDev = true) {
 
 	// Configuración común
 	pipeline = pipeline
-		.pipe(sass({ includePaths: 'node_modules' }).on('error', sass.logError))
+		.pipe(
+			sass({ includePaths: ['node_modules', 'patternlab/node_modules'] }).on(
+				'error',
+				sass.logError
+			)
+		)
 		.pipe(concat(outputFile))
 		.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
 
