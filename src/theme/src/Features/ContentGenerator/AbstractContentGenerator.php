@@ -14,6 +14,13 @@ abstract class AbstractContentGenerator implements ContentGeneratorInterface
 	protected string $option_key;
 
 	/**
+	 * Indica si el generador requiere ACF para funcionar
+	 * Los generadores que usen update_field, get_field, etc. deben establecer esto en true
+	 * @var bool
+	 */
+	protected bool $requires_acf = false;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $option_key Clave de opción para rastrear si el contenido ya ha sido creado
@@ -21,6 +28,26 @@ abstract class AbstractContentGenerator implements ContentGeneratorInterface
 	public function __construct(string $option_key)
 	{
 		$this->option_key = $option_key;
+	}
+
+	/**
+	 * Verifica si ACF está activo y disponible
+	 *
+	 * @return bool true si ACF está disponible, false en caso contrario
+	 */
+	public static function isAcfAvailable(): bool
+	{
+		return function_exists("get_field") && function_exists("update_field");
+	}
+
+	/**
+	 * Indica si este generador requiere ACF
+	 *
+	 * @return bool
+	 */
+	public function requiresAcf(): bool
+	{
+		return $this->requires_acf;
 	}
 
 	/**
@@ -106,6 +133,15 @@ abstract class AbstractContentGenerator implements ContentGeneratorInterface
 	 */
 	public function generate(bool $force = false): void
 	{
+		// Verificar si ACF es requerido pero no está disponible
+		if ($this->requiresAcf() && !self::isAcfAvailable()) {
+			$className = get_class($this);
+			error_log(
+				"ContentGenerator: Saltando {$className} porque requiere ACF y no está disponible"
+			);
+			return;
+		}
+
 		if ($this->isAlreadyGenerated($force)) {
 			return;
 		}
