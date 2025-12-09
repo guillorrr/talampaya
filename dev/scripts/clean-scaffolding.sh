@@ -714,6 +714,285 @@ EOF
         fi
         echo -e "${GREEN}✓${NC} Limpiado: $THEME_ASSETS/scripts/backend.js"
     fi
+
+    # Crear templates Twig mínimos para WordPress
+    create_minimal_twig_templates
+}
+
+#######################################
+# Crea templates Twig mínimos para que WordPress funcione
+#######################################
+create_minimal_twig_templates() {
+    echo ""
+    echo -e "${BOLD}Creando templates Twig mínimos para WordPress...${NC}"
+
+    local pages_dir="$PROJECT_ROOT/$THEME_VIEWS/pages"
+
+    if [[ "$DRY_RUN" != "true" ]]; then
+        mkdir -p "$pages_dir"
+
+        # page.twig
+        cat > "$pages_dir/page.twig" << 'EOF'
+{# Template base para páginas - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<article class="page-content">
+			<h1>{{ post.title }}</h1>
+			<div class="content">
+				{{ post.content }}
+			</div>
+		</article>
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/page.twig"
+
+        # single.twig
+        cat > "$pages_dir/single.twig" << 'EOF'
+{# Template base para posts - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<article class="post-content">
+			<h1>{{ post.title }}</h1>
+			<div class="post-meta mb-3">
+				<span class="date">{{ post.date }}</span>
+				{% if post.author %}
+					<span class="author">por {{ post.author.name }}</span>
+				{% endif %}
+			</div>
+			<div class="content">
+				{{ post.content }}
+			</div>
+		</article>
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/single.twig"
+
+        # index.twig
+        cat > "$pages_dir/index.twig" << 'EOF'
+{# Template base para listado de posts - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<h1>{{ title|default('Blog') }}</h1>
+
+		{% if posts %}
+			<div class="posts-list">
+				{% for post in posts %}
+					<article class="post-item mb-4">
+						<h2><a href="{{ post.link }}">{{ post.title }}</a></h2>
+						<div class="post-meta">
+							<span class="date">{{ post.date }}</span>
+						</div>
+						<div class="excerpt">
+							{{ post.preview.read_more_link }}
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+
+			{% if pagination %}
+				<nav class="pagination">
+					{{ pagination }}
+				</nav>
+			{% endif %}
+		{% else %}
+			<p>No hay publicaciones.</p>
+		{% endif %}
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/index.twig"
+
+        # home.twig
+        cat > "$pages_dir/home.twig" << 'EOF'
+{# Template para la página de blog (home.php) - Limpiado por clean-scaffolding #}
+{% extends "@pages/index.twig" %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/home.twig"
+
+        # front-page.twig
+        cat > "$pages_dir/front-page.twig" << 'EOF'
+{# Template para la página principal - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<article class="front-page-content">
+			<h1>{{ post.title }}</h1>
+			<div class="content">
+				{{ post.content }}
+			</div>
+		</article>
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/front-page.twig"
+
+        # archive.twig
+        cat > "$pages_dir/archive.twig" << 'EOF'
+{# Template para archivos - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<h1>{{ title }}</h1>
+
+		{% if description %}
+			<div class="archive-description mb-4">
+				{{ description }}
+			</div>
+		{% endif %}
+
+		{% if posts %}
+			<div class="posts-list">
+				{% for post in posts %}
+					<article class="post-item mb-4">
+						<h2><a href="{{ post.link }}">{{ post.title }}</a></h2>
+						<div class="post-meta">
+							<span class="date">{{ post.date }}</span>
+						</div>
+						<div class="excerpt">
+							{{ post.preview.read_more_link }}
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+
+			{% if pagination %}
+				<nav class="pagination">
+					{{ pagination }}
+				</nav>
+			{% endif %}
+		{% else %}
+			<p>No hay publicaciones en este archivo.</p>
+		{% endif %}
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/archive.twig"
+
+        # search.twig
+        cat > "$pages_dir/search.twig" << 'EOF'
+{# Template para resultados de búsqueda - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<h1>Resultados de búsqueda: "{{ search_query }}"</h1>
+
+		{% if posts %}
+			<p>Se encontraron {{ posts|length }} resultados.</p>
+
+			<div class="search-results">
+				{% for post in posts %}
+					<article class="post-item mb-4">
+						<h2><a href="{{ post.link }}">{{ post.title }}</a></h2>
+						<div class="excerpt">
+							{{ post.preview.read_more_link }}
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+
+			{% if pagination %}
+				<nav class="pagination">
+					{{ pagination }}
+				</nav>
+			{% endif %}
+		{% else %}
+			<p>No se encontraron resultados para "{{ search_query }}".</p>
+		{% endif %}
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/search.twig"
+
+        # author.twig
+        cat > "$pages_dir/author.twig" << 'EOF'
+{# Template para páginas de autor - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<h1>{{ title }}</h1>
+
+		{% if author.description %}
+			<div class="author-bio mb-4">
+				{{ author.description }}
+			</div>
+		{% endif %}
+
+		{% if posts %}
+			<h2>Publicaciones</h2>
+			<div class="posts-list">
+				{% for post in posts %}
+					<article class="post-item mb-4">
+						<h3><a href="{{ post.link }}">{{ post.title }}</a></h3>
+						<div class="post-meta">
+							<span class="date">{{ post.date }}</span>
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+
+			{% if pagination %}
+				<nav class="pagination">
+					{{ pagination }}
+				</nav>
+			{% endif %}
+		{% else %}
+			<p>Este autor no tiene publicaciones.</p>
+		{% endif %}
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/author.twig"
+
+        # 404.twig
+        cat > "$pages_dir/404.twig" << 'EOF'
+{# Template para página 404 - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5 text-center">
+		<h1>404</h1>
+		<h2>Página no encontrada</h2>
+		<p class="lead">Lo sentimos, la página que buscas no existe.</p>
+		<a href="{{ site.url }}" class="btn btn-primary">Volver al inicio</a>
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/404.twig"
+
+        # single-password.twig
+        cat > "$pages_dir/single-password.twig" << 'EOF'
+{# Template para posts protegidos con contraseña - Limpiado por clean-scaffolding #}
+{% extends "@layouts/base.twig" %}
+
+{% block layout_base_content %}
+	<main class="container py-5">
+		<article class="post-content">
+			<h1>{{ post.title }}</h1>
+			<div class="password-form">
+				<p>Este contenido está protegido con contraseña.</p>
+				{{ function('get_the_password_form') }}
+			</div>
+		</article>
+	</main>
+{% endblock %}
+EOF
+        echo -e "${GREEN}✓${NC} Creado: $THEME_VIEWS/pages/single-password.twig"
+
+    else
+        echo -e "${YELLOW}[DRY-RUN]${NC} Se crearían templates mínimos en $THEME_VIEWS/pages/"
+    fi
 }
 
 #######################################
@@ -804,6 +1083,99 @@ EOF
             fi
             echo -e "${GREEN}✓${NC} Limpiado: MenuContext.php"
         fi
+    fi
+
+    # Limpiar EndpointsManager.php (quitar GeolocationEndpoint si fue eliminado)
+    local endpoints_manager="$theme_src/Core/Endpoints/EndpointsManager.php"
+    if [[ -f "$endpoints_manager" ]] && grep -q "GeolocationEndpoint" "$endpoints_manager" 2>/dev/null; then
+        if [[ "$DRY_RUN" != "true" ]]; then
+            cat > "$endpoints_manager" << 'EOF'
+<?php
+
+namespace App\Core\Endpoints;
+
+use App\Utils\FileUtils;
+
+/**
+ * Gestor centralizado para todos los endpoints de la API
+ */
+class EndpointsManager
+{
+	/**
+	 * Endpoints registrados
+	 *
+	 * @var EndpointInterface[]
+	 */
+	private array $endpoints = [];
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->registerCoreEndpoints();
+		$this->registerCustomEndpoints();
+	}
+
+	/**
+	 * Registra los endpoints principales
+	 */
+	private function registerCoreEndpoints(): void
+	{
+		// Registrar endpoints básicos aquí
+		// Ejemplo: $this->addEndpoint(new MiEndpoint());
+	}
+
+	/**
+	 * Registra endpoints personalizados desde archivos
+	 */
+	private function registerCustomEndpoints(): void
+	{
+		if (defined("API_ENDPOINTS_PATH") && is_dir(API_ENDPOINTS_PATH)) {
+			$files = FileUtils::talampaya_directory_iterator(API_ENDPOINTS_PATH);
+
+			foreach ($files as $file) {
+				require_once $file;
+
+				$className = pathinfo($file, PATHINFO_FILENAME);
+				$fullyQualifiedClassName = "\\App\\Core\\Endpoints\\Custom\\$className";
+
+				if (
+					class_exists($fullyQualifiedClassName) &&
+					is_subclass_of($fullyQualifiedClassName, EndpointInterface::class)
+				) {
+					$this->addEndpoint(new $fullyQualifiedClassName());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Añade un endpoint
+	 *
+	 * @param EndpointInterface $endpoint Endpoint a añadir
+	 */
+	public function addEndpoint(EndpointInterface $endpoint): void
+	{
+		$this->endpoints[] = $endpoint;
+	}
+
+	/**
+	 * Registra todos los endpoints en WordPress
+	 */
+	public function registerAllEndpoints(): void
+	{
+		// Inicializar los endpoints cuando se inicialice la API REST
+		add_action("rest_api_init", function () {
+			foreach ($this->endpoints as $endpoint) {
+				$endpoint->register();
+			}
+		});
+	}
+}
+EOF
+        fi
+        echo -e "${GREEN}✓${NC} Limpiado: EndpointsManager.php"
     fi
 }
 
