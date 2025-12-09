@@ -558,7 +558,56 @@ review_all() {
 }
 
 #######################################
+# Pregunta al usuario qué hacer con un archivo auxiliar modificado
+# Arguments:
+#   $1 - Ruta del archivo (relativa al proyecto)
+#   $2 - Descripción del archivo
+# Returns:
+#   0 si debe sobrescribir, 1 si debe preservar
+#######################################
+ask_auxiliary_file_action() {
+    local file="$1"
+    local description="$2"
+
+    # En modo auto, preservar archivos modificados
+    if [[ "$AUTO_YES" == "true" ]]; then
+        echo -e "${YELLOW}→${NC} Preservado (modificado): $file"
+        return 1
+    fi
+
+    while true; do
+        echo "" >&2
+        echo -e "${YELLOW}[modificado]${NC} ${BOLD}$file${NC}" >&2
+        echo -e "  ${DIM}$description${NC}" >&2
+        echo -e "  ${GREEN}[s]${NC} Sobrescribir con versión limpia" >&2
+        echo -e "  ${BLUE}[p]${NC} Preservar contenido del fork" >&2
+        echo -e "  ${CYAN}[d]${NC} Ver diferencias con upstream" >&2
+        echo -n "> " >&2
+        read -r response </dev/tty
+
+        case "$response" in
+            s|S)
+                return 0
+                ;;
+            p|P)
+                echo -e "${BLUE}→${NC} Preservado: $file"
+                return 1
+                ;;
+            d|D)
+                show_file_diff "$file"
+                ;;
+            *)
+                echo -e "${BLUE}→${NC} Preservado: $file"
+                return 1
+                ;;
+        esac
+    done
+}
+
+#######################################
 # Limpia archivos auxiliares (style.scss, _main.scss, data.json, backend.js)
+# IMPORTANTE: Verifica si los archivos fueron modificados respecto a upstream
+# antes de sobrescribirlos. Si están modificados, pregunta al usuario.
 #######################################
 clean_auxiliary_files() {
     echo ""
@@ -567,8 +616,18 @@ clean_auxiliary_files() {
     # Limpiar style.scss principal
     local style_file="$PROJECT_ROOT/$PATTERNLAB_STYLE"
     if [[ -f "$style_file" ]]; then
-        if [[ "$DRY_RUN" != "true" ]]; then
-            cat > "$style_file" << 'EOF'
+        local should_clean=true
+
+        # Verificar si fue modificado respecto a upstream
+        if is_modified_from_upstream "$PATTERNLAB_STYLE"; then
+            if ! ask_auxiliary_file_action "$PATTERNLAB_STYLE" "Contiene imports SCSS personalizados"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                cat > "$style_file" << 'EOF'
 /* ------------------------------------*\
     $TABLE OF CONTENTS
     Limpiado por clean-scaffolding
@@ -589,32 +648,55 @@ clean_auxiliary_files() {
 \*------------------------------------ */
 @import 'scss/objects/main';
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Limpiado: $PATTERNLAB_STYLE"
         fi
-        echo -e "${GREEN}✓${NC} Limpiado: $PATTERNLAB_STYLE"
     fi
 
-    # Crear/limpiar _main.scss en objects y base (SIEMPRE crear, aunque no exista)
+    # Crear/limpiar _main.scss en objects y base
     for dir in "objects" "base"; do
-        local main_file="$PROJECT_ROOT/$PATTERNLAB_CSS/$dir/_main.scss"
+        local main_file_rel="$PATTERNLAB_CSS/$dir/_main.scss"
+        local main_file="$PROJECT_ROOT/$main_file_rel"
         local dir_path="$PROJECT_ROOT/$PATTERNLAB_CSS/$dir"
+        local should_clean=true
 
-        if [[ "$DRY_RUN" != "true" ]]; then
-            # Asegurar que el directorio existe
-            mkdir -p "$dir_path"
-            # Crear archivo _main.scss (vacío con comentario)
-            cat > "$main_file" << 'EOF'
+        # Verificar si fue modificado respecto a upstream
+        if [[ -f "$main_file" ]] && is_modified_from_upstream "$main_file_rel"; then
+            if ! ask_auxiliary_file_action "$main_file_rel" "Contiene imports SCSS personalizados para $dir"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                # Asegurar que el directorio existe
+                mkdir -p "$dir_path"
+                # Crear archivo _main.scss (vacío con comentario)
+                cat > "$main_file" << 'EOF'
 // Limpiado por clean-scaffolding
 // Añade tus imports aquí
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Creado: $main_file_rel"
         fi
-        echo -e "${GREEN}✓${NC} Creado: $PATTERNLAB_CSS/$dir/_main.scss"
     done
 
     # Limpiar data.json
-    local data_file="$PROJECT_ROOT/$PATTERNLAB_DATA/data.json"
+    local data_file_rel="$PATTERNLAB_DATA/data.json"
+    local data_file="$PROJECT_ROOT/$data_file_rel"
     if [[ -f "$data_file" ]]; then
-        if [[ "$DRY_RUN" != "true" ]]; then
-            cat > "$data_file" << 'EOF'
+        local should_clean=true
+
+        # Verificar si fue modificado respecto a upstream
+        if is_modified_from_upstream "$data_file_rel"; then
+            if ! ask_auxiliary_file_action "$data_file_rel" "Contiene datos globales personalizados para PatternLab"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                cat > "$data_file" << 'EOF'
 {
 	"title": "Pattern Lab",
 	"htmlClass": "pl",
@@ -636,15 +718,27 @@ EOF
 	"url": "#"
 }
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Limpiado: $data_file_rel"
         fi
-        echo -e "${GREEN}✓${NC} Limpiado: $PATTERNLAB_DATA/data.json"
     fi
 
     # Limpiar listitems.json
-    local listitems_file="$PROJECT_ROOT/$PATTERNLAB_DATA/listitems.json"
+    local listitems_file_rel="$PATTERNLAB_DATA/listitems.json"
+    local listitems_file="$PROJECT_ROOT/$listitems_file_rel"
     if [[ -f "$listitems_file" ]]; then
-        if [[ "$DRY_RUN" != "true" ]]; then
-            cat > "$listitems_file" << 'EOF'
+        local should_clean=true
+
+        # Verificar si fue modificado respecto a upstream
+        if is_modified_from_upstream "$listitems_file_rel"; then
+            if ! ask_auxiliary_file_action "$listitems_file_rel" "Contiene datos de listas personalizados para PatternLab"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                cat > "$listitems_file" << 'EOF'
 {
 	"1": [{
 		"title": "Item 1",
@@ -684,15 +778,27 @@ EOF
 	}]
 }
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Limpiado: $listitems_file_rel"
         fi
-        echo -e "${GREEN}✓${NC} Limpiado: $PATTERNLAB_DATA/listitems.json"
     fi
 
     # Limpiar backend.js (quitar imports de módulos eliminados como geolocation)
-    local backend_js="$PROJECT_ROOT/$THEME_ASSETS/scripts/backend.js"
+    local backend_js_rel="$THEME_ASSETS/scripts/backend.js"
+    local backend_js="$PROJECT_ROOT/$backend_js_rel"
     if [[ -f "$backend_js" ]]; then
-        if [[ "$DRY_RUN" != "true" ]]; then
-            cat > "$backend_js" << 'EOF'
+        local should_clean=true
+
+        # Verificar si fue modificado respecto a upstream
+        if is_modified_from_upstream "$backend_js_rel"; then
+            if ! ask_auxiliary_file_action "$backend_js_rel" "Contiene imports de módulos JavaScript personalizados"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                cat > "$backend_js" << 'EOF'
 /**
  * Script principal para el panel de administración
  *
@@ -711,8 +817,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	console.log('Backend scripts inicializados');
 });
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Limpiado: $backend_js_rel"
         fi
-        echo -e "${GREEN}✓${NC} Limpiado: $THEME_ASSETS/scripts/backend.js"
     fi
 
     # Crear templates Twig mínimos para WordPress
@@ -997,6 +1104,8 @@ EOF
 
 #######################################
 # Limpia referencias en archivos del theme
+# IMPORTANTE: Verifica si los archivos fueron modificados respecto a upstream
+# antes de sobrescribirlos. Si están modificados, pregunta al usuario.
 #######################################
 clean_theme_references() {
     echo ""
@@ -1009,36 +1118,59 @@ clean_theme_references() {
     if [[ ! -f "$theme_src/Register/PostType/ProjectPostType.php" ]]; then
 
         # Limpiar TalampayaStarter.php
-        local starter_file="$theme_src/TalampayaStarter.php"
+        local starter_file_rel="$THEME_SRC/TalampayaStarter.php"
+        local starter_file="$PROJECT_ROOT/$starter_file_rel"
         if [[ -f "$starter_file" ]] && grep -q "project_post\|ProjectPost\|epic\|EpicTaxonomy" "$starter_file" 2>/dev/null; then
-            if [[ "$DRY_RUN" != "true" ]]; then
-                php -r '
-                $file = $argv[1];
-                $content = file_get_contents($file);
+            local should_clean=true
 
-                $content = preg_replace(
-                    "/public function extendPostClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
-                    "public function extendPostClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de post types personalizados aquí\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
-                    $content
-                );
-
-                $content = preg_replace(
-                    "/public function extendTermClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
-                    "public function extendTermClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de taxonomías personalizadas aquí\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
-                    $content
-                );
-
-                file_put_contents($file, $content);
-                ' "$starter_file" 2>/dev/null
+            # Verificar si fue modificado respecto a upstream
+            if is_modified_from_upstream "$starter_file_rel"; then
+                if ! ask_auxiliary_file_action "$starter_file_rel" "Contiene mapeos de post types y taxonomías personalizados"; then
+                    should_clean=false
+                fi
             fi
-            echo -e "${GREEN}✓${NC} Limpiado: TalampayaStarter.php"
+
+            if [[ "$should_clean" == "true" ]]; then
+                if [[ "$DRY_RUN" != "true" ]]; then
+                    php -r '
+                    $file = $argv[1];
+                    $content = file_get_contents($file);
+
+                    $content = preg_replace(
+                        "/public function extendPostClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
+                        "public function extendPostClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de post types personalizados aquí\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
+                        $content
+                    );
+
+                    $content = preg_replace(
+                        "/public function extendTermClassmap\(array \\\$classmap\): array\s*\{[^}]+\}/s",
+                        "public function extendTermClassmap(array \$classmap): array\n\t{\n\t\t\$custom_classmap = [\n\t\t\t// Agregar mapeos de taxonomías personalizadas aquí\n\t\t];\n\n\t\treturn array_merge(\$classmap, \$custom_classmap);\n\t}",
+                        $content
+                    );
+
+                    file_put_contents($file, $content);
+                    ' "$starter_file" 2>/dev/null
+                fi
+                echo -e "${GREEN}✓${NC} Limpiado: TalampayaStarter.php"
+            fi
         fi
 
         # Limpiar DefaultMenus.php
-        local menus_file="$theme_src/Register/Menu/DefaultMenus.php"
+        local menus_file_rel="$THEME_SRC/Register/Menu/DefaultMenus.php"
+        local menus_file="$PROJECT_ROOT/$menus_file_rel"
         if [[ -f "$menus_file" ]] && grep -q "projects" "$menus_file" 2>/dev/null; then
-            if [[ "$DRY_RUN" != "true" ]]; then
-                cat > "$menus_file" << 'EOF'
+            local should_clean=true
+
+            # Verificar si fue modificado respecto a upstream
+            if is_modified_from_upstream "$menus_file_rel"; then
+                if ! ask_auxiliary_file_action "$menus_file_rel" "Contiene definiciones de menús personalizados"; then
+                    should_clean=false
+                fi
+            fi
+
+            if [[ "$should_clean" == "true" ]]; then
+                if [[ "$DRY_RUN" != "true" ]]; then
+                    cat > "$menus_file" << 'EOF'
 <?php
 
 namespace App\Register\Menu;
@@ -1055,15 +1187,27 @@ class DefaultMenus extends AbstractMenu
 	}
 }
 EOF
+                fi
+                echo -e "${GREEN}✓${NC} Limpiado: DefaultMenus.php"
             fi
-            echo -e "${GREEN}✓${NC} Limpiado: DefaultMenus.php"
         fi
 
         # Limpiar MenuContext.php
-        local menu_context="$theme_src/Core/ContextExtender/Custom/MenuContext.php"
+        local menu_context_rel="$THEME_SRC/Core/ContextExtender/Custom/MenuContext.php"
+        local menu_context="$PROJECT_ROOT/$menu_context_rel"
         if [[ -f "$menu_context" ]] && grep -q "projects_menu" "$menu_context" 2>/dev/null; then
-            if [[ "$DRY_RUN" != "true" ]]; then
-                cat > "$menu_context" << 'EOF'
+            local should_clean=true
+
+            # Verificar si fue modificado respecto a upstream
+            if is_modified_from_upstream "$menu_context_rel"; then
+                if ! ask_auxiliary_file_action "$menu_context_rel" "Contiene contextos de menú personalizados"; then
+                    should_clean=false
+                fi
+            fi
+
+            if [[ "$should_clean" == "true" ]]; then
+                if [[ "$DRY_RUN" != "true" ]]; then
+                    cat > "$menu_context" << 'EOF'
 <?php
 
 namespace App\Core\ContextExtender\Custom;
@@ -1080,16 +1224,28 @@ class MenuContext implements ContextExtenderInterface
 	}
 }
 EOF
+                fi
+                echo -e "${GREEN}✓${NC} Limpiado: MenuContext.php"
             fi
-            echo -e "${GREEN}✓${NC} Limpiado: MenuContext.php"
         fi
     fi
 
     # Limpiar EndpointsManager.php (quitar GeolocationEndpoint si fue eliminado)
-    local endpoints_manager="$theme_src/Core/Endpoints/EndpointsManager.php"
+    local endpoints_manager_rel="$THEME_SRC/Core/Endpoints/EndpointsManager.php"
+    local endpoints_manager="$PROJECT_ROOT/$endpoints_manager_rel"
     if [[ -f "$endpoints_manager" ]] && grep -q "GeolocationEndpoint" "$endpoints_manager" 2>/dev/null; then
-        if [[ "$DRY_RUN" != "true" ]]; then
-            cat > "$endpoints_manager" << 'EOF'
+        local should_clean=true
+
+        # Verificar si fue modificado respecto a upstream
+        if is_modified_from_upstream "$endpoints_manager_rel"; then
+            if ! ask_auxiliary_file_action "$endpoints_manager_rel" "Contiene configuración de endpoints personalizados"; then
+                should_clean=false
+            fi
+        fi
+
+        if [[ "$should_clean" == "true" ]]; then
+            if [[ "$DRY_RUN" != "true" ]]; then
+                cat > "$endpoints_manager" << 'EOF'
 <?php
 
 namespace App\Core\Endpoints;
@@ -1174,8 +1330,9 @@ class EndpointsManager
 	}
 }
 EOF
+            fi
+            echo -e "${GREEN}✓${NC} Limpiado: EndpointsManager.php"
         fi
-        echo -e "${GREEN}✓${NC} Limpiado: EndpointsManager.php"
     fi
 }
 
