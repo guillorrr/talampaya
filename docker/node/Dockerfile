@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:22-alpine
 ENV NODE_ENV=development
 WORKDIR /usr/src/app
 COPY package*.json ./
