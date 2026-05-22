@@ -81,11 +81,61 @@ class AcfHelper
 						true
 					);
 					$field["sub_fields"] = $new_subfields["fields"];
+
+					// Subfields just got their keys prefixed; rewrite any
+					// conditional_logic references pointing at the original
+					// (un-prefixed) names so ACF can resolve them.
+					$field["sub_fields"] = self::updateConditionalLogicReferences(
+						$field["sub_fields"],
+						$key
+					);
 				}
 			}
 		}
 
 		return $array;
+	}
+
+	/**
+	 * Rewrite conditional_logic field references after subfield keys are prefixed.
+	 *
+	 * When a field group is rendered inside a repeater, this helper prefixes
+	 * each subfield key with the parent key. Any conditional_logic rule that
+	 * was authored against the original (un-prefixed) name would otherwise be
+	 * orphaned. This rebuilds those references so the rules keep working.
+	 *
+	 * @param array $fields Subfields after key replacement.
+	 * @param string $key Prefix that was just applied to the subfields.
+	 * @return array Subfields with conditional_logic references rewritten.
+	 */
+	private static function updateConditionalLogicReferences(array $fields, string $key): array
+	{
+		// Map original (un-prefixed) name → new prefixed key.
+		$key_map = [];
+		foreach ($fields as $field) {
+			if (isset($field["key"]) && strpos($field["key"], $key . "_") === 0) {
+				$original_without_prefix = substr($field["key"], strlen($key . "_"));
+				$key_map[$original_without_prefix] = $field["key"];
+			}
+		}
+
+		foreach ($fields as &$field) {
+			if (!isset($field["conditional_logic"]) || !is_array($field["conditional_logic"])) {
+				continue;
+			}
+			foreach ($field["conditional_logic"] as &$condition_group) {
+				if (!is_array($condition_group)) {
+					continue;
+				}
+				foreach ($condition_group as &$condition) {
+					if (isset($condition["field"], $key_map[$condition["field"]])) {
+						$condition["field"] = $key_map[$condition["field"]];
+					}
+				}
+			}
+		}
+
+		return $fields;
 	}
 
 	/**
