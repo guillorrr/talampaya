@@ -58,14 +58,13 @@ class AssetsManager
 			true
 		);
 
-		// REMOVE COMMENT TO ACTIVE
-		//        if (is_page('example-slug')){
-		//            wp_enqueue_script('talampaya_example', get_template_directory_uri() . '/js/example.js', array(), talampaya_theme_version(), TRUE);
-		//            $wp_js_vars = array(
-		//                'ajax_url' => admin_url('admin-ajax.php'),
-		//            );
-		//            wp_localize_script('talampaya_footer_js', 'wp_js_var', $wp_js_vars);
-		//        }
+		// Variables JS globales accesibles desde el frontend vía `wp_js_var`.
+		// Añade aquí cualquier dato que necesites exponer desde PHP a JS
+		// (URLs de endpoints REST, flags de configuración, etc.).
+		$wp_js_vars = [
+			"ajax_url" => admin_url("admin-ajax.php"),
+		];
+		wp_localize_script("talampaya_footer_js", "wp_js_var", $wp_js_vars);
 
 		// Cargar script de comentarios si es necesario
 		if (is_singular() && comments_open() && get_option("thread_comments")) {

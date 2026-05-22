@@ -44,10 +44,7 @@ class ThemeSupport
 
 	public function loadTextDomain(): void
 	{
-		load_theme_textdomain(
-			$this->theme_text_domain,
-			get_template_directory() . "/assets/languages"
-		);
+		load_theme_textdomain($this->theme_text_domain, get_template_directory() . "/languages");
 	}
 
 	/**

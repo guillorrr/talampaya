@@ -29,7 +29,7 @@ exec(command, (error, stdout, stderr) => {
 		__dirname,
 		`../../build/wp-content/themes/${themeName}/languages/${themeName}.pot`
 	);
-	const destPath = path.join(__dirname, `../../src/theme/assets/languages/talampaya.pot`);
+	const destPath = path.join(__dirname, `../../src/theme/languages/talampaya.pot`);
 
 	fs.copyFile(sourcePath, destPath, err => {
 		if (err) {

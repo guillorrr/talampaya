@@ -503,7 +503,7 @@ function prodCopyImages() {
 Languages
 -------------------------------------------------------------------------------------------------- */
 
-const languagesFiles = ['./src/theme/assets/languages/**'];
+const languagesFiles = ['./src/theme/languages/**'];
 
 function processLanguages(isDev = true) {
 	const renameLanguageFiles = rename(function (path) {
@@ -543,10 +543,6 @@ const backendStyles = [
 function processStyles(files, outputFile, subDir = '', isDev = true) {
 	console.log(`Compiling ${outputFile} styles...`);
 
-	const domain = process.env.DOMAIN || 'localhost';
-	const protocol = process.env.PROTOCOL || 'http';
-	const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
-
 	let pipeline = src(files);
 
 	if (isDev) {
@@ -561,8 +557,22 @@ function processStyles(files, outputFile, subDir = '', isDev = true) {
 				sass.logError
 			)
 		)
-		.pipe(concat(outputFile))
-		.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
+		.pipe(concat(outputFile));
+
+	// Reemplazar rutas relativas (../, ../../, etc.):
+	// - Dev: URL absoluta hacia el dominio local para que BrowserSync pueda
+	//   resolver assets (fonts, images) desde el CSS inyectado en runtime.
+	// - Prod: ruta relativa "./" — el CSS queda en la raíz del tema, igual
+	//   que fonts/ y images/, por lo que el build es portable entre dominios
+	//   y no requiere recompilar al cambiar de host.
+	if (isDev) {
+		const domain = process.env.DOMAIN || 'localhost';
+		const protocol = process.env.PROTOCOL || 'http';
+		const themeUrl = `${protocol}://${domain}/wp-content/themes/${themeName}`;
+		pipeline = pipeline.pipe(replace(/(\.\.\/)+/g, `${themeUrl}/`));
+	} else {
+		pipeline = pipeline.pipe(replace(/(\.\.\/)+/g, './'));
+	}
 
 	// Configuraciones específicas
 	if (outputFile === 'style.css') {
