@@ -18,6 +18,7 @@ Step-by-step guides for common development tasks in Talampaya.
     - [Adding a Menu Location](#adding-a-menu-location)
     - [Adding a Sidebar](#adding-a-sidebar)
     - [Customizing Admin](#customizing-admin)
+    - [Adding Options Pages](#adding-options-pages)
 
 ## Cleaning Scaffolding (For Forks)
 
@@ -941,6 +942,118 @@ add_action('wp_dashboard_setup', function() {
     );
 });
 ```
+
+## Adding Options Pages
+
+**Time**: 10 minutes
+
+Options Pages allow you to create admin pages with ACF fields for global site settings.
+
+**Location**: `/src/theme/src/Features/Admin/Pages/`
+
+**Steps**:
+
+1. **Create Options Page class**:
+   ```php
+   <?php
+
+   declare(strict_types=1);
+
+   namespace App\Features\Admin\Pages;
+
+   use Illuminate\Support\Str;
+   use App\Inc\Helpers\AcfHelper;
+
+   class MySettingsOptionsPage
+   {
+       private string $page_slug = "my-settings";
+
+       public function __construct()
+       {
+           // Register ACF options page
+           add_action("acf/init", [$this, "registerOptionsPage"], 10);
+
+           // Register ACF fields
+           add_action("acf/init", [$this, "registerFields"], 20);
+       }
+
+       public function registerOptionsPage(): void
+       {
+           if (function_exists("acf_add_options_page")) {
+               acf_add_options_page([
+                   "page_title" => __("My Settings", "talampaya"),
+                   "menu_title" => __("My Settings", "talampaya"),
+                   "menu_slug" => $this->page_slug,
+                   "capability" => "edit_posts",
+                   "parent_slug" => "themes.php",
+                   "icon_url" => "dashicons-admin-settings",
+                   "position" => 30,
+                   "redirect" => false,
+               ]);
+           }
+       }
+
+       public function registerFields(): void
+       {
+           $block_title = __("Settings", "talampaya");
+
+           $fields = [
+               ["setting_text", "text", 100, __("Text Setting", "talampaya"), 1],
+               ["setting_toggle", "true_false", 100, __("Enable Feature", "talampaya"), 0],
+           ];
+
+           $groups = [[$block_title, AcfHelper::talampaya_create_acf_group_fields($fields), 1]];
+
+           foreach ($groups as $group) {
+               $field_group = [
+                   "key" => Str::snake($group[0]),
+                   "title" => __($group[0], "talampaya"),
+                   "fields" => $group[1],
+                   "location" => [
+                       [
+                           [
+                               "param" => "options_page",
+                               "operator" => "==",
+                               "value" => $this->page_slug,
+                           ],
+                       ],
+                   ],
+                   "show_in_rest" => true,
+                   "menu_order" => $group[2],
+               ];
+
+               acf_add_local_field_group(
+                   AcfHelper::talampaya_replace_keys_from_acf_register_fields(
+                       $field_group,
+                       "my_settings",
+                       "options"
+                   )
+               );
+           }
+       }
+   }
+
+   new MySettingsOptionsPage();
+   ```
+
+2. **Save file** - Auto-registered by WordPress
+
+3. **Access options** in your code:
+   ```php
+   $value = get_field("options_my_settings_setting_text", "option");
+   ```
+
+4. **Common parent slugs**:
+   - `"themes.php"` - Under Appearance
+   - `"options-general.php"` - Under Settings
+   - `"edit.php"` - Under Posts
+   - `null` - Top level menu item
+
+**Tips**:
+- Use `parent_slug` to group related settings
+- Set appropriate `capability` for security
+- Use descriptive `menu_slug` to avoid conflicts
+- Field names follow pattern: `options_{slug}_{field_name}`
 
 ---
 

@@ -301,6 +301,24 @@ patternlab/source/css/
 2. Co-located `.scss` files are processed by PatternLab
 3. Compiled CSS is copied to theme during build
 
+### Images Architecture
+
+**IMPORTANT**: Images are merged from TWO sources during build. To avoid duplication, follow these rules:
+
+**Image sources** (both are copied to `/build/.../images/`):
+- `/patternlab/source/images/` - PatternLab images (icons, UI assets)
+- `/src/theme/assets/images/` - WordPress-specific images
+
+**Rules to avoid duplication**:
+- **Icons and UI assets**: Add ONLY in `/patternlab/source/images/icons/`
+- **WordPress-specific images** (admin, backend): Add in `/src/theme/assets/images/`
+- **NEVER duplicate** the same image in both directories
+
+**Build flow for images**:
+1. Gulp reads from both `/patternlab/source/images/` and `/src/theme/assets/images/`
+2. Both are merged into `/build/wp-content/themes/{theme}/images/`
+3. If same filename exists in both, one will overwrite the other
+
 ### What You Can Touch
 
 **✅ Always safe to create/modify**:
@@ -309,6 +327,7 @@ patternlab/source/css/
 - ACF blocks in `/src/theme/blocks/{block-name}/` (JSON, PHP, Twig in same directory)
 - PatternLab patterns in `/patternlab/source/_patterns/` (atoms, molecules, organisms, templates)
 - PatternLab styles in `/patternlab/source/css/scss/` (ALL frontend styles)
+- PatternLab images in `/patternlab/source/images/` (icons, UI assets)
 - WordPress page templates in `/src/theme/views/pages/`
 - WordPress layouts in `/src/theme/views/layouts/`
 - WordPress components in `/src/theme/views/components/`
