@@ -135,6 +135,87 @@ See [ACF-BLOCKS.md](ACF-BLOCKS.md) for complete documentation.
 } ?>
 ```
 
+### Loco Translate
+
+**Version**: Latest
+**Purpose**: Translation management for .po/.mo files
+
+**Installation** (via Composer):
+```json
+{
+  "require": {
+    "wpackagist-plugin/loco-translate": "*"
+  }
+}
+```
+
+**Documentation**: https://localise.biz/wordpress/plugin
+
+**Key Features**:
+- In-browser translation editor
+- Extract strings from source code
+- Compile .mo files automatically
+- Translation progress tracking
+- Backup management
+
+**Theme Translation Setup**:
+
+1. **POT File Location**: `src/theme/languages/talampaya.pot`
+   - The build system renames this to match the theme name (e.g., `my-theme.pot`) in `/build/.../languages/`
+
+2. **Create Translations**:
+   - Go to Loco Translate → Themes → [Your Theme Name]
+   - Click "New language"
+   - Select target language
+   - Start translating strings
+
+3. **File Structure** (source):
+   ```
+   src/theme/languages/
+   ├── talampaya.pot          # Template (source strings)
+   ├── talampaya-ca.po        # Catalan translations
+   ├── talampaya-ca.mo        # Compiled Catalan
+   ├── talampaya-fr_FR.po     # French translations
+   └── talampaya-fr_FR.mo     # Compiled French
+   ```
+
+   After build (renamed to theme name):
+   ```
+   build/theme/languages/
+   ├── my-theme.pot
+   ├── my-theme-ca.po
+   └── my-theme-ca.mo
+   ```
+
+4. **Adding New Translatable Strings**:
+   ```php
+   // Use 'talampaya' as text domain - it gets replaced during build
+   __('Your string', 'talampaya');
+
+   // With sprintf for dynamic content
+   sprintf(__('Welcome, %s', 'talampaya'), $username);
+   ```
+
+5. **Sync New Strings**:
+   - After adding new `__()` calls in code
+   - Go to Loco Translate → Themes → [Your Theme Name]
+   - Click "Sync" to detect new strings
+   - Or manually update the .pot file
+
+**Usage in Templates**:
+```php
+// In PHP (use 'talampaya' - replaced during build)
+echo __('Button Label', 'talampaya');
+
+// In Twig (via WordPress function)
+{{ __('Button Label', 'talampaya') }}
+```
+
+**Multisite Configuration**:
+- Each site can have its own language set in Settings → General
+- Translations are shared across the network
+- Each site loads translations based on `WPLANG` setting
+
 ### WPML
 
 **Version**: Latest
