@@ -153,6 +153,15 @@ class Bootstrap
 		if (class_exists("App\\Features\\Permalinks\\CustomPermalinks")) {
 			new \App\Features\Permalinks\CustomPermalinks();
 		}
+
+		// SEO multisite: hreflang + sitemap index aggregation.
+		// Both classes self-deactivate when `is_multisite()` is false.
+		if (class_exists("App\\Features\\Seo\\MultisiteSitemapIndex")) {
+			new \App\Features\Seo\MultisiteSitemapIndex();
+		}
+		if (class_exists("App\\Features\\Seo\\MultisiteHreflangLinks")) {
+			new \App\Features\Seo\MultisiteHreflangLinks();
+		}
 	}
 
 	/**
